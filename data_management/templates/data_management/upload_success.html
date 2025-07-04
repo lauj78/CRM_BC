@@ -5,7 +5,16 @@
 </head>
 <body>
     <h1>Upload Successful</h1>
-    <p>Data has been uploaded successfully.</p>
+    <p><strong>File:</strong> {{ file_name }}</p>
+    <p><strong>File Type:</strong> {{ file_type|title }}</p>
+    <p><strong>Number of Records Uploaded:</strong> {{ record_count }}</p>
+    <p><strong>Upload Time:</strong> {{ upload_time }}</p>
+    {% if first_record %}
+        <p><strong>First Record:</strong> {{ first_record }}</p>
+    {% endif %}
+    {% if last_record %}
+        <p><strong>Last Record:</strong> {{ last_record }}</p>
+    {% endif %}
     <a href="{% url 'upload_file' %}">Upload another file</a>
 </body>
 </html>

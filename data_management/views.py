@@ -25,12 +25,19 @@ def upload_file(request):
                     df = pd.read_excel(file_like_object)
 
                 errors = []
+                valid_records = []
+                upload_time = datetime.now()
+
                 for index, row in df.iterrows():
                     try:
                         if file_type == 'members':
                             # Validate mandatory fields
                             if not all(row.get(field) for field in ['Username', 'Name', 'Handphone', 'Join Date']):
-                                errors.append(f"Row {index+2}: Missing mandatory fields")
+                                errors.append({
+                                    'row': index + 2,
+                                    'error': 'Missing mandatory fields',
+                                    'data': row.to_dict()
+                                })
                                 continue
                             # Parse Join Date
                             join_date = pd.to_datetime(row['Join Date'], format='%d-%m-%Y %H:%M:%S')
@@ -42,10 +49,15 @@ def upload_file(request):
                                 join_date=join_date,
                                 email=row.get('Email', '')
                             )
+                            valid_records.append(row.to_dict())
                         elif file_type in ['deposits', 'withdrawals']:
                             # Validate mandatory fields
                             if not all(row.get(field) for field in ['USERNAME', 'EVENT', 'AMOUNT', 'CREATE DATE', 'PROCESS DATE']):
-                                errors.append(f"Row {index+2}: Missing mandatory fields")
+                                errors.append({
+                                    'row': index + 2,
+                                    'error': 'Missing mandatory fields',
+                                    'data': row.to_dict()
+                                })
                                 continue
                             # Parse dates
                             create_date = pd.to_datetime(row['CREATE DATE'], format='%d-%m-%Y %H:%M:%S')
@@ -58,21 +70,36 @@ def upload_file(request):
                                 process_date=process_date,
                                 process_by=row.get('PROCESS BY', '')
                             )
+                            valid_records.append(row.to_dict())
                     except Exception as e:
-                        errors.append(f"Row {index+2}: {str(e)}")
-                
+                        errors.append({
+                            'row': index + 2,
+                            'error': str(e),
+                            'data': row.to_dict()
+                        })
+
                 if errors:
                     # Generate CSV error report
                     output = StringIO()
                     writer = csv.writer(output)
-                    writer.writerow(['Error'])
+                    writer.writerow(['Row', 'Error', 'Row Data'])
                     for error in errors:
-                        writer.writerow([error])
+                        writer.writerow([error['row'], error['error'], str(error['data'])])
                     response = HttpResponse(content_type='text/csv')
                     response['Content-Disposition'] = 'attachment; filename="errors.csv"'
                     response.write(output.getvalue())
                     return response
-                return redirect('upload_success')
+                
+                # Prepare success page data
+                context = {
+                    'file_name': file.name,
+                    'record_count': len(valid_records),
+                    'upload_time': upload_time,
+                    'first_record': valid_records[0] if valid_records else None,
+                    'last_record': valid_records[-1] if valid_records else None,
+                    'file_type': file_type
+                }
+                return render(request, 'data_management/upload_success.html', context)
             except Exception as e:
                 return render(request, 'data_management/upload.html', {'form': form, 'error': str(e)})
         else:
@@ -80,3 +107,6 @@ def upload_file(request):
     else:
         form = UploadFileForm()
     return render(request, 'data_management/upload.html', {'form': form})
+
+def upload_success(request):
+    return render(request, 'data_management/upload_success.html')
