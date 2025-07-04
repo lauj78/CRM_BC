@@ -78,28 +78,30 @@ def upload_file(request):
                             'data': row.to_dict()
                         })
 
+                # Store data in session for summary or CSV
+                request.session['upload_summary'] = {
+                    'file_name': file.name,
+                    'file_type': file_type,
+                    'record_count': len(valid_records),
+                    'error_count': len(errors),
+                    'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'first_record': valid_records[0] if valid_records else None,
+                    'last_record': valid_records[-1] if valid_records else None,
+                    'first_error': errors[0] if errors else None,
+                    'last_error': errors[-1] if errors else None,
+                    'errors': errors
+                }
+
                 if errors:
-                    # Generate CSV error report
-                    output = StringIO()
-                    writer = csv.writer(output)
-                    writer.writerow(['Row', 'Error', 'Row Data'])
-                    for error in errors:
-                        writer.writerow([error['row'], error['error'], str(error['data'])])
-                    response = HttpResponse(content_type='text/csv')
-                    response['Content-Disposition'] = 'attachment; filename="errors.csv"'
-                    response.write(output.getvalue())
-                    return response
-                
-                # Prepare success page data
-                context = {
+                    return redirect('upload_summary')
+                return render(request, 'data_management/upload_success.html', {
                     'file_name': file.name,
                     'record_count': len(valid_records),
                     'upload_time': upload_time,
                     'first_record': valid_records[0] if valid_records else None,
                     'last_record': valid_records[-1] if valid_records else None,
                     'file_type': file_type
-                }
-                return render(request, 'data_management/upload_success.html', context)
+                })
             except Exception as e:
                 return render(request, 'data_management/upload.html', {'form': form, 'error': str(e)})
         else:
@@ -110,3 +112,20 @@ def upload_file(request):
 
 def upload_success(request):
     return render(request, 'data_management/upload_success.html')
+
+def upload_summary(request):
+    summary = request.session.get('upload_summary', {})
+    return render(request, 'data_management/upload_summary.html', summary)
+
+def download_errors(request):
+    summary = request.session.get('upload_summary', {})
+    errors = summary.get('errors', [])
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Row', 'Error', 'Row Data'])
+    for error in errors:
+        writer.writerow([error['row'], error['error'], str(error['data'])])
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="errors.csv"'
+    response.write(output.getvalue())
+    return response
