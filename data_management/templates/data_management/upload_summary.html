@@ -25,6 +25,7 @@
     {% if error_count > 0 %}
         <p><a href="{% url 'download_errors' %}">Download Error Report (CSV)</a></p>
     {% endif %}
+    <p><a href="{% url 'error_logs_list' %}">View Error Logs</a></p>
     <p><a href="{% url 'upload_file' %}">Upload another file</a></p>
 </body>
 </html>

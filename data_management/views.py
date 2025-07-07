@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 import pandas as pd
 from .forms import UploadFileForm
-from .models import Member, Transaction
-from django.http import HttpResponse
+from .models import Member, Transaction, ErrorLog
+from django.http import HttpResponse, FileResponse
 import csv
 from io import StringIO, BytesIO
 from datetime import datetime
+import os
+from django.conf import settings
 
 def upload_file(request):
     if request.method == 'POST':
@@ -78,22 +80,42 @@ def upload_file(request):
                             'data': row.to_dict()
                         })
 
-                # Store data in session for summary or CSV
-                request.session['upload_summary'] = {
-                    'file_name': file.name,
-                    'file_type': file_type,
-                    'record_count': len(valid_records),
-                    'error_count': len(errors),
-                    'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'first_record': valid_records[0] if valid_records else None,
-                    'last_record': valid_records[-1] if valid_records else None,
-                    'first_error': errors[0] if errors else None,
-                    'last_error': errors[-1] if errors else None,
-                    'errors': errors
-                }
-
                 if errors:
+                    # Save error log file
+                    timestamp = upload_time.strftime('%Y%m%d_%H%M%S')
+                    file_name = f"{timestamp}_{file_type}_{len(errors)}error{len(valid_records)}success_log.csv"
+                    file_path = os.path.join(settings.MEDIA_ROOT, 'error_logs', file_name)
+                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                    with open(file_path, 'w', newline='') as f:
+                        writer = csv.writer(f)
+                        writer.writerow(['Row', 'Error', 'Row Data'])
+                        for error in errors:
+                            writer.writerow([error['row'], error['error'], str(error['data'])])
+
+                    # Save metadata to ErrorLog
+                    ErrorLog.objects.create(
+                        file_name=file_name,
+                        file_path=file_path,
+                        upload_time=upload_time,
+                        file_type=file_type,
+                        error_count=len(errors),
+                        success_count=len(valid_records)
+                    )
+
+                    # Store summary in session
+                    request.session['upload_summary'] = {
+                        'file_name': file.name,
+                        'file_type': file_type,
+                        'record_count': len(valid_records),
+                        'error_count': len(errors),
+                        'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'first_record': valid_records[0] if valid_records else None,
+                        'last_record': valid_records[-1] if valid_records else None,
+                        'first_error': errors[0] if errors else None,
+                        'last_error': errors[-1] if errors else None
+                    }
                     return redirect('upload_summary')
+
                 return render(request, 'data_management/upload_success.html', {
                     'file_name': file.name,
                     'record_count': len(valid_records),
@@ -129,3 +151,20 @@ def download_errors(request):
     response['Content-Disposition'] = 'attachment; filename="errors.csv"'
     response.write(output.getvalue())
     return response
+
+def error_logs_list(request):
+    logs = ErrorLog.objects.order_by('-upload_time')
+    return render(request, 'data_management/error_logs_list.html', {'logs': logs})
+
+def download_log(request, log_id):
+    log = ErrorLog.objects.get(id=log_id)
+    return FileResponse(open(log.file_path, 'rb'), as_attachment=True, filename=log.file_name)
+
+def delete_log(request, log_id):
+    if request.method == 'POST':
+        log = ErrorLog.objects.get(id=log_id)
+        if os.path.exists(log.file_path):
+            os.remove(log.file_path)
+        log.delete()
+        return redirect('error_logs_list')
+    return redirect('error_logs_list')

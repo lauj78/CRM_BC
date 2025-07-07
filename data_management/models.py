@@ -30,3 +30,14 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.event} by {self.username}"
+    
+class ErrorLog(models.Model):
+    file_name = models.CharField(max_length=100, unique=True)
+    file_path = models.CharField(max_length=200)
+    upload_time = models.DateTimeField()
+    file_type = models.CharField(max_length=20)
+    error_count = models.IntegerField()
+    success_count = models.IntegerField()
+
+    def __str__(self):
+        return self.file_name    
