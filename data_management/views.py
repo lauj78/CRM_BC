@@ -8,6 +8,7 @@ from io import StringIO, BytesIO
 from datetime import datetime
 import os
 from django.conf import settings
+from django.utils import timezone
 
 def upload_file(request):
     if request.method == 'POST':
@@ -15,20 +16,32 @@ def upload_file(request):
         if form.is_valid():
             file = request.FILES['file']
             file_type = form.cleaned_data['file_type']
+            # Validate file is CSV
+            if not file.name.lower().endswith('.csv'):
+                return render(request, 'data_management/upload.html', {
+                    'form': form,
+                    'error': 'Please upload a file with .csv extension.'
+                })
+            # Additional MIME type check (optional, can be spoofed)
+            if file.content_type not in ['text/csv', 'application/vnd.ms-excel']:
+                return render(request, 'data_management/upload.html', {
+                    'form': form,
+                    'error': 'Invalid file type. Please upload a CSV file.'
+                })
             try:
                 # Read file content into a BytesIO object
                 file_content = file.read()
                 file_like_object = BytesIO(file_content)
 
-                # Read CSV or Excel
+                # Read CSV or Excel with UTF-8-SIG encoding to handle BOM
                 if file.name.endswith('.csv'):
-                    df = pd.read_csv(file_like_object, sep=None, engine='python')
+                    df = pd.read_csv(file_like_object, sep=None, engine='python', encoding='utf-8-sig')
                 else:
                     df = pd.read_excel(file_like_object)
 
                 errors = []
                 valid_records = []
-                upload_time = datetime.now()
+                upload_time = timezone.now()
 
                 for index, row in df.iterrows():
                     try:
@@ -41,8 +54,20 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            # Parse Join Date
-                            join_date = pd.to_datetime(row['Join Date'], format='%d-%m-%Y %H:%M:%S')
+                            # Parse Join Date with flexible handling
+                            join_date_str = str(row['Join Date'])
+                            join_date = pd.to_datetime(join_date_str, errors='coerce')
+                            if pd.isna(join_date):
+                                try:
+                                    join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                except ValueError:
+                                    try:
+                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                    except ValueError:
+                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                if pd.isna(join_date):
+                                    raise ValueError(f"Invalid date format for Join Date at row {index + 2}: {join_date_str}")
+                            join_date = timezone.make_aware(join_date, timezone.get_current_timezone())
                             Member.objects.create(
                                 username=row['Username'],
                                 name=row['Name'],
@@ -61,9 +86,33 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            # Parse dates
-                            create_date = pd.to_datetime(row['CREATE DATE'], format='%d-%m-%Y %H:%M:%S')
-                            process_date = pd.to_datetime(row['PROCESS DATE'], format='%d-%m-%Y %H:%M:%S')
+                            # Parse dates with flexible handling
+                            create_date_str = str(row['CREATE DATE'])
+                            process_date_str = str(row['PROCESS DATE'])
+                            create_date = pd.to_datetime(create_date_str, errors='coerce')
+                            process_date = pd.to_datetime(process_date_str, errors='coerce')
+                            if pd.isna(create_date):
+                                try:
+                                    create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                except ValueError:
+                                    try:
+                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                    except ValueError:
+                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                if pd.isna(create_date):
+                                    raise ValueError(f"Invalid date format for CREATE DATE at row {index + 2}: {create_date_str}")
+                            if pd.isna(process_date):
+                                try:
+                                    process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                except ValueError:
+                                    try:
+                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                    except ValueError:
+                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                if pd.isna(process_date):
+                                    raise ValueError(f"Invalid date format for PROCESS DATE at row {index + 2}: {process_date_str}")
+                            create_date = timezone.make_aware(create_date, timezone.get_current_timezone())
+                            process_date = timezone.make_aware(process_date, timezone.get_current_timezone())
                             Transaction.objects.create(
                                 username=row['USERNAME'],
                                 event='Deposit' if file_type == 'deposits' else 'Withdraw',
@@ -102,7 +151,7 @@ def upload_file(request):
                         success_count=len(valid_records)
                     )
 
-                    # Store summary in session
+                    # Store summary in session with stringified datetimes
                     request.session['upload_summary'] = {
                         'file_name': file.name,
                         'file_type': file_type,
