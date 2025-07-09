@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Data</title>
+    <title>Upload File</title>
 </head>
 <body>
-    <h1>Upload Data</h1>
+    <h1>Upload File</h1>
     {% if error %}
-        <p style="color: red;">Error: {{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Upload</button>
     </form>
-    <p><a href="{% url 'error_logs_list' %}">View Error Logs</a></p>
+    <a href="{% url 'upload_summary' %}">View Summary</a>
 </body>
 </html>

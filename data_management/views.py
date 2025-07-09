@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 from django.conf import settings
 from django.utils import timezone
+import pytz
 
 def upload_file(request):
     if request.method == 'POST':
@@ -16,24 +17,22 @@ def upload_file(request):
         if form.is_valid():
             file = request.FILES['file']
             file_type = form.cleaned_data['file_type']
+
             # Validate file is CSV
             if not file.name.lower().endswith('.csv'):
                 return render(request, 'data_management/upload.html', {
                     'form': form,
-                    'error': 'Please upload a file with .csv extension.'
+                    'error': 'Please install a file with .csv extension.'
                 })
-            # Additional MIME type check (optional, can be spoofed)
             if file.content_type not in ['text/csv', 'application/vnd.ms-excel']:
                 return render(request, 'data_management/upload.html', {
                     'form': form,
                     'error': 'Invalid file type. Please upload a CSV file.'
                 })
+
             try:
-                # Read file content into a BytesIO object
                 file_content = file.read()
                 file_like_object = BytesIO(file_content)
-
-                # Read CSV or Excel with UTF-8-SIG encoding to handle BOM
                 if file.name.endswith('.csv'):
                     df = pd.read_csv(file_like_object, sep=None, engine='python', encoding='utf-8-sig')
                 else:
@@ -46,7 +45,6 @@ def upload_file(request):
                 for index, row in df.iterrows():
                     try:
                         if file_type == 'members':
-                            # Validate mandatory fields
                             if not all(row.get(field) for field in ['Username', 'Name', 'Handphone', 'Join Date']):
                                 errors.append({
                                     'row': index + 2,
@@ -54,20 +52,19 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            # Parse Join Date with flexible handling
                             join_date_str = str(row['Join Date'])
                             join_date = pd.to_datetime(join_date_str, errors='coerce')
                             if pd.isna(join_date):
                                 try:
-                                    join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                    join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M:%S')
                                 except ValueError:
                                     try:
-                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M')
                                     except ValueError:
-                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %I:%M:%S %p')
                                 if pd.isna(join_date):
                                     raise ValueError(f"Invalid date format for Join Date at row {index + 2}: {join_date_str}")
-                            join_date = timezone.make_aware(join_date, timezone.get_current_timezone())
+                            join_date = timezone.make_aware(join_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             Member.objects.create(
                                 username=row['Username'],
                                 name=row['Name'],
@@ -77,8 +74,7 @@ def upload_file(request):
                                 email=row.get('Email', '')
                             )
                             valid_records.append(row.to_dict())
-                        elif file_type in ['deposits', 'withdrawals']:
-                            # Validate mandatory fields
+                        elif file_type in ['deposit', 'manual_deposit', 'withdraw', 'manual_withdraw']:
                             if not all(row.get(field) for field in ['USERNAME', 'EVENT', 'AMOUNT', 'CREATE DATE', 'PROCESS DATE']):
                                 errors.append({
                                     'row': index + 2,
@@ -86,36 +82,35 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            # Parse dates with flexible handling
                             create_date_str = str(row['CREATE DATE'])
                             process_date_str = str(row['PROCESS DATE'])
                             create_date = pd.to_datetime(create_date_str, errors='coerce')
                             process_date = pd.to_datetime(process_date_str, errors='coerce')
                             if pd.isna(create_date):
                                 try:
-                                    create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                    create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M:%S')
                                 except ValueError:
                                     try:
-                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M')
                                     except ValueError:
-                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %I:%M:%S %p')
                                 if pd.isna(create_date):
                                     raise ValueError(f"Invalid date format for CREATE DATE at row {index + 2}: {create_date_str}")
                             if pd.isna(process_date):
                                 try:
-                                    process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M:%S')  # 24-hour
+                                    process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M:%S')
                                 except ValueError:
                                     try:
-                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M')  # 24-hour, no seconds
+                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M')
                                     except ValueError:
-                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %I:%M:%S %p')  # 12-hour with AM/PM
+                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %I:%M:%S %p')
                                 if pd.isna(process_date):
                                     raise ValueError(f"Invalid date format for PROCESS DATE at row {index + 2}: {process_date_str}")
-                            create_date = timezone.make_aware(create_date, timezone.get_current_timezone())
-                            process_date = timezone.make_aware(process_date, timezone.get_current_timezone())
+                            create_date = timezone.make_aware(create_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
+                            process_date = timezone.make_aware(process_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             Transaction.objects.create(
                                 username=row['USERNAME'],
-                                event='Deposit' if file_type == 'deposits' else 'Withdraw',
+                                event=file_type.replace('_', ' ').title(),  # Convert to title case (e.g., 'manual_deposit' -> 'Manual Deposit')
                                 amount=float(row['AMOUNT']),
                                 create_date=create_date,
                                 process_date=process_date,
@@ -130,7 +125,6 @@ def upload_file(request):
                         })
 
                 if errors:
-                    # Save error log file
                     timestamp = upload_time.strftime('%Y%m%d_%H%M%S')
                     file_name = f"{timestamp}_{file_type}_{len(errors)}error{len(valid_records)}success_log.csv"
                     file_path = os.path.join(settings.MEDIA_ROOT, 'error_logs', file_name)
@@ -141,7 +135,6 @@ def upload_file(request):
                         for error in errors:
                             writer.writerow([error['row'], error['error'], str(error['data'])])
 
-                    # Save metadata to ErrorLog
                     ErrorLog.objects.create(
                         file_name=file_name,
                         file_path=file_path,
@@ -151,7 +144,6 @@ def upload_file(request):
                         success_count=len(valid_records)
                     )
 
-                    # Store summary in session with stringified datetimes
                     request.session['upload_summary'] = {
                         'file_name': file.name,
                         'file_type': file_type,
@@ -161,7 +153,8 @@ def upload_file(request):
                         'first_record': valid_records[0] if valid_records else None,
                         'last_record': valid_records[-1] if valid_records else None,
                         'first_error': errors[0] if errors else None,
-                        'last_error': errors[-1] if errors else None
+                        'last_error': errors[-1] if errors else None,
+                        'error_log_path': file_path if errors else None
                     }
                     return redirect('upload_summary')
 
@@ -179,23 +172,36 @@ def upload_file(request):
             return render(request, 'data_management/upload.html', {'form': form, 'error': 'Invalid form submission'})
     else:
         form = UploadFileForm()
-    return render(request, 'data_management/upload.html', {'form': form})
+        return render(request, 'data_management/upload.html', {'form': form})
 
 def upload_success(request):
     return render(request, 'data_management/upload_success.html')
 
 def upload_summary(request):
     summary = request.session.get('upload_summary', {})
-    return render(request, 'data_management/upload_summary.html', summary)
+    if not summary:
+        return render(request, 'data_management/upload_summary.html', {'error': 'No upload summary available.'})
+    return render(request, 'data_management/upload_summary.html', {
+        'file_name': summary.get('file_name'),
+        'file_type': summary.get('file_type'),
+        'record_count': summary.get('record_count', 0),
+        'error_count': summary.get('error_count', 0),
+        'upload_time': summary.get('upload_time'),
+        'first_record': summary.get('first_record'),
+        'last_record': summary.get('last_record'),
+        'first_error': summary.get('first_error'),
+        'last_error': summary.get('last_error'),
+        'error_log_path': summary.get('error_log_path')
+    })
 
 def download_errors(request):
     summary = request.session.get('upload_summary', {})
-    errors = summary.get('errors', [])
+    errors = summary.get('first_error', {}).get('data', []) if summary.get('error_count', 0) > 0 else []
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(['Row', 'Error', 'Row Data'])
-    for error in errors:
-        writer.writerow([error['row'], error['error'], str(error['data'])])
+    if errors:
+        writer.writerow([summary.get('first_error', {}).get('row'), summary.get('first_error', {}).get('error'), str(summary.get('first_error', {}).get('data'))])
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="errors.csv"'
     response.write(output.getvalue())

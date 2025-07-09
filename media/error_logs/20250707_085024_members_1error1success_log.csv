@@ -1,0 +1,4 @@
+Row,Error,Row Data
+2,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(testuser3) already exists.
+","{'Username': 'testuser3', 'Name': 'TEST USER 3', 'Referral': 'ads007', 'Handphone': 6281234567893, 'Join Date': '20-05-2025 10:04:00', 'Email': 'test3@example.com'}"
