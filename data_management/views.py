@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 import pandas as pd
 from .forms import UploadFileForm
 from .models import Member, Transaction, ErrorLog
@@ -11,6 +13,23 @@ from django.conf import settings
 from django.utils import timezone
 import pytz
 
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('data_management:upload_file')  # Updated from 'upload_file'
+        else:
+            return render(request, 'login.html', {'error': 'Invalid credentials'})
+    return render(request, 'login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('data_management:login')
+
+@login_required
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -156,7 +175,7 @@ def upload_file(request):
                         'last_error': errors[-1] if errors else None,
                         'error_log_path': file_path if errors else None
                     }
-                    return redirect('upload_summary')
+                    return redirect('data_management:upload_summary')
 
                 return render(request, 'data_management/upload_success.html', {
                     'file_name': file.name,
@@ -174,9 +193,11 @@ def upload_file(request):
         form = UploadFileForm()
         return render(request, 'data_management/upload.html', {'form': form})
 
+@login_required
 def upload_success(request):
     return render(request, 'data_management/upload_success.html')
 
+@login_required
 def upload_summary(request):
     summary = request.session.get('upload_summary', {})
     if not summary:
@@ -194,6 +215,7 @@ def upload_summary(request):
         'error_log_path': summary.get('error_log_path')
     })
 
+@login_required
 def download_errors(request):
     summary = request.session.get('upload_summary', {})
     errors = summary.get('first_error', {}).get('data', []) if summary.get('error_count', 0) > 0 else []
@@ -207,19 +229,22 @@ def download_errors(request):
     response.write(output.getvalue())
     return response
 
+@login_required
 def error_logs_list(request):
     logs = ErrorLog.objects.order_by('-upload_time')
     return render(request, 'data_management/error_logs_list.html', {'logs': logs})
 
+@login_required
 def download_log(request, log_id):
     log = ErrorLog.objects.get(id=log_id)
     return FileResponse(open(log.file_path, 'rb'), as_attachment=True, filename=log.file_name)
 
+@login_required
 def delete_log(request, log_id):
     if request.method == 'POST':
         log = ErrorLog.objects.get(id=log_id)
         if os.path.exists(log.file_path):
             os.remove(log.file_path)
         log.delete()
-        return redirect('error_logs_list')
-    return redirect('error_logs_list')
+        return redirect('data_management:error_logs_list')
+    return redirect('data_management:error_logs_list')

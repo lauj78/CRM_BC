@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload File</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Upload File{% endblock %}
+
+{% block content %}
     <h1>Upload File</h1>
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p class="error">{{ error }}</p>
     {% endif %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Upload</button>
     </form>
-    <a href="{% url 'upload_summary' %}">View Summary</a>
-</body>
-</html>
+    <a href="{% url 'data_management:upload_summary' %}">View Summary</a>
+{% endblock %}

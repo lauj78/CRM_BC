@@ -1,20 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Success</title>
-</head>
-<body>
-    <h1>Upload Successful</h1>
+{% extends "base.html" %}
+
+{% block title %}Upload Summary{% endblock %}
+
+{% block content %}
+    <h1>Upload Summary</h1>
     <p><strong>File:</strong> {{ file_name }}</p>
     <p><strong>File Type:</strong> {{ file_type|title }}</p>
-    <p><strong>Number of Records Uploaded:</strong> {{ record_count }}</p>
     <p><strong>Upload Time:</strong> {{ upload_time }}</p>
+    <p><strong>Records Successfully Uploaded:</strong> {{ record_count }}</p>
     {% if first_record %}
-        <p><strong>First Record:</strong> {{ first_record }}</p>
+        <p><strong>First Successful Record:</strong> {{ first_record }}</p>
     {% endif %}
     {% if last_record %}
-        <p><strong>Last Record:</strong> {{ last_record }}</p>
+        <p><strong>Last Successful Record:</strong> {{ last_record }}</p>
     {% endif %}
-    <a href="{% url 'upload_file' %}">Upload another file</a>
-</body>
-</html>
+    <p><strong>Records Failed:</strong> {{ error_count }}</p>
+    {% if first_error %}
+        <p><strong>First Failed Record:</strong> Row {{ first_error.row }} - {{ first_error.error }}: {{ first_error.data }}</p>
+    {% endif %}
+    {% if last_error %}
+        <p><strong>Last Failed Record:</strong> Row {{ last_error.row }} - {{ last_error.error }}: {{ last_error.data }}</p>
+    {% endif %}
+    {% if error_count > 0 %}
+        <p><a href="{% url 'data_management:download_errors' %}">Download Error Report (CSV)</a></p>
+    {% endif %}
+    <p><a href="{% url 'data_management:error_logs_list' %}">View Error Logs</a></p>
+    <p><a href="{% url 'data_management:upload_file' %}">Upload another file</a></p>
+{% endblock %}
