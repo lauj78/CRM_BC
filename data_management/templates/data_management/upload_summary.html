@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Summary</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Upload Summary{% endblock %}
+
+{% block content %}
     <h1>Upload Summary</h1>
     <p><strong>File:</strong> {{ file_name }}</p>
     <p><strong>File Type:</strong> {{ file_type|title }}</p>
@@ -23,9 +22,8 @@
         <p><strong>Last Failed Record:</strong> Row {{ last_error.row }} - {{ last_error.error }}: {{ last_error.data }}</p>
     {% endif %}
     {% if error_count > 0 %}
-        <p><a href="{% url 'download_errors' %}">Download Error Report (CSV)</a></p>
+        <p><a href="{% url 'data_management:download_errors' %}">Download Error Report (CSV)</a></p>  <!-- Updated -->
     {% endif %}
-    <p><a href="{% url 'error_logs_list' %}">View Error Logs</a></p>
-    <p><a href="{% url 'upload_file' %}">Upload another file</a></p>
-</body>
-</html>
+    <p><a href="{% url 'data_management:error_logs_list' %}">View Error Logs</a></p>
+    <p><a href="{% url 'data_management:upload_file' %}">Upload another file</a></p>
+{% endblock %}
