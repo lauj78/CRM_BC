@@ -65,8 +65,9 @@
             <h1>CRM System</h1>
         </div>
         <div class="navbar">
+            <a href="{% url 'dashboard_app:dashboard' %}">Dashboard</a>  <!-- Updated to dashboard_app namespace -->
             <a href="{% url 'data_management:upload_file' %}">Upload Data</a>
-            {% if user.is_authenticated %}
+             {% if user.is_authenticated %}
                 <a href="{% url 'data_management:logout' %}">Logout</a>
             {% else %}
                 <a href="{% url 'data_management:login' %}">Login</a>

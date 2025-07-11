@@ -1,0 +1,4 @@
+Row,Error,Row Data
+2,Missing mandatory fields,"{'USERNAME': 'Drahmathidayat2', 'CREATE DATE': '03-07-2025 23:18:59', 'EVENT': 'Deposit', 'PROCESS DATE': '03-07-2025 23:19:18', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': 25.0}"
+3,Missing mandatory fields,"{'USERNAME': 'Dyanntt12345', 'CREATE DATE': '3/07/2025 23:14:25', 'EVENT': 'Deposit', 'PROCESS DATE': '3/07/2025 23:14:25', 'PROCESS BY': 'xpukul69', 'AMOUNT': 50.0}"
+4,Missing mandatory fields,"{'USERNAME': 'Djojott03', 'CREATE DATE': '3/07/2025 11:18:59 PM', 'EVENT': 'Deposit', 'PROCESS DATE': '3/07/2025 11:18:59 PM', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': 150.0}"

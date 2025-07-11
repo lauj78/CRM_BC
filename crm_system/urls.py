@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/data/login/', permanent=False)),  # Redirect root to /data/login/
     path('data/', include('data_management.urls', namespace='data_management')),  # Namespace for data_management
+    path('dashboard/', include('dashboard_app.urls', namespace='dashboard_app')),  # Add this line
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
