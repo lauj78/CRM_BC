@@ -21,13 +21,13 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')
+            return redirect('dashboard_app:dashboard')  # Updated to use namespace
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
     return render(request, 'login.html')
 
 @login_required
-def dashboard(request):
+def dashboard_view(request):  # Renamed from 'dashboard' to 'dashboard_view'
     today = timezone.now().date()
     thirty_days_ago = today - timedelta(days=30)
 
@@ -85,7 +85,7 @@ def dashboard(request):
     elif request.method == 'POST':
         OperatorLog.objects.create(user=request.user, action="Viewed dashboard report")
     logs = OperatorLog.objects.all()[:10]
-    return render(request, 'dashboard.html', {
+    return render(request, 'dashboard_app/dashboard.html', {  # Updated template path
         'members': dashboard_data,
         'logs': logs,
     })
@@ -93,8 +93,8 @@ def dashboard(request):
 @login_required
 @user_passes_test(lambda u: not u.is_superuser)
 def upload_view(request):
-    return redirect('upload_file')
+    return redirect('data_management:upload_file')  # Updated to use namespace
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('data_management:login')  # Updated to use namespace
