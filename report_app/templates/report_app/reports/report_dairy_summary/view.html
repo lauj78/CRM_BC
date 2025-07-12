@@ -1,0 +1,25 @@
+{% include 'report_app/reports/report_dairy_summary/filter_form.html' %}
+
+<h2>Transaction Summary Report</h2>
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Day</th>
+        <th>Depo Tx</th>
+        <th>Depo Val</th>
+        <th>WD Tx</th>
+        <th>WD Val</th>
+        <th>Players</th>
+    </tr>
+    {% for data in members %}
+    <tr>
+        <td>{{ data.date }}</td>
+        <td>{{ data.day }}</td>
+        <td>{{ data.total_trx }}</td>
+        <td>{{ data.total_value }}</td>
+        <td>{{ data.total_wd }}</td>
+        <td>{{ data.total_wd_value }}</td>
+        <td>{{ data.active_players }}</td>
+    </tr>
+    {% endfor %}
+</table>
