@@ -1,0 +1,4 @@
+Row,Error,Row Data
+3,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(riki79, Withdraw, 2025-07-11 23:04:00+00, 1200.00) already exists.
+","{'No': 2, 'CREATE DATE': '11/07/2025 23:04', 'USERNAME': 'riki79', 'EVENT': 'Withdraw', 'PROCESS DATE': '11/07/2025 23:06', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '1200.00'}"

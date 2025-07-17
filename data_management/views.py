@@ -109,11 +109,14 @@ def upload_file(request):
                             create_date = timezone.make_aware(create_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             process_date = timezone.make_aware(process_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
 
-                            # Clean and convert amount with quote and comma handling
+                            # Clean and convert amount with enhanced validation
                             amount_str = str(row['AMOUNT']).strip('"')  # Remove quotes
-                            cleaned_amount = re.sub(r'[^\d.]', '', amount_str)  # Remove commas and non-numeric
+                            cleaned_amount = re.sub(r'[^\d.]', '', amount_str)  # Remove non-numeric except decimal
                             if not cleaned_amount:
                                 raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str}")
+                            # Check if the original amount contains non-numeric characters after cleaning
+                            if amount_str != cleaned_amount and not amount_str.replace(cleaned_amount, '').isdigit():
+                                raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str} (non-numeric characters detected)")
                             amount = Decimal(cleaned_amount)
 
                             # Create transaction with individual save to catch unique constraint errors

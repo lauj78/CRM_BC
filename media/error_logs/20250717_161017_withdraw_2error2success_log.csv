@@ -1,0 +1,3 @@
+Row,Error,Row Data
+3,Invalid date format for CREATE DATE at row 3: invalid-date,"{'No': 2, 'CREATE DATE': 'invalid-date', 'USERNAME': 'heaven17', 'EVENT': 'Withdraw', 'PROCESS DATE': '12/07/2025 01:24', 'PROCESS BY': 'jefri@xpukul69', 'AMOUNT': '1,000'}"
+5,Invalid date format for CREATE DATE at row 5: 14/07/2025 25:00,"{'No': 4, 'CREATE DATE': '14/07/2025 25:00', 'USERNAME': '805ram', 'EVENT': 'Withdraw', 'PROCESS DATE': '14-07-2025 00:15', 'PROCESS BY': 'jefri@xpukul69', 'AMOUNT': '1300'}"
