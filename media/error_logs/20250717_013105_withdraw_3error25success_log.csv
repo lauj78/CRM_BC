@@ -1,0 +1,4 @@
+Row,Error,Row Data
+2,"could not convert string to float: '1,200.00'","{'No': 1, 'CREATE DATE': '16/07/2025 23:04', 'USERNAME': 'riki79', 'EVENT': 'Withdraw', 'PROCESS DATE': '16/07/2025 23:06', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '1,200.00'}"
+25,"could not convert string to float: '1,000.00'","{'No': 24, 'CREATE DATE': '16/07/2025 1:23', 'USERNAME': 'heaven17', 'EVENT': 'Withdraw', 'PROCESS DATE': '16/07/2025 1:24', 'PROCESS BY': 'jefri@xpukul69', 'AMOUNT': '1,000.00'}"
+29,"could not convert string to float: '1,300.00'","{'No': 28, 'CREATE DATE': '16/07/2025 0:13', 'USERNAME': '805ram', 'EVENT': 'Withdraw', 'PROCESS DATE': '16/07/2025 0:15', 'PROCESS BY': 'jefri@xpukul69', 'AMOUNT': '1,300.00'}"
