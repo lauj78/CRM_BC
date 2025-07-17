@@ -12,6 +12,8 @@ import os
 from django.conf import settings
 from django.utils import timezone
 import pytz
+from decimal import Decimal
+import re
 
 def login_view(request):
     if request.method == 'POST':
@@ -50,12 +52,9 @@ def upload_file(request):
                 })
 
             try:
-                file_content = file.read()
-                file_like_object = BytesIO(file_content)
-                if file.name.endswith('.csv'):
-                    df = pd.read_csv(file_like_object, sep=None, engine='python', encoding='utf-8-sig')
-                else:
-                    df = pd.read_excel(file_like_object)
+                file_content = file.read().decode('utf-8-sig')
+                file_like_object = StringIO(file_content)
+                df = pd.read_csv(file_like_object, sep=None, engine='python', quotechar='"', encoding='utf-8-sig')  # Handle quoted fields
 
                 errors = []
                 valid_records = []
@@ -72,15 +71,9 @@ def upload_file(request):
                                 })
                                 continue
                             join_date_str = str(row['Join Date'])
-                            join_date = pd.to_datetime(join_date_str, errors='coerce')
+                            join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
                             if pd.isna(join_date):
-                                try:
-                                    join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M:%S')
-                                except ValueError:
-                                    try:
-                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M')
-                                    except ValueError:
-                                        join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %I:%M:%S %p')
+                                join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
                                 if pd.isna(join_date):
                                     raise ValueError(f"Invalid date format for Join Date at row {index + 2}: {join_date_str}")
                             join_date = timezone.make_aware(join_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
@@ -103,38 +96,36 @@ def upload_file(request):
                                 continue
                             create_date_str = str(row['CREATE DATE'])
                             process_date_str = str(row['PROCESS DATE'])
-                            create_date = pd.to_datetime(create_date_str, errors='coerce')
-                            process_date = pd.to_datetime(process_date_str, errors='coerce')
+                            create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
+                            process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
                             if pd.isna(create_date):
-                                try:
-                                    create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M:%S')
-                                except ValueError:
-                                    try:
-                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M')
-                                    except ValueError:
-                                        create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %I:%M:%S %p')
+                                create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
                                 if pd.isna(create_date):
                                     raise ValueError(f"Invalid date format for CREATE DATE at row {index + 2}: {create_date_str}")
                             if pd.isna(process_date):
-                                try:
-                                    process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M:%S')
-                                except ValueError:
-                                    try:
-                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M')
-                                    except ValueError:
-                                        process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %I:%M:%S %p')
+                                process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
                                 if pd.isna(process_date):
                                     raise ValueError(f"Invalid date format for PROCESS DATE at row {index + 2}: {process_date_str}")
                             create_date = timezone.make_aware(create_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             process_date = timezone.make_aware(process_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
-                            Transaction.objects.create(
+
+                            # Clean and convert amount with quote and comma handling
+                            amount_str = str(row['AMOUNT']).strip('"')  # Remove quotes
+                            cleaned_amount = re.sub(r'[^\d.]', '', amount_str)  # Remove commas and non-numeric
+                            if not cleaned_amount:
+                                raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str}")
+                            amount = Decimal(cleaned_amount)
+
+                            # Create transaction with individual save to catch unique constraint errors
+                            transaction = Transaction(
                                 username=row['USERNAME'],
-                                event=file_type.replace('_', ' ').title(),  # Convert to title case (e.g., 'manual_deposit' -> 'Manual Deposit')
-                                amount=float(row['AMOUNT']),
+                                event=file_type.replace('_', ' ').title(),
+                                amount=amount,
                                 create_date=create_date,
                                 process_date=process_date,
                                 process_by=row.get('PROCESS BY', '')
                             )
+                            transaction.save()  # Save individually to handle exceptions
                             valid_records.append(row.to_dict())
                     except Exception as e:
                         errors.append({
