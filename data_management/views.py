@@ -63,10 +63,12 @@ def upload_file(request):
                 for index, row in df.iterrows():
                     try:
                         if file_type == 'members':
-                            if not all(row.get(field) for field in ['Username', 'Name', 'Handphone', 'Join Date']):
+                            required_fields = ['Username', 'Name', 'Handphone', 'Join Date']
+                            if not all(row.get(field) is not None and not pd.isna(row[field]) and str(row[field]).strip() != '' for field in required_fields):
+                                missing_field = next((field for field in required_fields if not row.get(field) or pd.isna(row[field]) or str(row[field]).strip() == ''), None)
                                 errors.append({
                                     'row': index + 2,
-                                    'error': 'Missing mandatory fields',
+                                    'error': f"Missing or empty field: {missing_field}" if missing_field else 'Missing mandatory fields',
                                     'data': row.to_dict()
                                 })
                                 continue

@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.utils import timezone
 import calendar
 from data_management.models import Transaction
+from django.template.response import TemplateResponse
 
 @login_required
 def report_dairy_summary_view(request):
@@ -72,8 +73,16 @@ def report_dairy_summary_view(request):
         })
         current_date += timedelta(days=1)
 
-    return render(request, 'report_app/reports/report_dairy_summary/view.html', {
+    context = {
         'members': dashboard_data,
-        'start_date': start_date.strftime('%Y-%m-%d'),  # Convert to string for template
-        'end_date': end_date.strftime('%Y-%m-%d'),      # Convert to string for template
-    })
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
+    }
+    return TemplateResponse(request, 'report_app/reports/report_dairy_summary/view.html', context)
+
+report_metadata = {
+    'name': 'Dairy Summary',
+    'view': report_dairy_summary_view,
+    'template': 'report_app/reports/report_dairy_summary/view.html',
+    'filter_form': 'report_app/reports/report_dairy_summary/filter_form.html'  # Reference the filter form
+}
