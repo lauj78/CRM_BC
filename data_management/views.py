@@ -87,10 +87,12 @@ def upload_file(request):
                             )
                             valid_records.append(row.to_dict())
                         elif file_type in ['deposit', 'manual_deposit', 'withdraw', 'manual_withdraw']:
-                            if not all(row.get(field) for field in ['USERNAME', 'EVENT', 'AMOUNT', 'CREATE DATE', 'PROCESS DATE']):
+                            required_fields = ['USERNAME', 'EVENT', 'AMOUNT', 'CREATE DATE', 'PROCESS DATE', 'PROCESS BY']
+                            if not all(row.get(field) is not None and not pd.isna(row[field]) and str(row[field]).strip() != '' for field in required_fields):
+                                missing_field = next((field for field in required_fields if not row.get(field) or pd.isna(row[field]) or str(row[field]).strip() == ''), None)
                                 errors.append({
                                     'row': index + 2,
-                                    'error': 'Missing mandatory fields',
+                                    'error': f"Missing or empty field: {missing_field}" if missing_field else 'Missing mandatory fields',
                                     'data': row.to_dict()
                                 })
                                 continue
@@ -114,8 +116,9 @@ def upload_file(request):
                             cleaned_amount = re.sub(r'[^\d.]', '', amount_str)  # Remove non-numeric except decimal
                             if not cleaned_amount:
                                 raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str}")
-                            # Check if the original amount contains non-numeric characters after cleaning
-                            if amount_str != cleaned_amount and not amount_str.replace(cleaned_amount, '').isdigit():
+                            # Allow commas as thousand separators; check for other non-numeric characters
+                            non_numeric = ''.join(c for c in amount_str if c not in cleaned_amount and c not in ',')
+                            if non_numeric and not all(c.isdigit() or c == ',' for c in amount_str.replace(cleaned_amount, '')):
                                 raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str} (non-numeric characters detected)")
                             amount = Decimal(cleaned_amount)
 
@@ -126,7 +129,7 @@ def upload_file(request):
                                 amount=amount,
                                 create_date=create_date,
                                 process_date=process_date,
-                                process_by=row.get('PROCESS BY', '')
+                                process_by=row['PROCESS BY']  # Removed default empty string
                             )
                             transaction.save()  # Save individually to handle exceptions
                             valid_records.append(row.to_dict())

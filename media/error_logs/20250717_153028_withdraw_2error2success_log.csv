@@ -1,3 +1,0 @@
-Row,Error,Row Data
-2,[<class 'decimal.ConversionSyntax'>],"{'No': 1, 'CREATE DATE': '11/07/2025 23:04', 'USERNAME': 'riki79', 'EVENT': 'Withdraw', 'PROCESS DATE': '11/07/2025 23:06', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '1200..00'}"
-5,Invalid amount format at row 5: nan,"{'No': 4, 'CREATE DATE': '14/07/2025 00:13', 'USERNAME': '805ram', 'EVENT': 'Withdraw', 'PROCESS DATE': '14/07/2025 00:15', 'PROCESS BY': 'jefri@xpukul69', 'AMOUNT': nan}"
