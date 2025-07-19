@@ -8,7 +8,7 @@ from data_management.models import Transaction
 from django.template.response import TemplateResponse
 
 @login_required
-def report_dairy_summary_view(request):
+def report_daily_summary_view(request):
     today = timezone.now().date()
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -78,11 +78,11 @@ def report_dairy_summary_view(request):
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
     }
-    return TemplateResponse(request, 'report_app/reports/report_dairy_summary/view.html', context)
+    return TemplateResponse(request, 'report_app/reports/report_daily_summary/view.html', context)
 
 report_metadata = {
-    'name': 'Dairy Summary',
-    'view': report_dairy_summary_view,
-    'template': 'report_app/reports/report_dairy_summary/view.html',
-    'filter_form': 'report_app/reports/report_dairy_summary/filter_form.html'  # Reference the filter form
+    'name': 'Daily Summary',
+    'view': report_daily_summary_view,
+    'template': 'report_app/reports/report_daily_summary/view.html',
+    'filter_form': 'report_app/reports/report_daily_summary/filter_form.html'  # Reference the filter form
 }
