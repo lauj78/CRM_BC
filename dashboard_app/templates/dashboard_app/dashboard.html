@@ -10,74 +10,12 @@
     </select>
     <button type="submit">Select</button>
   </form>
-  {% if selected_report_name and displayed_report %}
+  {% if displayed_report %}
     <div class="report-block">
       <h3>{{ displayed_report.name }}</h3>
-      {% if displayed_report.name == 'Daily Summary' and available_reports|length > 0 %}
-        <form method="get">
-          {% include 'report_app/reports/report_daily_summary/filter_form.html' %}
-          <button type="submit">Apply Filters</button>
-        </form>
-      {% endif %}
-      {% if displayed_report.members %}
-        <h4>Transaction Summary Report</h4>
-        <table border="1">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Day</th>
-              <th colspan="3">Total Form Depo</th>
-              <th colspan="3">Total Coin Depo</th>
-              <th colspan="3">Total Form WD</th>
-              <th colspan="3">Total Coin WD</th>
-              <th>Other Index</th>
-            </tr>
-            <tr>
-              <th></th>
-              <th></th>
-              <th>Trx</th>
-              <th>Manual</th>
-              <th>Total</th>
-              <th>Depo</th>
-              <th>Manual</th>
-              <th>Total Depo</th>
-              <th>Trx</th>
-              <th>Manual</th>
-              <th>Total</th>
-              <th>WD</th>
-              <th>Manual</th>
-              <th>Total WD</th>
-              <th>No of Player</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for data in displayed_report.members %}
-            <tr>
-              <td>{{ data.date }}</td>
-              <td>{{ data.day }}</td>
-              <td>{{ data.depo_trx }}</td>
-              <td>{{ data.manual_trx }}</td>
-              <td>{{ data.total_trx }}</td>
-              <td>{{ data.depo_value|floatformat:2 }}</td>
-              <td>{{ data.manual_value|floatformat:2 }}</td>
-              <td>{{ data.total_value|floatformat:2 }}</td>
-              <td>{{ data.wd_trx }}</td>
-              <td>{{ data.manual_wd_trx }}</td>
-              <td>{{ data.total_wd }}</td>
-              <td>{{ data.wd_value|floatformat:2 }}</td>
-              <td>{{ data.manual_wd_value|floatformat:2 }}</td>
-              <td>{{ data.total_wd_value|floatformat:2 }}</td>
-              <td>{{ data.active_players }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% elif displayed_report.total_members and displayed_report.total_transactions %}
-        <p>Total Members: {{ displayed_report.total_members }}</p>
-        <p>Total Transactions: {{ displayed_report.total_transactions }}</p>
-      {% else %}
-        <p>No data available for this report.</p>
-      {% endif %}
+      {% include displayed_report.metadata.template with members=displayed_report.members filter_form=displayed_report.filter_form name=displayed_report.name %}
     </div>
+  {% else %}
+    <p>No report selected.</p>
   {% endif %}
 {% endblock %}

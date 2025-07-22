@@ -13,24 +13,31 @@ def report_daily_summary_view(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    # Default to 30 days if no dates provided
+    # Default dates for the filter form as date objects
+    start_date_default = today - timedelta(days=30)
+    end_date_default = today
+
+    # Use GET parameters if provided, otherwise use defaults
     if not start_date or not end_date:
-        start_date = today - timedelta(days=30)
-        end_date = today
+        start_date = start_date_default
+        end_date = end_date_default
     else:
         start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
 
-    print(f"Start date type: {type(start_date)}, value: {start_date}")  # Debug
-    print(f"End date type: {type(end_date)}, value: {end_date}")  # Debug
+    # print(f"Debug - Start date: {start_date}, Type: {type(start_date)}")  # Debug
+    # print(f"Debug - End date: {end_date}, Type: {type(end_date)}")  # Debug
+    # print(f"Debug - Start date default: {start_date_default}, Type: {type(start_date_default)}")  # Debug
+    # print(f"Debug - End date default: {end_date_default}, Type: {type(end_date_default)}")  # Debug
 
     # Prepare data for the selected date range
     dashboard_data = []
     current_date = start_date
     while current_date <= end_date:
-        print(f"Current date type: {type(current_date)}, value: {current_date}")  # Debug
+        #print(f"Debug - Processing date: {current_date}, Type: {type(current_date)}")  # Debug
         day_transactions = Transaction.objects.filter(process_date__date=current_date)
-        
+        #print(f"Debug - Transactions for {current_date}: {day_transactions.count()}")  # Debug
+
         # Section: Total Form Depo
         depo_trx = day_transactions.filter(event='Deposit').count()
         manual_trx = day_transactions.filter(event='Manual Deposit').count()
@@ -73,16 +80,12 @@ def report_daily_summary_view(request):
         })
         current_date += timedelta(days=1)
 
+    # print(f"Debug - Dashboard data length: {len(dashboard_data)}")  # Debug total rows
     context = {
         'members': dashboard_data,
         'start_date': start_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d'),
+        'start_date_default': start_date_default,
+        'end_date_default': end_date_default,
     }
-    return TemplateResponse(request, 'report_app/reports/report_daily_summary/view.html', context)
-
-report_metadata = {
-    'name': 'Daily Summary',
-    'view': report_daily_summary_view,
-    'template': 'report_app/reports/report_daily_summary/view.html',
-    'filter_form': 'report_app/reports/report_daily_summary/filter_form.html'  # Reference the filter form
-}
+    return TemplateResponse(request, 'report_app/reports/report_daily_summary/view.html', {'context_data': context})

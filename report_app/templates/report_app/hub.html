@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Report Hub{% endblock %}
+{% block content %}
+  <h2>Report Hub</h2>
+  <ul>
+    {% for report in reports %}
+      <li>{{ report.category }} - <a href="?report={{ report.name }}">{{ report.name }}</a></li>
+    {% empty %}
+      <li>No reports available for your role.</li>
+    {% endfor %}
+  </ul>
+  {% if request.GET.report %}
+    {% for report in reports %}
+      {% if report.name == request.GET.report %}
+        {% with selected_report=report %}
+          {% include selected_report.template with members=selected_report.members start_date=selected_report.start_date end_date=selected_report.end_date start_date_default=selected_report.start_date_default end_date_default=selected_report.end_date_default %}
+        {% endwith %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}

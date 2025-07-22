@@ -12,5 +12,7 @@
         {{ form.as_p }}
         <button type="submit">Upload</button>
     </form>
-    <a href="{% url 'data_management:upload_summary' %}">View Summary</a>
+    
+    <p><a href="{% url 'data_management:error_logs_list' %}">View Error Logs</a></p>
+    <p><a href="{% url 'data_management:upload_summary' %}">View Previous Summary Detail</a></p>
 {% endblock %}

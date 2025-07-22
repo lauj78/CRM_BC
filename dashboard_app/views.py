@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def dynamic_dashboard(request):
     # Dynamically load available reports from report_app/reports/
     available_reports = []
-    report_modules = ['report_dummy_test', 'report_daily_summary']  # Ensure both reports are listed
+    report_modules = ['report_dummy_test', 'report_daily_summary']  # To be made dynamic later
     for module_name in report_modules:
         try:
             module = import_module(f'report_app.reports.{module_name}.views')
@@ -41,10 +41,13 @@ def dynamic_dashboard(request):
     if selected_report:
         # Call the report view with the current request (GET params for filters)
         logger.debug(f"Calling view for {selected_report['name']}")
+        print(f"Debug: Calling view for {selected_report['name']}")
         response = selected_report['view'](request)
         if hasattr(response, 'context_data'):
             context = response.context_data.copy()
             context['name'] = selected_report['name']
+            # Include the full metadata for dynamic template inclusion
+            context['metadata'] = selected_report
             displayed_report = context
             logger.debug(f"Displayed report context: {context}")
         else:

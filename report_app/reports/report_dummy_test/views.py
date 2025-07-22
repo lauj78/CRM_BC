@@ -9,11 +9,12 @@ def member_transaction_count_view(request):
         'total_members': total_members,
         'total_transactions': total_transactions,
     }
+    # print(f"Debug: member_transaction_count_view - total_members: {total_members}, total_transactions: {total_transactions}")  # Debug
     return TemplateResponse(request, 'report_app/reports/report_dummy_test/view.html', context)
 
 report_metadata = {
     'name': 'Member and Transaction Count',
     'view': member_transaction_count_view,
     'template': 'report_app/reports/report_dummy_test/view.html',
-    'filter_form': None  # No filters for this dummy report
+    'filter_form': None  # No filters
 }
