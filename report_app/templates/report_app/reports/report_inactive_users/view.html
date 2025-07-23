@@ -41,6 +41,7 @@
     {% endif %}
     <form method="post" action="">
         {% csrf_token %}
+        <p></p>
         <input type="hidden" name="start_date" value="{{ start_date }}">
         <input type="hidden" name="end_date" value="{{ end_date }}">
         <input type="hidden" name="_export" value="csv">
