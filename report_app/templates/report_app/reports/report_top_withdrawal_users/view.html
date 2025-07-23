@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Report Top Withdrawal Users{% endblock %}
+
+{% block content %}
+<div class="report-block">
+    <form method="get" action="">
+        <!-- Hidden input to preserve the report parameter -->
+        <input type="hidden" name="report" value="Top Withdrawal Users">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ start_date|default:start_date_default|date:'Y-m-d' }}" required>
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ end_date|default:end_date_default|date:'Y-m-d' }}" required>
+        <label for="top_n">Top N Users:</label>
+        <input type="number" id="top_n" name="top_n" value="{{ top_n|default:'100' }}" min="1" required>
+        <button type="submit">Apply Filters</button>
+    </form>
+    <h4>Report Top Withdrawal Users</h4>
+    <p>Date range: {{ start_date }} to {{ end_date }}</p>
+    <table border="1" style="table-layout: fixed; width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Username</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Withdrawals</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Withdrawal Frequency</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Average Withdrawal</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Largest Withdrawal Value</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Withdrawals</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Withdrawal Frequency</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Deposits</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Deposit Frequency</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Deposits</th>
+                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Last Login Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in report_top_withdrawal_users %}
+            <tr>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.username }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_withdrawals|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.withdrawal_frequency }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.average_withdrawal|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.largest_withdrawal|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_manual_withdrawals|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.manual_withdrawal_freq }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_deposits|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.deposit_freq }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_manual_deposits|floatformat:2 }}</td>
+                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.last_login|date:'Y-m-d' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if not report_top_withdrawal_users %}
+        <p>No top withdrawal users found in the selected range.</p>
+    {% endif %}
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
+        <input type="hidden" name="top_n" value="{{ top_n }}">
+        <input type="hidden" name="_export" value="csv">
+        <button type="submit" class="btn">Download CSV</button>
+    </form>
+    {% if csv_data %}
+        <script>
+            // Trigger download of CSV data
+            const csvData = "{{ csv_data|escapejs }}";
+            const filename = "{{ filename|escapejs }}";
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

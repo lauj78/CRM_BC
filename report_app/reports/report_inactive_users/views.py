@@ -32,30 +32,29 @@ def report_inactive_users_view(request):
         process_date__date__range=[start_date, end_date]
     ).values('username').annotate(last_activity=Max('process_date__date'))
 
-    # Identify inactive users
+    # Identify all users (no 7-day threshold)
     inactive_users = []
     for lt in latest_transactions:
         username = lt['username']
         last_activity = lt['last_activity']
         days_inactive = (today - last_activity).days
 
-        if days_inactive >= 7:
-            deposits = Transaction.objects.filter(
-                username=username, event__in=['Deposit', 'Manual Deposit'],
-                process_date__date__range=[start_date, end_date]
-            ).aggregate(total_deposits=Sum('amount'))['total_deposits'] or 0
-            withdrawals = Transaction.objects.filter(
-                username=username, event__in=['Withdraw', 'Manual Withdraw'],
-                process_date__date__range=[start_date, end_date]
-            ).aggregate(total_withdrawals=Sum('amount'))['total_withdrawals'] or 0
+        deposits = Transaction.objects.filter(
+            username=username, event__in=['Deposit', 'Manual Deposit'],
+            process_date__date__range=[start_date, end_date]
+        ).aggregate(total_deposits=Sum('amount'))['total_deposits'] or 0
+        withdrawals = Transaction.objects.filter(
+            username=username, event__in=['Withdraw', 'Manual Withdraw'],
+            process_date__date__range=[start_date, end_date]
+        ).aggregate(total_withdrawals=Sum('amount'))['total_withdrawals'] or 0
 
-            inactive_users.append({
-                'username': username,
-                'last_activity': last_activity,
-                'total_deposits': deposits,
-                'total_withdrawals': withdrawals,
-                'days_inactive': days_inactive,
-            })
+        inactive_users.append({
+            'username': username,
+            'last_activity': last_activity,
+            'total_deposits': deposits,
+            'total_withdrawals': withdrawals,
+            'days_inactive': days_inactive,
+        })
 
     # Sort by days inactive
     inactive_users.sort(key=lambda x: x['days_inactive'], reverse=True)
@@ -74,7 +73,7 @@ def report_inactive_users_view(request):
         except ValueError:
             return HttpResponseBadRequest("Invalid date format. Use YYYY-MM-DD.")
 
-        # Prepare data for export
+        # Prepare data for export (no 7-day threshold)
         latest_transactions = Transaction.objects.filter(
             process_date__date__range=[start_date, end_date]
         ).values('username').annotate(last_activity=Max('process_date__date'))
@@ -83,22 +82,23 @@ def report_inactive_users_view(request):
             username = lt['username']
             last_activity = lt['last_activity']
             days_inactive = (today - last_activity).days
-            if days_inactive >= 7:
-                deposits = Transaction.objects.filter(
-                    username=username, event__in=['Deposit', 'Manual Deposit'],
-                    process_date__date__range=[start_date, end_date]
-                ).aggregate(total_deposits=Sum('amount'))['total_deposits'] or 0
-                withdrawals = Transaction.objects.filter(
-                    username=username, event__in=['Withdraw', 'Manual Withdraw'],
-                    process_date__date__range=[start_date, end_date]
-                ).aggregate(total_withdrawals=Sum('amount'))['total_withdrawals'] or 0
-                export_users.append({
-                    'username': username,
-                    'last_activity': last_activity,
-                    'total_deposits': deposits,
-                    'total_withdrawals': withdrawals,
-                    'days_inactive': days_inactive,
-                })
+
+            deposits = Transaction.objects.filter(
+                username=username, event__in=['Deposit', 'Manual Deposit'],
+                process_date__date__range=[start_date, end_date]
+            ).aggregate(total_deposits=Sum('amount'))['total_deposits'] or 0
+            withdrawals = Transaction.objects.filter(
+                username=username, event__in=['Withdraw', 'Manual Withdraw'],
+                process_date__date__range=[start_date, end_date]
+            ).aggregate(total_withdrawals=Sum('amount'))['total_withdrawals'] or 0
+
+            export_users.append({
+                'username': username,
+                'last_activity': last_activity,
+                'total_deposits': deposits,
+                'total_withdrawals': withdrawals,
+                'days_inactive': days_inactive,
+            })
         export_users.sort(key=lambda x: x['days_inactive'], reverse=True)
 
         # Convert export data to CSV content
