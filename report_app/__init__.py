@@ -15,6 +15,16 @@ REPORTS = [
         'view': 'report_app.reports.report_dummy_test.views',
         'function_name': 'member_transaction_count_view',
         'template': 'report_app/reports/report_dummy_test/view.html',
+        'access': ['admin', 'op']
+    },
+    {
+        'name': 'Inactive User Report',
+        'category': 'Retention Management',
+        'view': 'report_app.reports.report_inactive_users.views',
+        'function_name': 'report_inactive_users_view',
+        'template': 'report_app/reports/report_inactive_users/view.html',
         'access': ['admin', 'op'],
-    }
+        'params': ['start_date', 'end_date']
+    },
+    
 ]
