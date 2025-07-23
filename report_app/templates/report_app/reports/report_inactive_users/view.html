@@ -39,6 +39,30 @@
     {% if not inactive_users %}
         <p>No inactive users found in the selected range.</p>
     {% endif %}
-    <a href="?report=Inactive%20User%20Report&start_date={{ start_date|default:start_date_default|date:'Y-m-d' }}&end_date={{ end_date|default:end_date_default|date:'Y-m-d' }}&_export=csv" class="btn">Download CSV</a>
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
+        <input type="hidden" name="_export" value="csv">
+        <button type="submit" class="btn">Download CSV</button>
+    </form>
+    {% if csv_data %}
+        <script>
+            // Trigger download of CSV data
+            const csvData = "{{ csv_data|escapejs }}";
+            const filename = "{{ filename|escapejs }}";
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        </script>
+    {% endif %}
 </div>
 {% endblock %}
