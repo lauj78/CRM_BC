@@ -11,6 +11,6 @@ urlpatterns = [
     path('error-logs/', views.error_logs_list, name='error_logs_list'),
     path('error-logs/download/<int:log_id>/', views.download_log, name='download_log'),
     path('error-logs/delete/<int:log_id>/', views.delete_log, name='delete_log'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
+    # path('login/', views.login_view, name='login'),
+    # path('logout/', views.logout_view, name='logout'),
 ]

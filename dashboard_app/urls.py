@@ -5,6 +5,6 @@ from . import views
 app_name = 'dashboard_app'
 
 urlpatterns = [
-    path('', views.dynamic_dashboard, name='dashboard'),
-    path('upload/', views.upload_view, name='upload'),  # Optional, if you want a separate upload route
+    path('', views.dashboard, name='dashboard'),
+    # Other paths if any
 ]

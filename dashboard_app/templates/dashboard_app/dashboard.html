@@ -1,21 +1,6 @@
-{% extends 'base.html' %}
-{% block title %}Dashboard{% endblock %}
+<!-- dashboard_app/templates/dashboard_app/dashboard.html -->
+{% extends "base.html" %}
 {% block content %}
-  <h2>Select Report</h2>
-  <form method="post">{% csrf_token %}
-    <select name="selected_report">
-      {% for report in available_reports %}
-        <option value="{{ report.name }}" {% if report.name == selected_report_name %}selected{% endif %}>{{ report.name }}</option>
-      {% endfor %}
-    </select>
-    <button type="submit">Select</button>
-  </form>
-  {% if displayed_report %}
-    <div class="report-block">
-      <h3>{{ displayed_report.name }}</h3>
-      {% include displayed_report.metadata.template with members=displayed_report.members filter_form=displayed_report.filter_form name=displayed_report.name %}
-    </div>
-  {% else %}
-    <p>No report selected.</p>
-  {% endif %}
+    <h2>Welcome to the Dashboard</h2>
+    <p>This is your master dashboard.</p>
 {% endblock %}

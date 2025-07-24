@@ -1,3 +1,4 @@
+<!-- crm_system/templates/base.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,12 +91,17 @@
         </div>
         <div class="navbar">
             <a href="{% url 'dashboard_app:dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
-            <a href="{% url 'data_management:upload_file' %}" {% if request.path == '/upload/' %}class="active"{% endif %}>Upload Data</a>
+            <a href="{% url 'data_management:upload_file' %}" {% if request.path == '/data/upload/' %}class="active"{% endif %}>Upload Data</a>
             <a href="{% url 'report_app:report_hub' %}" {% if request.path == '/report/reports/' %}class="active"{% endif %}>Reporting</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'data_management:logout' %}" {% if request.path == '/logout/' %}class="active"{% endif %}>Logout</a>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none; border:none; color:white; padding:14px 16px; text-decoration:none; cursor:pointer;">
+                        Logout
+                    </button>
+                </form>
             {% else %}
-                <a href="{% url 'data_management:login' %}" {% if request.path == '/login/' %}class="active"{% endif %}>Login</a>
+                <a href="{% url 'login' %}" {% if request.path == '/accounts/login/' %}class="active"{% endif %}>Login</a>
             {% endif %}
         </div>
         <div class="content">
