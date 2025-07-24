@@ -91,7 +91,7 @@
         </div>
         <div class="navbar">
             <a href="{% url 'dashboard_app:dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
-            <a href="{% url 'data_management:upload_file' %}" {% if request.path == '/data/upload/' %}class="active"{% endif %}>Upload Data</a>
+            <a href="{% url 'data_management:upload_file' %}" {% if request.path == '/data/upload/' %}class="active"{% endif %}>Data Import</a>
             <a href="{% url 'report_app:report_hub' %}" {% if request.path == '/report/reports/' %}class="active"{% endif %}>Reporting</a>
             {% if user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">

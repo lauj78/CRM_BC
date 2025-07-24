@@ -3,19 +3,7 @@
 {% block title %}Daily Summary Report{% endblock %}
 
 {% block content %}
-
 <div class="report-block">
-  <!-- Debug: Check available context variables
-  <p>Debug - displayed_report: {{ displayed_report|default:'not set' }}</p>
-  <p>Debug - start_date: {{ start_date|default:'not set' }}</p>
-  <p>Debug - end_date: {{ end_date|default:'not set' }}</p>
-  <p>Debug - start_date_default: {{ start_date_default|default:'not set' }}</p>
-  <p>Debug - end_date_default: {{ end_date_default|default:'not set' }}</p>
-  <p>Debug - displayed_report.start_date_default: {{ displayed_report.start_date_default|default:'not set' }}</p>
-  <p>Debug - displayed_report.end_date_default: {{ displayed_report.end_date_default|default:'not set' }}</p>
-  -->
-
-
   <form method="get" action="">
     <!-- Hidden input to preserve the report parameter -->
     <input type="hidden" name="report" value="Daily Summary">
@@ -26,7 +14,7 @@
     <button type="submit">Apply Filters</button>
   </form>
   <h4>Transaction Summary Report</h4>
-  <table border="1">
+  <table border="1" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
     <thead>
       <tr>
         <th>Date</th>
@@ -35,24 +23,27 @@
         <th colspan="3">Total Coin Depo</th>
         <th colspan="3">Total Form WD</th>
         <th colspan="3">Total Coin WD</th>
-        <th>Other Index</th>
+        <th colspan="4">Other Index</th>
       </tr>
       <tr>
         <th></th>
         <th></th>
-        <th>Trx</th>
-        <th>Manual</th>
-        <th>Total</th>
-        <th>Depo</th>
-        <th>Manual</th>
-        <th>Total Depo</th>
-        <th>Trx</th>
-        <th>Manual</th>
-        <th>Total</th>
-        <th>WD</th>
-        <th>Manual</th>
-        <th>Total WD</th>
-        <th>No of Player</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Trx</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Manual</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Depo</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Manual</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Depo</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Trx</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Manual</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">WD</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Manual</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total WD</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">No of Player</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">New Member</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">New Member Deposited</th>
+        <th style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Old Player</th>
       </tr>
     </thead>
     <tbody>
@@ -60,19 +51,22 @@
       <tr>
         <td>{{ data.date }}</td>
         <td>{{ data.day }}</td>
-        <td>{{ data.depo_trx }}</td>
-        <td>{{ data.manual_trx }}</td>
-        <td>{{ data.total_trx }}</td>
-        <td>{{ data.depo_value|floatformat:2 }}</td>
-        <td>{{ data.manual_value|floatformat:2 }}</td>
-        <td>{{ data.total_value|floatformat:2 }}</td>
-        <td>{{ data.wd_trx }}</td>
-        <td>{{ data.manual_wd_trx }}</td>
-        <td>{{ data.total_wd }}</td>
-        <td>{{ data.wd_value|floatformat:2 }}</td>
-        <td>{{ data.manual_wd_value|floatformat:2 }}</td>
-        <td>{{ data.total_wd_value|floatformat:2 }}</td>
-        <td>{{ data.active_players }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.depo_trx }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.manual_trx }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.total_trx }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.depo_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.manual_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.total_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.wd_trx }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.manual_wd_trx }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.total_wd }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.wd_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.manual_wd_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.total_wd_value|floatformat:2 }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.active_players }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.new_member }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.new_member_deposited }}</td>
+        <td style="width: 10ch; max-width: 10ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ data.old_player }}</td>
       </tr>
       {% endfor %}
     </tbody>

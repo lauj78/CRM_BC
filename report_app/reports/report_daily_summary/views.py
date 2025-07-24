@@ -4,7 +4,7 @@ from django.db.models import Count, Sum
 from datetime import timedelta
 from django.utils import timezone
 import calendar
-from data_management.models import Transaction
+from data_management.models import Transaction, Member
 from django.template.response import TemplateResponse
 
 @login_required
@@ -25,18 +25,11 @@ def report_daily_summary_view(request):
         start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
 
-    # print(f"Debug - Start date: {start_date}, Type: {type(start_date)}")  # Debug
-    # print(f"Debug - End date: {end_date}, Type: {type(end_date)}")  # Debug
-    # print(f"Debug - Start date default: {start_date_default}, Type: {type(start_date_default)}")  # Debug
-    # print(f"Debug - End date default: {end_date_default}, Type: {type(end_date_default)}")  # Debug
-
     # Prepare data for the selected date range
     dashboard_data = []
     current_date = start_date
     while current_date <= end_date:
-        #print(f"Debug - Processing date: {current_date}, Type: {type(current_date)}")  # Debug
         day_transactions = Transaction.objects.filter(process_date__date=current_date)
-        #print(f"Debug - Transactions for {current_date}: {day_transactions.count()}")  # Debug
 
         # Section: Total Form Depo
         depo_trx = day_transactions.filter(event='Deposit').count()
@@ -61,6 +54,15 @@ def report_daily_summary_view(request):
         # Section: Other Index
         active_players = day_transactions.filter(event__in=['Deposit', 'Manual Deposit']).values('username').distinct().count()
         
+        # New Metrics
+        new_members = Member.objects.filter(join_date__date=current_date).count()  # Compare date only
+        new_member_usernames = Member.objects.filter(join_date__date=current_date).values('username')
+        new_member_deposited = day_transactions.filter(
+            event__in=['Deposit', 'Manual Deposit'],
+            username__in=new_member_usernames
+        ).distinct().count()
+        old_player = max(0, active_players - new_member_deposited)  # Avoid negative values
+
         dashboard_data.append({
             'date': current_date,
             'day': calendar.day_name[current_date.weekday()],
@@ -77,10 +79,12 @@ def report_daily_summary_view(request):
             'manual_wd_value': manual_wd_value,
             'total_wd_value': total_wd_value,
             'active_players': active_players,
+            'new_member': new_members,
+            'new_member_deposited': new_member_deposited,
+            'old_player': old_player,
         })
         current_date += timedelta(days=1)
 
-    # print(f"Debug - Dashboard data length: {len(dashboard_data)}")  # Debug total rows
     context = {
         'members': dashboard_data,
         'start_date': start_date.strftime('%Y-%m-%d'),
