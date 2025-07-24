@@ -45,13 +45,13 @@ def report_top_withdrawal_users_view(request):
         print(f"Invalid top_n, using default: 100")
         top_n = 100
 
-    # Query transactions
+    # Query transactions for Withdraw only (ranking metric)
     withdrawal_users = Transaction.objects.filter(
-        event__in=['Withdraw', 'Manual Withdraw'],
+        event='Withdraw',
         process_date__date__range=[start_date, end_date]
     ).values('username').annotate(
         total_withdrawals=Sum('amount'),
-        withdrawal_frequency=Sum(1),  # Count of withdrawal transactions
+        withdrawal_frequency=Sum(1),  # Count of Withdraw transactions
         largest_withdrawal=Max('amount')
     )
     print(f"Found {withdrawal_users.count()} withdrawal users for range {start_date} to {end_date}")
@@ -124,9 +124,9 @@ def report_top_withdrawal_users_view(request):
         except ValueError:
             return HttpResponseBadRequest("Invalid date or top_n format. Use YYYY-MM-DD for dates and a positive integer for top_n.")
 
-        # Recalculate data for export
+        # Query transactions for Withdraw only (ranking metric) for export
         withdrawal_users = Transaction.objects.filter(
-            event__in=['Withdraw', 'Manual Withdraw'],
+            event='Withdraw',
             process_date__date__range=[start_date, end_date]
         ).values('username').annotate(
             total_withdrawals=Sum('amount'),
@@ -245,7 +245,7 @@ def report_top_withdrawal_users_view(request):
                 user['total_deposits'],
                 user['deposit_freq'],
                 user['total_manual_deposits'],
-                user['last_login'].strftime('%Y-m-d') if user['last_login'] else ''
+                user['last_login'].strftime('%Y-%m-%d') if user['last_login'] else ''
             ])
         csv_data = csv_content.getvalue()
         csv_content.close()

@@ -17,36 +17,36 @@
     </form>
     <h4>Report Top Deposit Users</h4>
     <p>Date range: {{ start_date }} to {{ end_date }}</p>
-    <table border="1" style="table-layout: fixed; width: 100%;">
+    <table border="1" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Username</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Deposits</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Deposit Frequency</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Average Deposit</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Largest Deposit Value</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Deposits</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Deposit Frequency</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Withdrawals</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Withdrawal Frequency</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Total Manual Withdrawals</th>
-                <th style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">Last Login Date</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Username</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Deposits</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Deposit Frequency</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Average Deposit</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Largest Deposit Value</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Deposits</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Deposit Frequency</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Withdrawals</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Withdrawal Frequency</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Withdrawals</th>
+                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Last Login Date</th>
             </tr>
         </thead>
         <tbody>
             {% for user in report_top_deposit_users %}
             <tr>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.username }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_deposits|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.deposit_frequency }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.average_deposit|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.largest_deposit|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_manual_deposits|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.manual_deposit_freq }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_withdrawals|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.withdrawal_freq }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.total_manual_withdrawals|floatformat:2 }}</td>
-                <td style="width: 14ch; word-wrap: break-word; overflow-wrap: break-word;">{{ user.last_login|date:'Y-m-d' }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.username }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_deposits|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.deposit_frequency }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.average_deposit|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.largest_deposit|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_manual_deposits|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.manual_deposit_freq }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_withdrawals|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.withdrawal_freq }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_manual_withdrawals|floatformat:2 }}</td>
+                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.last_login|date:'Y-m-d' }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -60,6 +60,8 @@
         <input type="hidden" name="end_date" value="{{ end_date }}">
         <input type="hidden" name="top_n" value="{{ top_n }}">
         <input type="hidden" name="_export" value="csv">
+        <p>
+        </p>
         <button type="submit" class="btn">Download CSV</button>
     </form>
     {% if csv_data %}
