@@ -14,6 +14,9 @@ import pytz
 from decimal import Decimal
 import re
 
+# Hardcoded standard event types (case-insensitive validation, stored as title case)
+STANDARD_EVENTS = ['Deposit', 'Manual Deposit', 'Withdraw', 'Manual Withdraw']
+
 @login_required
 def upload_file(request):
     if request.method == 'POST':
@@ -37,7 +40,7 @@ def upload_file(request):
             try:
                 file_content = file.read().decode('utf-8-sig')
                 file_like_object = StringIO(file_content)
-                df = pd.read_csv(file_like_object, sep=None, engine='python', quotechar='"', encoding='utf-8-sig')  # Handle quoted fields
+                df = pd.read_csv(file_like_object, sep=None, engine='python', quotechar='"', encoding='utf-8-sig')
 
                 errors = []
                 valid_records = []
@@ -45,7 +48,7 @@ def upload_file(request):
 
                 for index, row in df.iterrows():
                     try:
-                        if file_type == 'members':
+                        if file_type == 'member':
                             required_fields = ['Username', 'Name', 'Handphone', 'Join Date']
                             if not all(row.get(field) is not None and not pd.isna(row[field]) and str(row[field]).strip() != '' for field in required_fields):
                                 missing_field = next((field for field in required_fields if not row.get(field) or pd.isna(row[field]) or str(row[field]).strip() == ''), None)
@@ -55,12 +58,17 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            join_date_str = str(row['Join Date'])
-                            join_date = pd.to_datetime(join_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
+                            join_date_str = str(row['Join Date']).strip()
+                            # Initial parse with flexible format
+                            join_date = pd.to_datetime(join_date_str, dayfirst=True, errors='coerce')
                             if pd.isna(join_date):
-                                join_date = pd.to_datetime(join_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
-                                if pd.isna(join_date):
-                                    raise ValueError(f"Invalid date format for Join Date at row {index + 2}: {join_date_str}")
+                                raise ValueError(f"Invalid date format for Join Date at row {index + 2}: {join_date_str}")
+                            # Check for missing time
+                            if join_date.hour == 0 and join_date.minute == 0 and join_date.second == 0:
+                                raise ValueError(f"Missing time component for Join Date at row {index + 2}: {join_date_str}")
+                            # Ensure seconds are present (append :00 if needed)
+                            if join_date.second == 0 and join_date.minute > 0:  # Likely HH:MM case
+                                join_date = join_date.replace(second=0)  # Keep as is if already parsed correctly
                             join_date = timezone.make_aware(join_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             Member.objects.create(
                                 username=row['Username'],
@@ -71,7 +79,7 @@ def upload_file(request):
                                 email=row.get('Email', '')
                             )
                             valid_records.append(row.to_dict())
-                        elif file_type in ['deposit', 'manual_deposit', 'withdraw', 'manual_withdraw']:
+                        elif file_type == 'transaction':
                             required_fields = ['USERNAME', 'EVENT', 'AMOUNT', 'CREATE DATE', 'PROCESS DATE', 'PROCESS BY']
                             if not all(row.get(field) is not None and not pd.isna(row[field]) and str(row[field]).strip() != '' for field in required_fields):
                                 missing_field = next((field for field in required_fields if not row.get(field) or pd.isna(row[field]) or str(row[field]).strip() == ''), None)
@@ -81,42 +89,50 @@ def upload_file(request):
                                     'data': row.to_dict()
                                 })
                                 continue
-                            create_date_str = str(row['CREATE DATE'])
-                            process_date_str = str(row['PROCESS DATE'])
-                            create_date = pd.to_datetime(create_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
-                            process_date = pd.to_datetime(process_date_str, format='%d/%m/%Y %H:%M', errors='coerce')  # Primary format
+                            create_date_str = str(row['CREATE DATE']).strip()
+                            process_date_str = str(row['PROCESS DATE']).strip()
+                            # Initial parse with flexible format
+                            create_date = pd.to_datetime(create_date_str, dayfirst=True, errors='coerce')
                             if pd.isna(create_date):
-                                create_date = pd.to_datetime(create_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
-                                if pd.isna(create_date):
-                                    raise ValueError(f"Invalid date format for CREATE DATE at row {index + 2}: {create_date_str}")
+                                raise ValueError(f"Invalid date format for CREATE DATE at row {index + 2}: {create_date_str}")
+                            process_date = pd.to_datetime(process_date_str, dayfirst=True, errors='coerce')
                             if pd.isna(process_date):
-                                process_date = pd.to_datetime(process_date_str, format='%d-%m-%Y %H:%M', errors='coerce')  # Fallback for hyphens
-                                if pd.isna(process_date):
-                                    raise ValueError(f"Invalid date format for PROCESS DATE at row {index + 2}: {process_date_str}")
+                                raise ValueError(f"Invalid date format for PROCESS DATE at row {index + 2}: {process_date_str}")
+                            # Check for missing time
+                            if create_date.hour == 0 and create_date.minute == 0 and create_date.second == 0:
+                                raise ValueError(f"Missing time component for CREATE DATE at row {index + 2}: {create_date_str}")
+                            if process_date.hour == 0 and process_date.minute == 0 and process_date.second == 0:
+                                raise ValueError(f"Missing time component for PROCESS DATE at row {index + 2}: {process_date_str}")
+                            # Ensure seconds are present (no re-parsing needed if already valid)
                             create_date = timezone.make_aware(create_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
                             process_date = timezone.make_aware(process_date, timezone.get_current_timezone()).astimezone(pytz.UTC)
 
-                            # Clean and convert amount with enhanced validation
-                            amount_str = str(row['AMOUNT']).strip('"')  # Remove quotes
-                            cleaned_amount = re.sub(r'[^\d.]', '', amount_str)  # Remove non-numeric except decimal
+                            # Validate and standardize EVENT
+                            event = str(row['EVENT']).strip()
+                            event_lower = event.lower()
+                            if event_lower not in [e.lower() for e in STANDARD_EVENTS]:
+                                raise ValueError(f"Invalid event type at row {index + 2}: {event}. Must be one of {', '.join(STANDARD_EVENTS)}")
+                            standardized_event = next(e for e in STANDARD_EVENTS if e.lower() == event_lower)
+
+                            # Clean and convert amount
+                            amount_str = str(row['AMOUNT']).strip('"')
+                            cleaned_amount = re.sub(r'[^\d.]', '', amount_str)
                             if not cleaned_amount:
                                 raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str}")
-                            # Allow commas as thousand separators; check for other non-numeric characters
                             non_numeric = ''.join(c for c in amount_str if c not in cleaned_amount and c not in ',')
                             if non_numeric and not all(c.isdigit() or c == ',' for c in amount_str.replace(cleaned_amount, '')):
                                 raise ValueError(f"Invalid amount format at row {index + 2}: {amount_str} (non-numeric characters detected)")
                             amount = Decimal(cleaned_amount)
 
-                            # Create transaction with individual save to catch unique constraint errors
                             transaction = Transaction(
                                 username=row['USERNAME'],
-                                event=file_type.replace('_', ' ').title(),
+                                event=standardized_event,
                                 amount=amount,
                                 create_date=create_date,
                                 process_date=process_date,
-                                process_by=row['PROCESS BY']  # Removed default empty string
+                                process_by=row['PROCESS BY']
                             )
-                            transaction.save()  # Save individually to handle exceptions
+                            transaction.save()
                             valid_records.append(row.to_dict())
                     except Exception as e:
                         errors.append({
@@ -155,7 +171,8 @@ def upload_file(request):
                         'last_record': valid_records[-1] if valid_records else None,
                         'first_error': errors[0] if errors else None,
                         'last_error': errors[-1] if errors else None,
-                        'error_log_path': file_path if errors else None
+                        'error_log_path': file_path if errors else None,
+                        'all_errors': errors if errors else []  # Store all errors
                     }
                     return redirect('data_management:upload_summary')
 
@@ -174,6 +191,8 @@ def upload_file(request):
     else:
         form = UploadFileForm()
         return render(request, 'data_management/upload.html', {'form': form})
+
+# [Rest of the views (upload_success, upload_summary, etc.) remain unchanged]
 
 @login_required
 def upload_success(request):
@@ -194,18 +213,19 @@ def upload_summary(request):
         'last_record': summary.get('last_record'),
         'first_error': summary.get('first_error'),
         'last_error': summary.get('last_error'),
-        'error_log_path': summary.get('error_log_path')
+        'error_log_path': summary.get('error_log_path'),
+        'all_errors': summary.get('all_errors', [])  # Pass all errors to template
     })
 
 @login_required
 def download_errors(request):
     summary = request.session.get('upload_summary', {})
-    errors = summary.get('first_error', {}).get('data', []) if summary.get('error_count', 0) > 0 else []
+    errors = summary.get('all_errors', [])
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(['Row', 'Error', 'Row Data'])
-    if errors:
-        writer.writerow([summary.get('first_error', {}).get('row'), summary.get('first_error', {}).get('error'), str(summary.get('first_error', {}).get('data'))])
+    for error in errors:
+        writer.writerow([error['row'], error['error'], str(error['data'])])
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="errors.csv"'
     response.write(output.getvalue())
