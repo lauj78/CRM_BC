@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}User Phone Lookup Report{% endblock %}
+
+{% block content %}
+<div class="report-block" style="display: flex; justify-content: space-between;">
+  <div style="width: 30%; padding-right: 10px;">
+    <p>We can only handle 2000 usernames per request.</p>
+    <form method="post" action="">
+      {% csrf_token %}
+      <textarea name="usernames" rows="20" style="width: 100%; resize: vertical; padding: 5px;" placeholder="Enter usernames, one per line..."></textarea>
+      <br><br>
+      <button type="submit">Lookup</button>
+    </form>
+    {% if error_message %}
+      <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+  </div>
+  <div style="width: 70%;">
+    {% if results %}
+      <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="usernames" value="{{ request.POST.usernames|default:''|escape }}">
+        <input type="hidden" name="_export" value="csv">
+        <button type="submit">Download CSV</button>
+      </form>
+      <br>
+    {% endif %}
+    <table border="1" style="table-layout: auto; width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Username</th>
+          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Name</th>
+          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Handphone</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in results %}
+        <tr>
+          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.username }}</td>
+          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.name }}</td>
+          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.handphone }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if csv_data %}
+      <script>
+        // JavaScript to trigger CSV download
+        const csvData = "{{ csv_data|escapejs }}";
+        const filename = "{{ filename|escapejs }}";
+        const blob = new Blob([csvData], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      </script>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

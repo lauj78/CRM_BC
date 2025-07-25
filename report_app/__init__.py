@@ -44,5 +44,13 @@ REPORTS = [
         'template': 'report_app/reports/report_dummy_test/view.html',
         'access': ['admin', 'op']
     },
-    
+    {
+        'name': 'User Phone Lookup',
+        'category': 'Member Management',
+        'view': 'report_app.reports.report_user_phone_lookup.views',
+        'function_name': 'report_user_phone_lookup_view',
+        'template': 'report_app/reports/report_user_phone_lookup/view.html',
+        'access': ['admin', 'op'],
+        'params': []  # No parameters required
+    },
 ]
