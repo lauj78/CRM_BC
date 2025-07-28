@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Master Dashboard</h2>
+    <p>System administration panel</p>
+    <ul>
+        <li><a href="{% url 'admin:index' %}">Django Admin</a></li>
+        <li><a href="#">Tenant Management</a></li>
+        <li><a href="#">System Settings</a></li>
+    </ul>
+{% endblock %}

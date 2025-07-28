@@ -89,11 +89,31 @@
         <div class="header">
             <h1>CRM System</h1>
         </div>
+       
+        {% load tenant_tags %}
+        <!-- Update navigation links -->
         <div class="navbar">
-            <a href="{% url 'dashboard_app:dashboard' %}" {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a>
-            <a href="{% url 'data_management:upload_file' %}" {% if request.path == '/data/upload/' %}class="active"{% endif %}>Data Import</a>
-            <a href="{% url 'report_app:report_hub' %}" {% if request.path == '/report/reports/' %}class="active"{% endif %}>Reporting</a>
-            {% if user.is_authenticated %}
+            {% if request.user.is_authenticated and request.user.email|endswith:"@master" %}
+                <a href="{% url 'master_dashboard:dashboard' %}" 
+                {% if request.path == '/master/dashboard/' %}class="active"{% endif %}>
+                Master Dashboard
+                </a>
+            {% elif request.user.is_authenticated %}
+                <a href="{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}" 
+                {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/dashboard/' %}class="active"{% endif %}>
+                Dashboard
+                </a>
+                <a href="{% url 'data_management:upload_file' tenant_id=request.tenant.tenant_id %}" 
+                {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/data/upload/' %}class="active"{% endif %}>
+                Data Import
+                </a>
+                <a href="{% url 'report_app:report_hub' tenant_id=request.tenant.tenant_id %}" 
+                {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/report/reports/' %}class="active"{% endif %}>
+                Reporting
+                </a>
+            {% endif %}
+    
+            {% if request.user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" style="background:none; border:none; color:white; padding:14px 16px; text-decoration:none; cursor:pointer;">

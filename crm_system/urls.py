@@ -1,16 +1,28 @@
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from tenants.views import tenant_test, tenant_redirect
+from django.contrib.auth.views import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-   # path('', RedirectView.as_view(url='/data/login/', permanent=False)),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
-    path('data/', include('data_management.urls', namespace='data_management')),
-    path('dashboard/', include('dashboard_app.urls', namespace='dashboard_app')),
-    path('report/', include('report_app.urls', namespace='report_app')),  # Add namespace
+    path('tenant-test/', tenant_test),
+    path('tenant-redirect/', tenant_redirect, name='tenant_redirect'),
+    
+    # Master admin routes (no tenant)
+    path('master/', include([
+        path('dashboard/', include('dashboard_app.urls', namespace='master_dashboard')),
+    ])),
+    
+    # Tenant-specific apps
+    path('tenant/<tenant_id>/', include([
+        path('data/', include('data_management.urls', namespace='data_management')),
+        path('dashboard/', include('dashboard_app.urls', namespace='dashboard_app')),
+        path('report/', include('report_app.urls', namespace='report_app')),
+        path('tenant-test/', tenant_test),
+    ])),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

@@ -2,5 +2,13 @@
 {% extends "base.html" %}
 {% block content %}
     <h2>Welcome to the Dashboard</h2>
-    <p>This is your master dashboard.</p>
+    <p>This is your master dashboard detail : </p>
+    
+    {% if tenant_name %}
+        <div class="tenant-info">
+            <h3>Tenant Information</h3>
+            <p>Tenant ID: {{ tenant_id }}</p>
+            <p>Tenant Name: {{ tenant_name }}</p>
+        </div>
+    {% endif %}
 {% endblock %}
