@@ -47,3 +47,16 @@ class TenantMiddleware:
         
         response = self.get_response(request)
         return response
+    
+# Add to tenants/middleware.py
+class BackendSessionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        # Inject session into auth backend
+        from .backends import TenantAuthBackend
+        if hasattr(request, 'session'):
+            TenantAuthBackend.session = request.session
+        
+        return self.get_response(request)

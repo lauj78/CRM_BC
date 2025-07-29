@@ -1,3 +1,4 @@
+# tenants/backends.py
 from django.contrib.auth import get_user_model
 from .models import Tenant
 import logging
@@ -21,10 +22,24 @@ class TenantAuthBackend:
             
         username_part = email_parts[0]
         domain_part = email_parts[1]
-        tenant_id = domain_part.split('.')[0]  # Get tenant from subdomain
+        tenant_id = domain_part.split('.')[0]
         
         logger.debug(f"Username: {username_part}, Tenant: {tenant_id}")
         
+        # MASTER USER HANDLING
+        if tenant_id == "master":
+            try:
+                user = User.objects.using('default').get(username=username_part)
+                if user.check_password(password):
+                    logger.debug("Master authentication SUCCESS")
+                    request.session['tenant_id'] = 'master'
+                    return user
+                logger.debug("Invalid password for master")
+            except User.DoesNotExist:
+                logger.debug("Master user not found")
+            return None
+        
+        # REGULAR TENANT HANDLING
         try:
             tenant = Tenant.objects.get(tenant_id=tenant_id)
             logger.debug(f"Found tenant: {tenant.name}")
@@ -32,14 +47,13 @@ class TenantAuthBackend:
             logger.debug(f"Tenant not found: {tenant_id}")
             return None
         
-        # Authenticate using tenant database
         try:
             user = User.objects.using(tenant.db_alias).get(username=username_part)
             if user.check_password(password):
                 logger.debug("Authentication SUCCESS")
-                # Store tenant in session
+                # Store both tenant ID and database alias in session
                 request.session['tenant_id'] = tenant.tenant_id
-                request.session.save()  # Ensure session is saved immediately
+                request.session['tenant_db'] = tenant.db_alias
                 return user
             logger.debug("Invalid password")
         except User.DoesNotExist:
@@ -48,10 +62,17 @@ class TenantAuthBackend:
         return None
     
     def get_user(self, user_id):
-        """CRITICAL FIX: Must return user object for session auth"""
+        """Retrieve user from session-stored database"""
         logger.debug(f"get_user called for ID: {user_id}")
         
-        # Check all tenant databases
+        # First try to get from session-stored database
+        try:
+            db_alias = self.session.get('tenant_db', 'default')
+            return User.objects.using(db_alias).get(pk=user_id)
+        except (User.DoesNotExist, KeyError):
+            logger.debug(f"User not found in session DB {db_alias}")
+        
+        # Fallback to scanning all databases
         for tenant in Tenant.objects.all():
             try:
                 user = User.objects.using(tenant.db_alias).get(pk=user_id)
@@ -60,5 +81,9 @@ class TenantAuthBackend:
             except User.DoesNotExist:
                 continue
         
-        logger.debug(f"User {user_id} not found in any tenant DB")
-        return None
+        # Finally try default database
+        try:
+            return User.objects.using('default').get(pk=user_id)
+        except User.DoesNotExist:
+            logger.debug(f"User {user_id} not found in any DB")
+            return None
