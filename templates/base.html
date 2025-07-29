@@ -112,10 +112,26 @@
         {% load tenant_tags %}
         <!-- Update navigation links -->
         <div class="navbar">
+
+            {% if request.user.is_authenticated and not request.user.email|endswith:"@master" %}
+                <script>
+                // Prevent non-master users from accessing master URLs
+                    if (window.location.pathname.startsWith('/master/')) {
+                        window.location.href = "{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}";
+                    }
+                </script>
+            {% endif %}
+
+
+
             {% if request.user.is_authenticated and request.user.email|endswith:"@master" %}
                 <a href="{% url 'master_dashboard:dashboard' %}" 
                 {% if request.path == '/master/dashboard/' %}class="active"{% endif %}>
                 Master Dashboard
+                </a>
+                <a href="{% url 'tenant_management:tenant_list' %}" 
+                {% if request.path == '/master/tenants/' %}class="active"{% endif %}>
+                Tenant Management
                 </a>
             {% elif request.user.is_authenticated %}
                 <a href="{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}" 

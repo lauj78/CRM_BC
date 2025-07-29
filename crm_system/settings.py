@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'data_management',
     'dashboard_app',
     'report_app',
-    'tenants',  # Your custom tenants app
+    'tenants', 
+    'tenant_management',
 ]
 
 MIDDLEWARE = [

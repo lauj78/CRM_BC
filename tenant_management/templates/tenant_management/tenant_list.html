@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Tenant Management Tenant Lists</h2>
+    <a href="{% url 'tenant_management:create_tenant' %}" class="btn btn-primary mb-3">
+        + Create New Tenant
+    </a>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Tenant ID</th>
+                <th>Status</th>
+                <th>Subscription End</th>
+                <th>Days Left</th>
+                <th>Actions</th>
+                <th>List</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tenant in object_list %}
+            <tr>
+                <td>{{ tenant.name }}</td>
+                <td>{{ tenant.tenant_id }}</td>
+                <td>
+                    <span class="badge 
+                        {% if tenant.status == 'Active' %}bg-success
+                        {% elif tenant.status == 'Expired' %}bg-danger
+                        {% else %}bg-warning{% endif %}">
+                        {{ tenant.status }}
+                    </span>
+                </td>
+                <td>{{ tenant.subscription_end|date:"M d, Y" }}</td>
+                <td>{{ tenant.days_remaining }}</td>
+                <td>
+                    <a href="{% url 'tenant_management:edit_tenant' pk=tenant.pk %}" class="btn btn-sm btn-outline-secondary">
+                        Edit Tenant
+                    </a>
+                </td>
+                <td>
+                    <a href="{% url 'tenant_management:manage_users' tenant_id=tenant.pk %}" class="btn btn-sm btn-outline-primary">
+                       Users List 
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No tenants found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+            
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- Debugging safeguard -->
+    {% if not tenant %}
+    <div class="alert alert-danger">
+        <strong>Configuration Error:</strong> Tenant context is missing!<br>
+        View: {{ view }}<br>
+        Tenant ID: {{ view.kwargs.tenant_id|default:"N/A" }}
+    </div>
+    {% endif %}
+
+    <h2>
+        {% if object %}Edit{% else %}Create{% endif %} User
+        {% if tenant %} for {{ tenant.name }}{% endif %}
+    </h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+        {% if tenant %}
+        <a href="{% url 'tenant_management:manage_users' tenant_id=tenant.pk %}" class="btn btn-secondary">
+            Cancel
+        </a>
+        {% endif %}
+    </form>
+    
+    {% if object and tenant %}
+    <div class="mt-4">
+        <p>
+            <a href="{% url 'tenant_management:reset_password' tenant_id=tenant.pk pk=user.pk %}" class="btn btn-sm btn-outline-danger">
+                Reset Password
+            </a>
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

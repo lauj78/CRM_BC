@@ -17,6 +17,7 @@ urlpatterns = [
     # Master admin routes (no tenant)
     path('master/', include([
         path('dashboard/', include('dashboard_app.urls', namespace='master_dashboard')),
+        path('Tenant Management/', include('tenant_management.urls', namespace='tenant_management')),
     ])),
     
     # Tenant-specific apps

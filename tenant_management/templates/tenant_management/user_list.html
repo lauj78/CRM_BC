@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Users for {{ tenant.name }}</h2>
+    <a href="{% url 'tenant_management:create_user' tenant_id=tenant.pk %}" class="btn btn-primary mb-3">
+        + Create New User
+    </a>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Last Login</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+                <td>
+                    {% if user.is_active %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'tenant_management:edit_user' tenant_id=tenant.pk pk=user.pk %}" 
+                       class="btn btn-sm btn-outline-secondary">
+                        Edit
+                    </a></td><td>
+                    <!-- This is an HTML comment:   below code is to change password not reset, change password need original password.
+                    <a href="{% url 'tenant_management:change_password' tenant_id=tenant.pk pk=user.pk %}" 
+                       class="btn btn-sm btn-outline-warning">
+                       Change Password
+                    </a>   --> 
+                    <a href="{% url 'tenant_management:reset_password' tenant_id=tenant.pk pk=user.pk %}" 
+                        class="btn btn-sm btn-outline-danger">
+                        Reset Password
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No users found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
