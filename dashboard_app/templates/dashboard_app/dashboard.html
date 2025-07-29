@@ -9,6 +9,7 @@
             <h3>Tenant Information</h3>
             <p>Tenant ID: {{ tenant_id }}</p>
             <p>Tenant Name: {{ tenant_name }}</p>
+            <p>Subscription Ends: {{ subscription_end|date:"F d, Y" }}</p>
         </div>
     {% endif %}
 {% endblock %}

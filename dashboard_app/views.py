@@ -11,6 +11,7 @@ def dashboard(request, tenant_id=None):
     tenant = getattr(request, 'tenant', None)
     context = {
         'tenant_name': tenant.name if tenant else 'No Tenant',
-        'tenant_id': tenant.tenant_id if tenant else None
+        'tenant_id': tenant.tenant_id if tenant else None,
+        'subscription_end': tenant.subscription_end if tenant else None,
     }
     return render(request, 'dashboard_app/dashboard.html', context)
