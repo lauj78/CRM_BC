@@ -1,7 +1,11 @@
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .middleware import _thread_local
 from .models import Tenant  # Add this import
+
+
+def account_locked(request):
+    return render(request, 'account_locked.html')
 
 def tenant_test(request, tenant_id=None):
     tenant = getattr(request, 'tenant', None)

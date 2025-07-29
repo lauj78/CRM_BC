@@ -47,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tenants.middleware.TenantMiddleware',  # Your custom middleware
+    'tenants.subscription_middleware.SubscriptionMiddleware',
 ]
 
 ROOT_URLCONF = 'crm_system.urls'

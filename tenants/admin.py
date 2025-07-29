@@ -4,7 +4,7 @@ from .models import Tenant
 @admin.register(Tenant)
 class TenantAdmin(admin.ModelAdmin):
     list_display = ('name', 'tenant_id', 'db_alias', 'is_active', 'subscription_start', 'subscription_end', 'days_remaining_display')
-    list_editable = ('subscription_end', 'is_active')
+    list_editable = ('subscription_end', 'subscription_start','is_active')
     list_filter = ('is_active', 'subscription_end')
     search_fields = ('name', 'tenant_id')
     fieldsets = (

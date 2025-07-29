@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+
+{% block title %}Account Locked{% endblock %}
+
+{% block content %}
+<head>
+    <title></title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .message { max-width: 600px; margin: 0 auto; }
+        .contact { margin-top: 30px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <div class="message">
+        <h1>Account Locked</h1>
+        <p>Your account access has been restricted.</p>
+        <p>This may be due to:</p>
+        <ul style="list-style: none; padding: 0;">
+            <li>• Subscription expiration</li>
+            <li>• Account suspension</li>
+        </ul>
+        <div class="contact">
+            <p>Please contact our support team to resolve this issue:</p>
+        </div>
+    </div>
+</body>
+{% endblock %}
