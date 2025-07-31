@@ -22,7 +22,8 @@ class TenantAuthBackend:
             
         username_part = email_parts[0]
         domain_part = email_parts[1]
-        tenant_id = domain_part.split('.')[0]
+        #tenant_id = domain_part.split('.')[0]    
+        tenant_id = domain_part   # change to test on using full domain
         
         logger.debug(f"Username: {username_part}, Tenant: {tenant_id}")
         

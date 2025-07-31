@@ -16,7 +16,6 @@ def tenant_test(request, tenant_id=None):
 
 # FIXED: Remove extra indentation from function definition
 def tenant_redirect(request):
-    # Detailed debug info
     print("\n===== tenant_redirect DEBUG START =====")
     print(f"Session ID: {request.session.session_key}")
     print(f"Authenticated: {request.user.is_authenticated}")
@@ -39,6 +38,20 @@ def tenant_redirect(request):
                     request.tenant = Tenant.objects.get(tenant_id=tenant_id)
                     print(f"Retrieved tenant from session: {tenant_id}")
                 except Tenant.DoesNotExist:
+                    pass
+        
+        # If still not set, try email-based resolution with FULL DOMAIN
+        if not hasattr(request, 'tenant') or not request.tenant:
+            email = getattr(request.user, 'email', '')
+            if '@' in email:
+                domain = email.split('@')[1]  # Get full domain
+                try:
+                    request.tenant = Tenant.objects.get(tenant_id=domain)
+                    print(f"Set tenant from full domain: {domain}")
+                    # Update session for future requests
+                    request.session['tenant_id'] = domain
+                except Tenant.DoesNotExist:
+                    print(f"Tenant not found for domain: {domain}")
                     pass
         
         # Redirect to tenant dashboard

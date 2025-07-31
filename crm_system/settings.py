@@ -20,7 +20,13 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Security settings
 SECRET_KEY = 'django-insecure-4r)r(q=0d3zpjm+3x&+5z)0_#0z1rd3wud+w+u_^ub--i5%2*8'
-DEBUG = True
+DEBUG = False
+
+# Custom error handlers
+handler404 = 'crm_system.views.custom_404'
+handler500 = 'crm_system.views.custom_500'
+
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -48,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tenants.middleware.TenantMiddleware',  # Your custom middleware
+    'tenants.middleware.SecurityLoggerMiddleware',
     'tenants.subscription_middleware.SubscriptionMiddleware',
 ]
 
@@ -94,6 +101,18 @@ DATABASES = {
             'options': '-c search_path=public'  # Add this line
         },
     },
+    'crm_db_abc_com': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'crm_db_abc_com',
+        'USER': 'crm_user',
+        'PASSWORD': 'securepassword',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c search_path=public'  # Add this line
+        },
+    },
+    
 }
 
 # Database router for tenant isolation
