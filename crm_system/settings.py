@@ -17,14 +17,17 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = 'tenant_redirect'  # We'll create this view
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
+# Add this to redirect authenticated users away from login page
+AUTHENTICATED_REDIRECT_URL = 'tenant_redirect'
+
 
 # Security settings
 SECRET_KEY = 'django-insecure-4r)r(q=0d3zpjm+3x&+5z)0_#0z1rd3wud+w+u_^ub--i5%2*8'
-DEBUG = False
+DEBUG = False    
 
 # Custom error handlers
 handler404 = 'crm_system.views.custom_404'
-handler500 = 'crm_system.views.custom_500'
+#handler500 = 'crm_system.views.custom_500'
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
@@ -54,8 +57,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tenants.middleware.TenantMiddleware',  # Your custom middleware
+    'tenants.middleware.ResponseSafetyMiddleware',
     'tenants.middleware.SecurityLoggerMiddleware',
-    'tenants.subscription_middleware.SubscriptionMiddleware',
+    'tenants.subscription_middleware.SubscriptionMiddleware',   
 ]
 
 ROOT_URLCONF = 'crm_system.urls'
