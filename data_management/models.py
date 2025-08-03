@@ -1,4 +1,6 @@
 from django.db import models
+from tenants.models import Tenant  # Add this import
+
 
 # Create your models here.
 
@@ -30,8 +32,18 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.event} by {self.username}"
+     
     
 class ErrorLog(models.Model):
+    # Cross-database foreign key - disable DB constraint
+    tenant = models.ForeignKey(
+        Tenant, 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        db_constraint=False  # This allows cross-database relationships
+    )
+    
     file_name = models.CharField(max_length=100, unique=True)
     file_path = models.CharField(max_length=200)
     upload_time = models.DateTimeField()
@@ -40,4 +52,4 @@ class ErrorLog(models.Model):
     success_count = models.IntegerField()
 
     def __str__(self):
-        return self.file_name    
+        return self.file_name

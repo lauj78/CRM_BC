@@ -4,8 +4,23 @@
 
 {% block content %}
     <h1>Error Logs</h1>
+    
+    <!-- Bulk Delete Form (separate from table) -->
+    <form method="post" action="{% url 'data_management:bulk_delete_logs' tenant_id=tenant_id %}" id="bulk-delete-form">
+        {% csrf_token %}
+        <input type="hidden" name="selected_logs" id="selected-logs-input">
+    </form>
+    
+    <div style="margin-bottom: 10px;">
+        <button type="button" id="select-all">Select All</button>
+        <button type="button" id="deselect-all">Deselect All</button>
+        <button type="button" id="delete-selected" style="background-color: #dc3545; color: white;">Delete Selected</button>
+        <span id="selected-count" style="margin-left: 10px; font-weight: bold;">0 selected</span>
+    </div>
+    
     <table border="1">
         <tr>
+            <th><input type="checkbox" id="master-checkbox"></th>
             <th>File Name</th>
             <th>Upload Time</th>
             <th>File Type</th>
@@ -15,24 +30,91 @@
         </tr>
         {% for log in logs %}
         <tr>
+            <td>
+                <input type="checkbox" value="{{ log.id }}" class="log-checkbox">
+            </td>
             <td>{{ log.file_name }}</td>
             <td>{{ log.upload_time }}</td>
             <td>{{ log.file_type|title }}</td>
             <td>{{ log.error_count }}</td>
             <td>{{ log.success_count }}</td>
             <td>
-                <a href="{% url 'data_management:download_log' log.id %}">Download</a>
-                <form method="post" action="{% url 'data_management:delete_log' log.id %}" style="display:inline;">
+                <a href="{% url 'data_management:download_log' tenant_id=tenant_id log_id=log.id %}">Download</a>
+                <!--
+                <form method="post" action="{% url 'data_management:delete_log' tenant_id=tenant_id log_id=log.id %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" onclick="return confirm('Are you sure you want to delete {{ log.file_name }}?')">Delete</button>
                 </form>
+                -->
             </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="6">No error logs found.</td>
+            <td colspan="7">No error logs found.</td>
         </tr>
         {% endfor %}
     </table>
-    <p><a href="{% url 'data_management:upload_file' %}">Back to Upload</a></p>
+    
+    <p><a href="{% url 'data_management:upload_file' tenant_id=tenant_id %}">Back to Upload</a></p>
+
+    <script>
+        // JavaScript for bulk operations
+        const masterCheckbox = document.getElementById('master-checkbox');
+        const logCheckboxes = document.querySelectorAll('.log-checkbox');
+        const selectedCount = document.getElementById('selected-count');
+        const deleteButton = document.getElementById('delete-selected');
+        const selectedLogsInput = document.getElementById('selected-logs-input');
+        
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('.log-checkbox:checked').length;
+            selectedCount.textContent = `${checked} selected`;
+            deleteButton.disabled = checked === 0;
+        }
+        
+        // Bulk delete button handler
+        deleteButton.addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.log-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+            const count = selectedIds.length;
+            
+            if (count === 0) {
+                alert('Please select at least one log to delete.');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete ${count} selected log(s)?`)) {
+                selectedLogsInput.value = selectedIds.join(',');
+                document.getElementById('bulk-delete-form').submit();
+            }
+        });
+        
+        // Existing checkbox/selection logic remains the same
+        masterCheckbox.addEventListener('change', function() {
+            logCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+        
+        logCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+        
+        document.getElementById('select-all').addEventListener('click', function() {
+            logCheckboxes.forEach(checkbox => checkbox.checked = true);
+            masterCheckbox.checked = true;
+            masterCheckbox.indeterminate = false;
+            updateSelectedCount();
+        });
+        
+        document.getElementById('deselect-all').addEventListener('click', function() {
+            logCheckboxes.forEach(checkbox => checkbox.checked = false);
+            masterCheckbox.checked = false;
+            masterCheckbox.indeterminate = false;
+            updateSelectedCount();
+        });
+        
+        // Initialize
+        updateSelectedCount();
+    </script>
 {% endblock %}

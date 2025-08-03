@@ -26,10 +26,10 @@ class SubscriptionMiddleware:
             if tenant.status in ["Expired", "Suspended"]:
                 return redirect('/account-locked/')
         
+        # FIXED: Only call get_response once
         try:
             response = self.get_response(request)
+            return response  # Return the response from try block
         except Exception as e:
             from django.http import HttpResponseServerError
-            response = HttpResponseServerError("Server Error")
-        
-        return self.get_response(request)
+            return HttpResponseServerError("Server Error")

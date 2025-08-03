@@ -13,6 +13,7 @@
         <button type="submit">Upload</button>
     </form>
     
-    <p><a href="{% url 'data_management:error_logs_list' %}">View Error Logs</a></p>
-    <p><a href="{% url 'data_management:upload_summary' %}">View Previous Summary Detail</a></p>
+    <p><a href="{% url 'data_management:error_logs_list' tenant_id=tenant_id %}">View Error Logs</a></p>
+   <!-- <p><a href="{% url 'data_management:upload_summary' tenant_id=tenant_id %}">View Previous Summary Detail</a></p> --->
+
 {% endblock %}

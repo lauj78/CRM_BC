@@ -1,7 +1,0 @@
-Row,Error,Row Data
-2,"duplicate key value violates unique constraint ""data_management_member_username_key""
-DETAIL:  Key (username)=(testuser7) already exists.
-","{'Username': 'testuser7', 'Name': 'TEST USER 1', 'Referral': 'ads005', 'Handphone': 6281234567890, 'Join Date': '20-05-2025 10:11:01', 'Email': 'test11@example.com'}"
-3,"duplicate key value violates unique constraint ""data_management_member_username_key""
-DETAIL:  Key (username)=(testuser6) already exists.
-","{'Username': 'testuser6', 'Name': 'TEST USER6 2', 'Referral': nan, 'Handphone': 6281234563891, 'Join Date': '20-05-2025 10:01:11', 'Email': nan}"

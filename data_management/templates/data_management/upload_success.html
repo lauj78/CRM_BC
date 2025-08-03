@@ -22,8 +22,8 @@
         <p><strong>Last Failed Record:</strong> Row {{ last_error.row }} - {{ last_error.error }}: {{ last_error.data }}</p>
     {% endif %}
     {% if error_count > 0 %}
-        <p><a href="{% url 'data_management:download_errors' %}">Download Error Report (CSV)</a></p>
+        <p><a href="{% url 'data_management:download_errors' tenant_id=tenant_id %}">Download Error Report (CSV)</a></p>
     {% endif %}
-    <p><a href="{% url 'data_management:error_logs_list' %}">View Error Logs</a></p>
-    <p><a href="{% url 'data_management:upload_file' %}">Upload another file</a></p>
+    <p><a href="{% url 'data_management:error_logs_list' tenant_id=tenant_id %}">View Error Logs</a></p>
+    <p><a href="{% url 'data_management:upload_file' tenant_id=tenant_id %}">Upload another file</a></p>
 {% endblock %}

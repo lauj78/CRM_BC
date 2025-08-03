@@ -50,13 +50,14 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'tenants.middleware.BackendSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tenants.middleware.BackendSessionMiddleware',
+    'tenants.middleware.TenantBypassMiddleware',
+    'tenants.middleware.TenantMiddleware',  # Your custom middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'tenants.middleware.TenantMiddleware',  # Your custom middleware
     'tenants.middleware.ResponseSafetyMiddleware',
     'tenants.middleware.SecurityLoggerMiddleware',
     'tenants.subscription_middleware.SubscriptionMiddleware',   
@@ -160,7 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Verify cookie settings
-SESSION_COOKIE_SECURE = True  # Set True in production
+SESSION_COOKIE_SECURE = False #Set True in production
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_NAME = "crm_session"
 

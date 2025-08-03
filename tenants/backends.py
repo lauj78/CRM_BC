@@ -7,19 +7,24 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class TenantAuthBackend:
-    session = None  # Class variable to store session
+    session = None
     
     def authenticate(self, request, username=None, password=None, **kwargs):
-        email = kwargs.get('email', username)
-        logger.debug(f"Auth attempt: {email}")
-        
-        if not email or '@' not in email:
+        # Add recursion prevention
+        if hasattr(request, '_auth_in_progress'):
+            logger.debug("Authentication already in progress")
             return None
             
+        request._auth_in_progress = True
+        logger.debug(f"Auth started for request: {id(request)}")
+        
         try:
-            # Store session for get_user
-            self.session = request.session
+            email = kwargs.get('email', username)
+            logger.debug(f"Auth attempt: {email}")
             
+            if not email or '@' not in email:
+                return None
+                
             # MASTER USER HANDLING
             if email.endswith('@master'):
                 user = User.objects.using('default').get(email=email)
@@ -31,7 +36,8 @@ class TenantAuthBackend:
             # REGULAR TENANT HANDLING
             domain = email.split('@')[1]
             try:
-                tenant = Tenant.objects.get(tenant_id=domain)
+                # Use default DB for tenant lookup
+                tenant = Tenant.objects.using('default').get(tenant_id=domain)
             except Tenant.DoesNotExist:
                 return None
             
@@ -39,40 +45,41 @@ class TenantAuthBackend:
             if user.check_password(password):
                 request.session['tenant_id'] = tenant.tenant_id
                 return user
-        except User.DoesNotExist:
-            pass
-        
-        return None
+                
+            return None
+        finally:
+            if hasattr(request, '_auth_in_progress'):
+                del request._auth_in_progress
+            logger.debug(f"Auth completed for request: {id(request)}")
     
     def get_user(self, user_id):
-        """Retrieve user from all databases"""
+        """Lightweight user retrieval without tenant queries"""
+        # Add recursion prevention
+        if hasattr(self, '_get_user_in_progress'):
+            logger.debug("Prevented recursive get_user call")
+            return None
+            
+        self._get_user_in_progress = True
         logger.debug(f"get_user called for ID: {user_id}")
-    
-        # First try to find user in the session's tenant database
-        if tenant_id := self.session.get('tenant_id'):
-            try:
-                tenant = Tenant.objects.get(tenant_id=tenant_id)
-                logger.debug(f"Looking for user {user_id} in tenant DB: {tenant.db_alias}")
-                return User.objects.using(tenant.db_alias).get(pk=user_id)
-            except (Tenant.DoesNotExist, User.DoesNotExist):
-                logger.debug(f"User not found in tenant DB {tenant_id}")
-                pass
-    
-        # Then try default database
+        
         try:
-            logger.debug(f"Looking for user {user_id} in default DB")
-            return User.objects.using('default').get(pk=user_id)
-        except User.DoesNotExist:
-            logger.debug(f"User not found in default DB")
-            pass
-    
-        # Then try all tenant databases
-        for tenant in Tenant.objects.all():
+            # Try session tenant first
+            if tenant_id := getattr(self, 'session', {}).get('tenant_id'):
+                try:
+                    # Use default DB for tenant lookup
+                    tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
+                    logger.debug(f"Looking for user {user_id} in tenant DB: {tenant.db_alias}")
+                    return User.objects.using(tenant.db_alias).get(pk=user_id)
+                except (Tenant.DoesNotExist, User.DoesNotExist) as e:
+                    logger.debug(f"User not found in tenant DB: {str(e)}")
+                    pass
+            
+            # Fallback to default database
             try:
-                logger.debug(f"Looking for user {user_id} in DB {tenant.db_alias}")
-                return User.objects.using(tenant.db_alias).get(pk=user_id)
+                logger.debug(f"Looking for user {user_id} in default DB")
+                return User.objects.using('default').get(pk=user_id)
             except User.DoesNotExist:
-                continue
-    
-        logger.debug(f"User {user_id} not found in any DB")
-        return None
+                logger.debug(f"User not found in default DB")
+                return None
+        finally:
+            del self._get_user_in_progress
