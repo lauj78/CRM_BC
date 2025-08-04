@@ -19,33 +19,80 @@ class TenantAuthBackend:
         logger.debug(f"Auth started for request: {id(request)}")
         
         try:
+            # Use email as username (they're the same now)
             email = kwargs.get('email', username)
             logger.debug(f"Auth attempt: {email}")
             
             if not email or '@' not in email:
+                logger.debug("Invalid email format")
                 return None
                 
-            # MASTER USER HANDLING
-            if email.endswith('@master'):
-                user = User.objects.using('default').get(email=email)
-                if user.check_password(password):
-                    request.session['tenant_id'] = 'master'
-                    return user
-                return None
+            # MASTER USER HANDLING - check for master.com domain
+            domain = email.split('@')[1]
+            logger.debug(f"Extracted domain: {domain}")
+            
+            if domain == 'master.com':
+                logger.debug("Master user detected (master.com domain)")
+                try:
+                    user = User.objects.using('default').get(username=email)  # Use username field
+                    logger.debug(f"Found master user: {user.username}")
+                    
+                    if user.check_password(password):
+                        logger.debug("Master password check passed")
+                        if hasattr(request, 'session'):
+                            request.session['tenant_id'] = 'master'
+                            logger.debug("Session tenant_id set to: master")
+                        return user
+                    else:
+                        logger.debug("Master password check failed")
+                        return None
+                        
+                except User.DoesNotExist:
+                    logger.debug("Master user not found in default database")
+                    return None
+                except Exception as e:
+                    logger.error(f"Error accessing master user: {str(e)}")
+                    return None
             
             # REGULAR TENANT HANDLING
-            domain = email.split('@')[1]
             try:
-                # Use default DB for tenant lookup
+                # Find tenant by domain
                 tenant = Tenant.objects.using('default').get(tenant_id=domain)
+                logger.debug(f"Found tenant: {tenant.name} (DB: {tenant.db_alias})")
             except Tenant.DoesNotExist:
+                logger.debug(f"Tenant not found for domain: {domain}")
+                return None
+            except Exception as e:
+                logger.error(f"Error finding tenant: {str(e)}")
                 return None
             
-            user = User.objects.using(tenant.db_alias).get(email=email)
-            if user.check_password(password):
-                request.session['tenant_id'] = tenant.tenant_id
-                return user
+            # Find user in tenant database
+            try:
+                logger.debug(f"Looking for user in database: {tenant.db_alias}")
+                user = User.objects.using(tenant.db_alias).get(username=email)  # Use username field
+                logger.debug(f"Found tenant user: {user.username} (active: {user.is_active})")
                 
+                if user.check_password(password):
+                    logger.debug("Tenant password check passed")
+                    if hasattr(request, 'session'):
+                        request.session['tenant_id'] = tenant.tenant_id
+                        logger.debug(f"Session tenant_id set to: {tenant.tenant_id}")
+                    else:
+                        logger.warning("No session available on request")
+                    return user
+                else:
+                    logger.debug("Tenant password check failed")
+                    return None
+                    
+            except User.DoesNotExist:
+                logger.debug(f"User not found in tenant database: {tenant.db_alias}")
+                return None
+            except Exception as e:
+                logger.error(f"Database error accessing {tenant.db_alias}: {str(e)}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Authentication exception: {str(e)}")
             return None
         finally:
             if hasattr(request, '_auth_in_progress'):
@@ -65,14 +112,23 @@ class TenantAuthBackend:
         try:
             # Try session tenant first
             if tenant_id := getattr(self, 'session', {}).get('tenant_id'):
-                try:
-                    # Use default DB for tenant lookup
-                    tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
-                    logger.debug(f"Looking for user {user_id} in tenant DB: {tenant.db_alias}")
-                    return User.objects.using(tenant.db_alias).get(pk=user_id)
-                except (Tenant.DoesNotExist, User.DoesNotExist) as e:
-                    logger.debug(f"User not found in tenant DB: {str(e)}")
-                    pass
+                if tenant_id == 'master':
+                    # Master user in default database
+                    try:
+                        logger.debug(f"Looking for master user {user_id} in default DB")
+                        return User.objects.using('default').get(pk=user_id)
+                    except User.DoesNotExist:
+                        logger.debug(f"Master user not found in default DB")
+                        pass
+                else:
+                    # Regular tenant user
+                    try:
+                        tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
+                        logger.debug(f"Looking for user {user_id} in tenant DB: {tenant.db_alias}")
+                        return User.objects.using(tenant.db_alias).get(pk=user_id)
+                    except (Tenant.DoesNotExist, User.DoesNotExist) as e:
+                        logger.debug(f"User not found in tenant DB: {str(e)}")
+                        pass
             
             # Fallback to default database
             try:

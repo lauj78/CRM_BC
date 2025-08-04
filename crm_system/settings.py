@@ -95,17 +95,17 @@ DATABASES = {
             'options': '-c search_path=public'  # Add this line
         },
     },
-    'crm_db_pukul69': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'crm_db_pukul69',
-        'USER': 'crm_user',
-        'PASSWORD': 'securepassword',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c search_path=public'  # Add this line
-        },
-    },
+    #'crm_db_pukul69': {
+    #    'ENGINE': 'django.db.backends.postgresql',
+    #    'NAME': 'crm_db_pukul69',
+    #    'USER': 'crm_user',
+    #    'PASSWORD': 'securepassword',
+    #    'HOST': 'localhost',
+    #    'PORT': '5432',
+    #    'OPTIONS': {
+    #        'options': '-c search_path=public'  # Add this line
+    #    },
+    #},
     'crm_db_abc_com': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'crm_db_abc_com',
@@ -133,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = [
     'tenants.backends.TenantAuthBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    #'django.contrib.auth.backends.ModelBackend',
 ]
 
 
@@ -190,3 +190,6 @@ LOGGING = {
 # Add session settings
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_AGE = 3600  # 1 hour
+
+# In settings.py
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']

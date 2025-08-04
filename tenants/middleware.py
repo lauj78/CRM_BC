@@ -77,10 +77,20 @@ class TenantMiddleware:
         
         logger.debug(f"Entering TenantMiddleware for path: {request.path}")
         
+        # MASTER USER HANDLING - Check session first for master users
+        tenant_id = request.session.get('tenant_id')
+        logger.debug(f"Session tenant_id: {tenant_id}")
+        
+        if tenant_id == 'master':
+            logger.debug("Master user detected from session - skipping tenant resolution")
+            request.tenant = None  # Master users don't have tenants
+            _thread_local.current_db = 'default'  # Master users use default DB
+            logger.debug("Database set to: default (master user)")
+            return self.get_response(request)
+        
+        # REGULAR TENANT HANDLING
         # Tenant resolution logic
         if not hasattr(request, 'tenant'):
-            tenant_id = request.session.get('tenant_id')
-            logger.debug(f"Session tenant_id: {tenant_id}")
             if tenant_id:
                 try:
                     # Use default DB for tenant lookup
@@ -99,16 +109,18 @@ class TenantMiddleware:
             logger.debug(f"User email for resolution: {email}")
             if '@' in email:
                 domain_part = email.split('@')[1]
-                tenant_id = domain_part
-                try:
-                    # Use default DB for tenant lookup
-                    request.tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
-                    logger.debug(f"Set tenant from email: {tenant_id}")
-                except Tenant.DoesNotExist:
-                    logger.debug(f"Tenant not found for domain: {domain_part}")
-                    pass
+                # Skip master.com domain
+                if domain_part != 'master.com':
+                    tenant_id = domain_part
+                    try:
+                        # Use default DB for tenant lookup
+                        request.tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
+                        logger.debug(f"Set tenant from email: {tenant_id}")
+                    except Tenant.DoesNotExist:
+                        logger.debug(f"Tenant not found for domain: {domain_part}")
+                        pass
         
-        # Redirect to login if no tenant found
+        # Redirect to login if no tenant found (only for non-master users)
         if not hasattr(request, 'tenant') or not request.tenant:
             logger.debug("No tenant found - redirecting to login")
             return redirect(settings.LOGIN_URL)
@@ -119,7 +131,7 @@ class TenantMiddleware:
             logger.debug(f"Database set to: {_thread_local.current_db}")
             
             # Only validate tenant path for non-bypassed requests
-            if request.user.is_authenticated and not request.user.email.endswith('@master'):
+            if request.user.is_authenticated and not request.user.email.endswith('@master.com'):
                 path = request.path_info
                 if path.startswith('/tenant/'):
                     parts = path.split('/')

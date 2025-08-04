@@ -113,7 +113,7 @@
         <div class="navbar">
             {% if request.user.is_authenticated %}
                 <!-- Add tenant check to JavaScript redirect -->
-                {% if not request.user.email|endswith:"@master" and request.tenant %}
+                {% if not request.user.email|endswith:"@master.com" and request.tenant %}
                     <script>
                         if (window.location.pathname.startsWith('/master/')) {
                             window.location.href = "{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}";
@@ -122,7 +122,7 @@
                 {% endif %}
 
                 <!-- Master User Links -->
-                {% if request.user.email|endswith:"@master" %}
+                {% if request.user.email|endswith:"@master.com" %}
                     <a href="{% url 'master_dashboard:dashboard' %}" 
                     {% if request.path == '/master/dashboard/' %}class="active"{% endif %}>
                     Master Dashboard

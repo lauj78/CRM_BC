@@ -34,7 +34,7 @@ def tenant_redirect(request):
     request._skip_tenant_processing = True
     
     print("\n===== tenant_redirect DEBUG START =====")
-    print(f"Session ID: {request.session.session_key}")
+    print(f"Session Key: {request.session.session_key}")
     print(f"Authenticated: {request.user.is_authenticated}")
     print(f"User ID: {request.user.id}")
     print(f"Email: {request.user.email}")
@@ -42,7 +42,7 @@ def tenant_redirect(request):
     print(f"Session data: {dict(request.session)}")
     
     # Master user check
-    if request.user.email.endswith('@master'):
+    if request.session.get('tenant_id') == 'master':
         print("Redirecting to master dashboard")
         return redirect('master_dashboard:dashboard')
     

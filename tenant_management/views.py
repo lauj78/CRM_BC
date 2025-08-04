@@ -71,7 +71,8 @@ class TenantUserCreateView(MasterUserRequiredMixin, CreateView):
     
     def form_valid(self, form):
         tenant = Tenant.objects.get(pk=self.kwargs['tenant_id'])
-        form.save(using=tenant.db_alias)
+        #form.save(using=tenant.db_alias)
+        form.save() 
         return redirect('tenant_management:manage_users', tenant_id=tenant.pk)
 
 class TenantUserUpdateView(MasterUserRequiredMixin, UpdateView):
@@ -83,7 +84,8 @@ class TenantUserUpdateView(MasterUserRequiredMixin, UpdateView):
         return User.objects.using(self.tenant.db_alias).get(pk=self.kwargs['pk'])
     
     def form_valid(self, form):
-        form.save(using=self.tenant.db_alias)
+        # form.save(using=self.tenant.db_alias)
+        form.save() 
         return redirect('tenant_management:manage_users', tenant_id=self.tenant.pk)
     
     def get_context_data(self, **kwargs):
