@@ -1,6 +1,8 @@
+#tenants/views.py
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
-from .middleware import _thread_local
+#from .middleware import _thread_local
+from .context import get_current_db, set_current_db, has_db_context
 from .models import Tenant
 from django.contrib.auth.decorators import login_required
 from .decorators import tenant_bypass
@@ -14,7 +16,7 @@ def tenant_test(request, tenant_id=None):
     tenant = getattr(request, 'tenant', None)
     return JsonResponse({
         'tenant': tenant.name if tenant else 'No tenant',
-        'database': getattr(_thread_local, 'current_db', 'default')
+        'database': get_current_db() or 'default'
     })
 
 @tenant_bypass

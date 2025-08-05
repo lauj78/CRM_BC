@@ -1,28 +1,28 @@
+#tenants/middleware.py
+
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden
-from threading import local
 from .tenant_resolver import get_tenant_from_request
 from .models import Tenant
 from django.conf import settings
 import logging
 import uuid
+# Import the shared context functions
+from .context import set_current_db, get_current_db, clear_current_db
 
 logger = logging.getLogger(__name__)
-_thread_local = local()
 
-# Add this new middleware first
+
 class TenantBypassMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         
     def __call__(self, request):
-        # Early view resolution to detect bypass decorator
         try:
             from django.urls import resolve
             resolved = resolve(request.path_info)
             view_func = resolved.func
             
-            # Check if view has bypass decorator
             if hasattr(view_func, '_tenant_bypass'):
                 request._skip_tenant_processing = True
                 logger.debug(f"Detected tenant bypass for view: {resolved.url_name}")
@@ -36,7 +36,6 @@ class BackendSessionMiddleware:
         self.get_response = get_response
         
     def __call__(self, request):
-        # Add recursion prevention
         if hasattr(request, '_backend_session_processed'):
             return self.get_response(request)
         request._backend_session_processed = True
@@ -57,43 +56,52 @@ class BackendSessionMiddleware:
 class TenantMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
+        self.master_dashboard_url = '/master/dashboard/'
         
     def __call__(self, request):
-        # Skip processing if flagged
         if getattr(request, '_skip_tenant_processing', False):
             logger.debug(f"Skipping tenant processing for bypassed view: {request.path}")
+            # Ensure the database context is set to default for bypassed views
+            set_current_db('default')
             return self.get_response(request)
             
-        # Skip tenant processing for public paths
-        public_paths = ['/accounts/', '/static/', '/favicon.ico', '/media/']
+        public_paths = ['/accounts/', '/static/', '/favicon.ico', '/media/', '/master/']
         if any(request.path.startswith(p) for p in public_paths):
             logger.debug(f"Skipping tenant processing for public path: {request.path}")
+            # Ensure default DB for public paths
+            set_current_db('default')
+            
+            # Special check to ensure master user is redirected correctly
+            if request.session.get('tenant_id') == 'master' and not request.path.startswith(self.master_dashboard_url):
+                return redirect(self.master_dashboard_url)
+                
             return self.get_response(request)
         
-        # Add recursion prevention
         if hasattr(request, '_tenant_middleware_processed'):
             return self.get_response(request)
         request._tenant_middleware_processed = True
         
         logger.debug(f"Entering TenantMiddleware for path: {request.path}")
         
-        # MASTER USER HANDLING - Check session first for master users
         tenant_id = request.session.get('tenant_id')
         logger.debug(f"Session tenant_id: {tenant_id}")
         
         if tenant_id == 'master':
             logger.debug("Master user detected from session - skipping tenant resolution")
-            request.tenant = None  # Master users don't have tenants
-            _thread_local.current_db = 'default'  # Master users use default DB
-            logger.debug("Database set to: default (master user)")
+            set_current_db('default')
+            logger.debug(f"Database set to: {get_current_db()} (master user)")
+            
+            # Master user should be redirected to their dedicated dashboard
+            if not request.path.startswith(self.master_dashboard_url):
+                logger.debug(f"Master user redirected to: {self.master_dashboard_url}")
+                return redirect(self.master_dashboard_url)
+            # The master user is on their correct path, so just proceed
             return self.get_response(request)
-        
-        # REGULAR TENANT HANDLING
+
         # Tenant resolution logic
         if not hasattr(request, 'tenant'):
             if tenant_id:
                 try:
-                    # Use default DB for tenant lookup
                     request.tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
                     logger.debug(f"Tenant set from session: {request.tenant.tenant_id}")
                 except Tenant.DoesNotExist:
@@ -101,6 +109,7 @@ class TenantMiddleware:
                     pass
         
         if not hasattr(request, 'tenant'):
+            from .tenant_resolver import get_tenant_from_request
             request.tenant = get_tenant_from_request(request)
             logger.debug(f"Set tenant from request: {request.tenant.tenant_id if request.tenant else 'None'}")
         
@@ -109,28 +118,25 @@ class TenantMiddleware:
             logger.debug(f"User email for resolution: {email}")
             if '@' in email:
                 domain_part = email.split('@')[1]
-                # Skip master.com domain
                 if domain_part != 'master.com':
                     tenant_id = domain_part
                     try:
-                        # Use default DB for tenant lookup
                         request.tenant = Tenant.objects.using('default').get(tenant_id=tenant_id)
                         logger.debug(f"Set tenant from email: {tenant_id}")
+                        request.session['tenant_id'] = domain_part
                     except Tenant.DoesNotExist:
                         logger.debug(f"Tenant not found for domain: {domain_part}")
                         pass
         
-        # Redirect to login if no tenant found (only for non-master users)
         if not hasattr(request, 'tenant') or not request.tenant:
             logger.debug("No tenant found - redirecting to login")
+            set_current_db('default')
             return redirect(settings.LOGIN_URL)
         
-        # Database and isolation logic
         if hasattr(request, 'tenant') and request.tenant:
-            _thread_local.current_db = request.tenant.db_alias
-            logger.debug(f"Database set to: {_thread_local.current_db}")
+            set_current_db(request.tenant.db_alias)
+            logger.debug(f"Database set to: {get_current_db()}")
             
-            # Only validate tenant path for non-bypassed requests
             if request.user.is_authenticated and not request.user.email.endswith('@master.com'):
                 path = request.path_info
                 if path.startswith('/tenant/'):
@@ -148,7 +154,7 @@ class TenantMiddleware:
                                 tenant_id=request.tenant.tenant_id
                             )
         else:
-            _thread_local.current_db = 'default'
+            set_current_db('default')
             logger.debug("No tenant found, using default database")
             
         try:
@@ -159,6 +165,8 @@ class TenantMiddleware:
             from django.http import HttpResponseServerError
             response = HttpResponseServerError("Server Error")
             
+        # Important: Clean up thread-local context after request processing
+        # Note: We don't clear here as other middleware might still need it
         logger.debug(f"Exiting TenantMiddleware with response: {type(response).__name__}")
         return response
 
@@ -167,12 +175,10 @@ class SecurityLoggerMiddleware:
         self.get_response = get_response
         
     def __call__(self, request):
-        # Add recursion prevention
         if hasattr(request, '_security_logger_processed'):
             return self.get_response(request)
         request._security_logger_processed = True
         
-        # Generate unique ID for this middleware invocation
         middleware_id = uuid.uuid4().hex[:4]
         logger.debug(f"SecurityLoggerMiddleware START [{middleware_id}]")
         response = self.get_response(request)
@@ -184,7 +190,6 @@ class ResponseSafetyMiddleware:
         self.get_response = get_response
         
     def __call__(self, request):
-        # Add recursion prevention
         if hasattr(request, '_response_safety_processed'):
             return self.get_response(request)
         request._response_safety_processed = True
@@ -199,4 +204,8 @@ class ResponseSafetyMiddleware:
             return HttpResponseServerError("Invalid Response")
         
         logger.debug(f"Exiting ResponseSafetyMiddleware with response: {type(response).__name__}")
+        
+        # Clean up thread-local context at the very end of request processing
+        clear_current_db()
+        
         return response
