@@ -8,7 +8,14 @@ from data_management.models import Transaction, Member
 from django.template.response import TemplateResponse
 
 @login_required
-def report_daily_summary_view(request):
+# The function signature is modified to accept 'tenant_id'.
+# This is required because the parent view ('report_hub_view') will pass it.
+def report_daily_summary_view(request, tenant_id):
+    """
+    Generates a daily summary report for a specific tenant.
+    The tenant_id is received from the URL and used by the middleware
+    to switch the database connection.
+    """
     today = timezone.now().date()
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -29,6 +36,8 @@ def report_daily_summary_view(request):
     dashboard_data = []
     current_date = start_date
     while current_date <= end_date:
+        # These queries automatically use the correct tenant's database
+        # because the TenantMiddleware has already handled the connection.
         day_transactions = Transaction.objects.filter(process_date__date=current_date)
 
         # Section: Total Form Depo

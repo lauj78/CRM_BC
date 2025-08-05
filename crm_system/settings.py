@@ -95,20 +95,21 @@ DATABASES = {
             'options': '-c search_path=public'  # Add this line
         },
     },
-    #'crm_db_pukul69': {
-    #    'ENGINE': 'django.db.backends.postgresql',
-    #    'NAME': 'crm_db_pukul69',
-    #    'USER': 'crm_user',
-    #    'PASSWORD': 'securepassword',
-    #    'HOST': 'localhost',
-    #    'PORT': '5432',
-    #    'OPTIONS': {
-    #        'options': '-c search_path=public'  # Add this line
-    #    },
-    #},
-    'crm_db_abc_com': {
+
+    'crm_db_pukul_com': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'crm_db_abc_com',
+        'NAME': 'crm_db_pukul_com',
+        'USER': 'crm_user',
+        'PASSWORD': 'securepassword',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c search_path=public'  # Add this line
+        },
+    },
+    'crm_db_test_com': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'crm_db_test_com',
         'USER': 'crm_user',
         'PASSWORD': 'securepassword',
         'HOST': 'localhost',
@@ -193,3 +194,7 @@ SESSION_COOKIE_AGE = 3600  # 1 hour
 
 # In settings.py
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+
+PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants']
+
+AUTH_USER_MODEL = "auth.User" # Just to make sure it's here
