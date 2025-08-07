@@ -1,8 +1,5 @@
+# data_management/models.py
 from django.db import models
-from tenants.models import Tenant  # Add this import
-
-
-# Create your models here.
 
 class Member(models.Model):
     username = models.CharField(max_length=100, unique=True)
@@ -18,7 +15,9 @@ class Member(models.Model):
 class Transaction(models.Model):
     EVENT_CHOICES = [
         ('Deposit', 'Deposit'),
+        ('Manual Deposit', 'Manual Deposit'),
         ('Withdraw', 'Withdraw'),
+        ('Manual Withdraw', 'Manual Withdraw'),
     ]
     username = models.CharField(max_length=100)
     event = models.CharField(max_length=20, choices=EVENT_CHOICES)
@@ -32,24 +31,22 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.event} by {self.username}"
-     
-    
+
+# OPTION 1: Clean approach - Remove foreign key, use tenant_id string
 class ErrorLog(models.Model):
-    # Cross-database foreign key - disable DB constraint
-    tenant = models.ForeignKey(
-        Tenant, 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        db_constraint=False  # This allows cross-database relationships
-    )
-    
-    file_name = models.CharField(max_length=100, unique=True)
+    tenant_id = models.CharField(max_length=100, db_index=True, null=True) # Store tenant domain (e.g., "pukul.com")
+    file_name = models.CharField(max_length=100)
     file_path = models.CharField(max_length=200)
     upload_time = models.DateTimeField()
     file_type = models.CharField(max_length=20)
     error_count = models.IntegerField()
     success_count = models.IntegerField()
 
+    class Meta:
+        unique_together = ('tenant_id', 'file_name')  # Ensure unique filenames per tenant
+        indexes = [
+            models.Index(fields=['tenant_id', 'upload_time']),
+        ]
+
     def __str__(self):
-        return self.file_name
+        return f"{self.file_name} ({self.tenant_id})"

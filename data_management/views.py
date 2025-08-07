@@ -37,7 +37,7 @@ def upload_file(request, tenant_id=None):
     if request.method == 'POST' and request.session.get('upload_in_progress'):
         print(f"DEBUG: REQUEST {request_id} - DUPLICATE DETECTED")
         return HttpResponse("Upload already in progress", status=400)
-   
+    
     if request.method == 'POST':
         # Set upload in progress flag
         request.session['upload_in_progress'] = True
@@ -51,7 +51,7 @@ def upload_file(request, tenant_id=None):
             print(f"DEBUG: REQUEST {request_id} - FILE METADATA")
             print(f"File: {file.name} ({file.size} bytes)")
             print(f"Type: {file_type}")
-            print(f"{'='*80}\n")                        
+            print(f"{'='*80}\n")
             
             # File validation
             if not file.name.lower().endswith('.csv'):
@@ -134,7 +134,7 @@ def upload_file(request, tenant_id=None):
                 else:
                     print("DataFrame is empty")
                 print("="*80 + "\n")
-                                              
+                    
                 # Process records
                 errors = []
                 valid_records = []
@@ -253,13 +253,13 @@ def upload_file(request, tenant_id=None):
                         tenant_id_clean = re.sub(r'[^\w\.-]', '', tenant.tenant_id)
                     else:
                         tenant_id_clean = 'default'
-                                     
+                                            
                     timestamp = upload_time.strftime('%Y%m%d_%H%M%S')
                     file_name = f"{timestamp}_{file_type}_{len(errors)}error{len(valid_records)}success_log.csv"
                     tenant_dir = os.path.join(settings.MEDIA_ROOT, 'error_logs', tenant_id_clean)
                     os.makedirs(tenant_dir, exist_ok=True)
                     file_path = os.path.join(tenant_dir, file_name)
-                                        
+                                            
                     with open(file_path, 'w', newline='') as f:
                         writer = csv.writer(f)
                         writer.writerow(['Row', 'Error', 'Row Data'])
@@ -268,9 +268,9 @@ def upload_file(request, tenant_id=None):
 
                     # Create error log using correct tenant_id (domain string)
                     print(f"DEBUG: Creating ErrorLog in {db_alias}: {file_name}")
-                    print(f"DEBUG: Tenant: {tenant} (ID: {tenant.id if tenant else None})")
+                    print(f"DEBUG: Tenant: {tenant.tenant_id if tenant else None} (ID: {tenant.id if tenant else None})")
                     ErrorLog.objects.using(db_alias).create(
-                        tenant=tenant,  # Pass the tenant object, not tenant.tenant_id
+                        tenant_id=tenant.tenant_id,  # Pass the tenant's domain string
                         file_name=file_name,
                         file_path=file_path,
                         upload_time=upload_time,
@@ -368,7 +368,7 @@ def upload_success(request, tenant_id=None):
         'last_record': success_data.get('last_record'),
         'file_type': success_data.get('file_type'),
         'tenant_id': tenant_id or getattr(request.tenant, 'tenant_id', None)
-    })   
+    }) 
 
 @login_required
 def upload_summary(request, tenant_id=None):
@@ -419,9 +419,9 @@ def error_logs_list(request, tenant_id=None):
     try:
         db_alias = tenant.db_alias if tenant else 'default'
         
-        # Query ErrorLogs from tenant database, but filter by tenant ID
+        # Query ErrorLogs from tenant database, but filter by tenant ID string
         logs = ErrorLog.objects.using(db_alias).filter(
-            tenant_id=tenant.id if tenant else None  # Use tenant.id for filtering
+            tenant_id=tenant.tenant_id if tenant else 'default'
         ).order_by('-upload_time')
             
         return render(request, 'data_management/error_logs_list.html', {
@@ -438,11 +438,10 @@ def download_log(request, log_id, tenant_id=None):
     tenant = getattr(request, 'tenant', None)
     try:
         db_alias = tenant.db_alias if tenant else 'default'
-        tenant_id_value = tenant.tenant_id if tenant else None  # Use tenant domain string
         
         log = ErrorLog.objects.using(db_alias).get(
             id=log_id,
-            tenant_id=tenant.id if tenant else None
+            tenant_id=tenant.tenant_id if tenant else 'default'
         )
         return FileResponse(open(log.file_path, 'rb'), as_attachment=True, filename=log.file_name)
         
@@ -455,13 +454,12 @@ def delete_log(request, log_id, tenant_id=None):
         tenant = getattr(request, 'tenant', None)
         try:
             db_alias = tenant.db_alias if tenant else 'default'
-            tenant_id_value = tenant.tenant_id if tenant else None  # Use tenant domain string
             
             log = ErrorLog.objects.using(db_alias).get(
                 id=log_id,
-                tenant_id=tenant.id if tenant else None
+                tenant_id=tenant.tenant_id if tenant else 'default'
             )
-                
+            
             if os.path.exists(log.file_path):
                 os.remove(log.file_path)
             log.delete(using=db_alias)
@@ -471,7 +469,6 @@ def delete_log(request, log_id, tenant_id=None):
             return HttpResponseForbidden("Access denied")
             
     return redirect('data_management:error_logs_list')
-
 
 
 @login_required
@@ -498,7 +495,7 @@ def bulk_delete_logs(request, tenant_id=None):
             # Get the logs to be deleted
             logs_to_delete = ErrorLog.objects.using(db_alias).filter(
                 id__in=log_ids,
-                tenant=tenant
+                tenant_id=tenant.tenant_id if tenant else 'default'
             )
             
             # Delete physical files and database records

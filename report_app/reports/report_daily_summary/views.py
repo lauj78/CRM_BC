@@ -8,8 +8,6 @@ from data_management.models import Transaction, Member
 from django.template.response import TemplateResponse
 
 @login_required
-# The function signature is modified to accept 'tenant_id'.
-# This is required because the parent view ('report_hub_view') will pass it.
 def report_daily_summary_view(request, tenant_id):
     """
     Generates a daily summary report for a specific tenant.
@@ -37,9 +35,16 @@ def report_daily_summary_view(request, tenant_id):
     current_date = start_date
     while current_date <= end_date:
         # These queries automatically use the correct tenant's database
-        # because the TenantMiddleware has already handled the connection.
         day_transactions = Transaction.objects.filter(process_date__date=current_date)
-
+        
+        # FIXED: Get new member usernames for the current date
+        new_member_usernames = set(
+            Member.objects.filter(join_date__date=current_date).values_list('username', flat=True)
+        )
+        
+        # Debug print (remove this in production)
+        # print(f"Date: {current_date}, New members: {new_member_usernames}")
+        
         # Section: Total Form Depo
         depo_trx = day_transactions.filter(event='Deposit').count()
         manual_trx = day_transactions.filter(event='Manual Deposit').count()
@@ -64,13 +69,60 @@ def report_daily_summary_view(request, tenant_id):
         active_players = day_transactions.filter(event__in=['Deposit', 'Manual Deposit']).values('username').distinct().count()
         
         # New Metrics
-        new_members = Member.objects.filter(join_date__date=current_date).count()  # Compare date only
-        new_member_usernames = Member.objects.filter(join_date__date=current_date).values('username')
-        new_member_deposited = day_transactions.filter(
+        new_members = len(new_member_usernames)
+        
+        new_member_deposited_count = day_transactions.filter(
             event__in=['Deposit', 'Manual Deposit'],
             username__in=new_member_usernames
-        ).distinct().count()
-        old_player = max(0, active_players - new_member_deposited)  # Avoid negative values
+        ).values('username').distinct().count()
+        
+        old_player = max(0, active_players - new_member_deposited_count)
+        
+        # FIXED: New Member Deposits and Withdrawals
+        new_member_depo_value = day_transactions.filter(
+            event='Deposit', 
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        new_member_manual_depo_value = day_transactions.filter(
+            event='Manual Deposit', 
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        new_member_wd_value = day_transactions.filter(
+            event='Withdraw', 
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        new_member_manual_wd_value = day_transactions.filter(
+            event='Manual Withdraw', 
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # FIXED: Old Member Deposits and Withdrawals (using exclude)
+        old_member_depo_value = day_transactions.filter(
+            event='Deposit'
+        ).exclude(
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        old_member_manual_depo_value = day_transactions.filter(
+            event='Manual Deposit'
+        ).exclude(
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        old_member_wd_value = day_transactions.filter(
+            event='Withdraw'
+        ).exclude(
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        old_member_manual_wd_value = day_transactions.filter(
+            event='Manual Withdraw'
+        ).exclude(
+            username__in=new_member_usernames
+        ).aggregate(total=Sum('amount'))['total'] or 0
 
         dashboard_data.append({
             'date': current_date,
@@ -89,8 +141,17 @@ def report_daily_summary_view(request, tenant_id):
             'total_wd_value': total_wd_value,
             'active_players': active_players,
             'new_member': new_members,
-            'new_member_deposited': new_member_deposited,
+            'new_member_deposited': new_member_deposited_count,
             'old_player': old_player,
+            # FIXED NEW METRICS
+            'new_member_depo_value': new_member_depo_value,
+            'new_member_manual_depo_value': new_member_manual_depo_value,
+            'new_member_wd_value': new_member_wd_value,
+            'new_member_manual_wd_value': new_member_manual_wd_value,
+            'old_member_depo_value': old_member_depo_value,
+            'old_member_manual_depo_value': old_member_manual_depo_value,
+            'old_member_wd_value': old_member_wd_value,
+            'old_member_manual_wd_value': old_member_manual_wd_value,
         })
         current_date += timedelta(days=1)
 

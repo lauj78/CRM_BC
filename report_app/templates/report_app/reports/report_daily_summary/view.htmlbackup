@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 
 {% block title %}Daily Summary Report{% endblock %}
 
@@ -142,8 +141,8 @@
     .data-table td {
         padding: 10px 8px;
         text-align: center;
-        border-bottom: 2px solid #cbd5e1; /* Made darker - was #f1f5f9 */
-        border-right: 1px solid #e2e8f0; /* Made darker - was #f1f5f9 */
+        border-bottom: 1px solid #f1f5f9;
+        border-right: 1px solid #f1f5f9;
         font-size: 13px;
         word-wrap: break-word;
         white-space: normal;
@@ -195,7 +194,7 @@
         position: sticky;
         left: 0;
         z-index: 10;
-        border-right: 2px solid #94a3b8 !important; /* Made darker - was #e2e8f0 */
+        border-right: 2px solid #e2e8f0 !important;
         min-width: 100px;
     }
 
@@ -206,7 +205,7 @@
         position: sticky;
         left: 100px;
         z-index: 10;
-        border-right: 2px solid #94a3b8 !important; /* Made darker - was #e2e8f0 */
+        border-right: 2px solid #e2e8f0 !important;
         min-width: 80px;
     }
 
@@ -341,31 +340,31 @@
                         <td class="count-section number-col count-col">{{ data.manual_trx }}</td>
                         <td class="count-section number-col count-col">{{ data.total_trx }}</td>
                         <!-- Deposit Values - DARK COLOR -->
-                        <td class="value-section number-col money-col">{{ data.depo_value|floatformat:2|intcomma }}</td>
-                        <td class="value-section number-col money-col">{{ data.manual_value|floatformat:2|intcomma }}</td>
-                        <td class="value-section number-col money-col">{{ data.total_value|floatformat:2|intcomma }}</td>
+                        <td class="value-section number-col money-col">{{ data.depo_value|floatformat:2 }}</td>
+                        <td class="value-section number-col money-col">{{ data.manual_value|floatformat:2 }}</td>
+                        <td class="value-section number-col money-col">{{ data.total_value|floatformat:2 }}</td>
                         <!-- Withdrawal Counts - LIGHT COLOR -->
                         <td class="count-section number-col count-col">{{ data.wd_trx }}</td>
                         <td class="count-section number-col count-col">{{ data.manual_wd_trx }}</td>
                         <td class="count-section number-col count-col">{{ data.total_wd }}</td>
                         <!-- Withdrawal Values - DARK COLOR -->
-                        <td class="value-section number-col money-col">{{ data.wd_value|floatformat:2|intcomma }}</td>
-                        <td class="value-section number-col money-col">{{ data.manual_wd_value|floatformat:2|intcomma }}</td>
-                        <td class="value-section number-col money-col">{{ data.total_wd_value|floatformat:2|intcomma }}</td>
+                        <td class="value-section number-col money-col">{{ data.wd_value|floatformat:2 }}</td>
+                        <td class="value-section number-col money-col">{{ data.manual_wd_value|floatformat:2 }}</td>
+                        <td class="value-section number-col money-col">{{ data.total_wd_value|floatformat:2 }}</td>
                         <!-- Player Activity - LIGHT COLOR -->
                         <td class="count-section number-col player-col">{{ data.active_players }}</td>
                         <td class="count-section number-col player-col">{{ data.new_member }}</td>
                         <td class="count-section number-col player-col">{{ data.new_member_deposited }}</td>
                         <td class="count-section number-col player-col">{{ data.old_player }}</td>
                         <!-- Member Breakdown - DARK COLOR -->
-                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_depo_value|floatformat:2|intcomma }}</td>
-                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_manual_depo_value|floatformat:2|intcomma }}</td>
-                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_wd_value|floatformat:2|intcomma }}</td>
-                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_manual_wd_value|floatformat:2|intcomma }}</td>
-                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_depo_value|floatformat:2|intcomma }}</td>
-                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_manual_depo_value|floatformat:2|intcomma }}</td>
-                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_wd_value|floatformat:2|intcomma }}</td>
-                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_manual_wd_value|floatformat:2|intcomma }}</td>
+                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_depo_value|floatformat:2 }}</td>
+                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_manual_depo_value|floatformat:2 }}</td>
+                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_wd_value|floatformat:2 }}</td>
+                        <td class="new-member-col value-section number-col money-col">{{ data.new_member_manual_wd_value|floatformat:2 }}</td>
+                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_depo_value|floatformat:2 }}</td>
+                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_manual_depo_value|floatformat:2 }}</td>
+                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_wd_value|floatformat:2 }}</td>
+                        <td class="old-member-col value-section number-col money-col">{{ data.old_member_manual_wd_value|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
