@@ -3,61 +3,247 @@
 {% block title %}User Phone Lookup Report{% endblock %}
 
 {% block content %}
-<div class="report-block" style="display: flex; justify-content: space-between;">
-  <div style="width: 30%; padding-right: 10px;">
-    <p>We can only handle 2000 usernames per request.</p>
-    <form method="post" action="">
-      {% csrf_token %}
-      <textarea name="usernames" rows="20" style="width: 100%; resize: vertical; padding: 5px;" placeholder="Enter usernames, one per line..."></textarea>
-      <br><br>
-      <button type="submit">Lookup</button>
-    </form>
-    {% if error_message %}
-      <p style="color: red;">{{ error_message }}</p>
-    {% endif %}
-  </div>
-  <div style="width: 70%;">
-    {% if results %}
-      <form method="post" action="">
-        {% csrf_token %}
-        <input type="hidden" name="usernames" value="{{ request.POST.usernames|default:''|escape }}">
-        <input type="hidden" name="_export" value="csv">
-        <button type="submit">Download CSV</button>
-      </form>
-      <br>
-    {% endif %}
-    <table border="1" style="table-layout: auto; width: 100%; border-collapse: collapse;">
-      <thead>
-        <tr>
-          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Username</th>
-          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Name</th>
-          <th style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Handphone</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for result in results %}
-        <tr>
-          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.username }}</td>
-          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.name }}</td>
-          <td style="word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ result.handphone }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% if csv_data %}
-      <script>
-        // JavaScript to trigger CSV download
-        const csvData = "{{ csv_data|escapejs }}";
-        const filename = "{{ filename|escapejs }}";
-        const blob = new Blob([csvData], { type: 'text/csv' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      </script>
-    {% endif %}
-  </div>
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        margin: 0;
+    }
+
+    .report-block {
+        display: flex;
+        gap: 30px;
+    }
+
+    .form-section {
+        flex: 1;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .form-section p {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
+    .form-section textarea {
+        width: 100%;
+        min-height: 300px;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 14px;
+        resize: vertical;
+        transition: all 0.2s;
+    }
+
+    .form-section textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .apply-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 20px;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .result-section {
+        flex: 2;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .result-header h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .download-btn {
+        padding: 10px 20px;
+        background: #1e293b;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+        background: #334155;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 15px 12px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: normal;
+        border-right: 1px solid #475569;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 2px solid #cbd5e1;
+        border-right: 1px solid #e2e8f0;
+        font-size: 13px;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    
+    .data-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+    
+    .username-col {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .error-message {
+        color: #dc2626;
+        background: #fef2f2;
+        padding: 15px;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .report-block {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📞 User Phone Lookup Report</h1>
+        <p>Search for user information by username.</p>
+    </div>
+
+    <div class="report-block">
+        <div class="form-section">
+            <p>We can only handle 2000 usernames per request. Enter usernames below, one per line.</p>
+            <form method="post" action="">
+                {% csrf_token %}
+                <textarea name="usernames" placeholder="Enter usernames, one per line...">{{ request.POST.usernames|default:'' }}</textarea>
+                <button type="submit" class="apply-btn">🔍 Lookup</button>
+            </form>
+            {% if error_message %}
+                <p class="error-message">{{ error_message }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="result-section">
+            <div class="result-header">
+                <h2>Search Results</h2>
+                {% if results %}
+                <form method="post" action="" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="usernames" value="{{ request.POST.usernames|default:''|escape }}">
+                    <input type="hidden" name="_export" value="csv">
+                    <button type="submit" class="download-btn">Download CSV</button>
+                </form>
+                {% endif %}
+            </div>
+
+            {% if results %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Username</th>
+                            <th>Name</th>
+                            <th>Handphone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td class="username-col">{{ result.username }}</td>
+                            <td>{{ result.name }}</td>
+                            <td>{{ result.handphone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: #64748b; padding: 40px;">Enter usernames in the box to begin your search.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

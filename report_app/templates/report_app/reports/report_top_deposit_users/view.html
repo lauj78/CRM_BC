@@ -1,72 +1,343 @@
 {% extends "base.html" %}
+{% load humanize %}
 
-{% block title %}Report Top Deposit Users{% endblock %}
+{% block title %}Top Deposit User Report{% endblock %}
 
 {% block content %}
-<div class="report-block">
-    <form method="get" action="">
-        <!-- Hidden input to preserve the report parameter -->
-        <input type="hidden" name="report" value="Top Deposit Users">
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ start_date|default:start_date_default|date:'Y-m-d' }}" required>
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ end_date|default:end_date_default|date:'Y-m-d' }}" required>
-        <label for="top_n">Top N Users:</label>
-        <input type="number" id="top_n" name="top_n" value="{{ top_n|default:'100' }}" min="1" required>
-        <button type="submit">Apply Filters</button>
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        margin: 0;
+    }
+
+    .filter-form {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 20px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #475569;
+    }
+
+    .form-group input, .form-group select {
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .apply-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .summary-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .summary-text {
+        font-size: 1.1rem;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .summary-text strong {
+        font-size: 1.4rem;
+        color: #1e293b;
+        font-weight: 700;
+    }
+
+    .section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 5px 0;
+    }
+
+    .section-subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        background: white;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        table-layout: fixed; /* Ensures column widths are respected */
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 15px 8px; /* Adjusted padding for tighter fit */
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: normal;
+        border-right: 1px solid #475569;
+        vertical-align: middle;
+        word-wrap: break-word;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 2px solid #cbd5e1;
+        border-right: 1px solid #e2e8f0;
+        font-size: 13px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .number-col {
+        text-align: right !important;
+        font-weight: 600;
+    }
+
+    .username-col {
+        text-align: left !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .date-col, .days-col {
+        font-weight: 500;
+        color: #475569;
+    }
+    
+    .winlose-col {
+        font-weight: 600;
+    }
+
+    .winlose-positive {
+        color: #16a34a; /* Green for positive winlose */
+    }
+
+    .winlose-negative {
+        color: #dc2626; /* Red for negative winlose */
+    }
+
+
+    .export-section {
+        margin: 30px 0;
+        text-align: center;
+    }
+
+    .export-form {
+        display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 10px;
+        }
+        
+        .report-header h1 {
+            font-size: 2rem;
+        }
+        
+        .filter-form {
+            padding: 20px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-group {
+            min-width: auto;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>🥇 Top Deposit Users Report</h1>
+        <p>This report shows the top users by deposit amount within a selected time frame.</p>
+    </div>
+
+    <form class="filter-form" method="get" action="">
+        <input type="hidden" name="report" value="Top Deposit User Report">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" 
+                   value="{{ start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" 
+                   value="{{ end_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="top_n">Top N Users</label>
+            <input type="number" id="top_n" name="top_n" value="{{ top_n|default:'50' }}" min="1">
+        </div>
+        <button type="submit" class="apply-btn">🔍 Apply Filters</button>
     </form>
-    <h4>Report Top Deposit Users</h4>
-    <p>Date range: {{ start_date }} to {{ end_date }}</p>
-    <table border="1" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Username</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Deposits</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Deposit Frequency</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Average Deposit</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Largest Deposit Value</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Deposits</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Deposit Frequency</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Withdrawals</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Withdrawal Frequency</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Total Manual Withdrawals</th>
-                <th style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">Last Login Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in report_top_deposit_users %}
-            <tr>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.username }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_deposits|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.deposit_frequency }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.average_deposit|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.largest_deposit|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_manual_deposits|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.manual_deposit_freq }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_withdrawals|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.withdrawal_freq }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.total_manual_withdrawals|floatformat:2 }}</td>
-                <td style="width: 14ch; max-width: 14ch; word-wrap: break-word; white-space: normal; text-align: center; padding: 2px;">{{ user.last_login|date:'Y-m-d' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if not report_top_deposit_users %}
-        <p>No top deposit users found in the selected range.</p>
-    {% endif %}
-    <form method="post" action="">
-        {% csrf_token %}
-        <input type="hidden" name="start_date" value="{{ start_date }}">
-        <input type="hidden" name="end_date" value="{{ end_date }}">
-        <input type="hidden" name="top_n" value="{{ top_n }}">
-        <input type="hidden" name="_export" value="csv">
-        <p>
-        </p>
-        <button type="submit" class="btn">Download CSV</button>
-    </form>
+
+    <div class="summary-section">
+        <div class="summary-text">
+            Total Users Displayed: <strong>{{ report_top_deposit_users|length|default:0|intcomma }}</strong>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Top Deposit Users</div>
+            <div class="section-subtitle">Data for {{ start_date }} to {{ end_date }}</div>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Username</th>
+                        <th style="width: 100px;">Total Deposits</th>
+                        <th style="width: 100px;">Total Manual Deposits</th>
+                        <th style="width: 100px;">Total Withdrawals</th>
+                        <th style="width: 100px;">Total Manual Withdrawals</th>
+                        <th style="width: 100px;">Player WINLOSE</th>
+                        <th style="width: 80px;">Days Inactive</th>
+                        <th style="width: 100px;">Last Activity</th>
+                        <th style="width: 80px;">Deposit Freq</th>
+                        <th style="width: 100px;">Avg Deposit</th>
+                        <th style="width: 100px;">Largest Deposit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in report_top_deposit_users %}
+                    <tr>
+                        <td class="username-col">{{ user.username }}</td>
+                        <td class="number-col">{{ user.total_deposits|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.total_manual_deposits|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.total_withdrawals|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.total_manual_withdrawals|floatformat:2|intcomma }}</td>
+                        <td class="winlose-col {% if user.player_winlose > 0 %}winlose-positive{% else %}winlose-negative{% endif %}">
+                            {{ user.player_winlose|floatformat:2|intcomma }}
+                        </td>
+                        <td class="days-col">{{ user.inactive_days }}</td>
+                        <td class="date-col">{{ user.last_activity|date:"M d, Y" }}</td>
+                        <td>{{ user.deposit_frequency|intcomma }}</td>
+                        <td class="number-col">{{ user.average_deposit|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.largest_deposit|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
+                            No top deposit users found in the selected range.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <form method="post" action="" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            <input type="hidden" name="top_n" value="{{ top_n }}">
+            <input type="hidden" name="_export" value="csv">
+            <button type="submit" class="apply-btn">📥 Download CSV</button>
+        </form>
+    </div>
+
     {% if csv_data %}
         <script>
-            // Trigger download of CSV data
             const csvData = "{{ csv_data|escapejs }}";
             const filename = "{{ filename|escapejs }}";
             const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });

@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}User Engagement Report{% endblock %}
+
+{% block content %}
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        margin: 0;
+    }
+
+    .report-header p {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #e2e8f0;
+    }
+    
+    .report-header .date-range {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #cbd5e1;
+    }
+
+    .filter-form {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 20px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #475569;
+    }
+
+    .form-group input {
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .apply-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .summary-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .summary-text {
+        font-size: 1.1rem;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .summary-text strong {
+        font-size: 1.4rem;
+        color: #1e293b;
+        font-weight: 700;
+    }
+    
+    .summary-info {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-left: 10px;
+    }
+    
+    .pagination-info {
+        background: #f8fafc;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #64748b;
+        text-align: left;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .pagination-info p {
+        margin: 0;
+    }
+
+    .section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 5px 0;
+    }
+
+    .section-subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        background: white;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        table-layout: fixed;
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 15px 12px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: normal;
+        border-right: 1px solid #475569;
+        vertical-align: middle;
+        word-wrap: break-word;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 2px solid #cbd5e1;
+        border-right: 1px solid #e2e8f0;
+        font-size: 13px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .number-col {
+        text-align: right !important;
+        font-weight: 600;
+    }
+
+    .username-col {
+        text-align: left !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .date-col {
+        font-weight: 500;
+        color: #475569;
+    }
+
+    .days-col {
+        font-weight: 600;
+        color: #dc2626;
+    }
+
+    .export-section {
+        margin: 30px 0;
+        text-align: center;
+    }
+
+    .export-form {
+        display: inline-block;
+    }
+
+    .pagination-container {
+        margin: 30px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-btn {
+        padding: 10px 15px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #475569;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .page-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e293b;
+        text-decoration: none;
+    }
+
+    .page-btn.current {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        font-weight: 600;
+    }
+
+    .page-dots {
+        padding: 10px 5px;
+        color: #94a3b8;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .page-jump {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .page-jump label {
+        font-weight: 500;
+        color: #475569;
+    }
+
+    .page-jump input {
+        width: 60px;
+        padding: 8px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    .apply-btn.small {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 10px;
+        }
+        
+        .report-header h1 {
+            font-size: 2rem;
+        }
+        
+        .filter-form {
+            padding: 20px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-group {
+            min-width: auto;
+        }
+
+        .pagination {
+            gap: 3px;
+        }
+        
+        .page-btn {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .count-number {
+            font-size: 2.5rem;
+        }
+        
+        .pagination-controls {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📈 User Engagement Report</h1>
+        <p>User activity and transaction history within the selected date range</p>
+        <p class="date-range">Report Period: <strong>{{ start_date }}</strong> to <strong>{{ end_date }}</strong></p>
+    </div>
+
+    <form class="filter-form" method="get" action="">
+        <input type="hidden" name="report" value="User Engagement Report">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" 
+                   value="{{ start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" 
+                   value="{{ end_date }}" required>
+        </div>
+        <button type="submit" class="apply-btn">🔍 Apply Filters</button>
+    </form>
+
+    <div class="summary-section">
+        <div class="summary-text">
+            Total Active Users: <strong>{{ total_users_count|default:0|intcomma }}</strong>
+        </div>
+        {% if user_engagement_data.has_other_pages %}
+        <div class="summary-info">
+            Showing {{ user_engagement_data.start_index|intcomma }} - {{ user_engagement_data.end_index|intcomma }} of {{ total_users_count|intcomma }} users (Page {{ user_engagement_data.number }} of {{ user_engagement_data.paginator.num_pages }})
+        </div>
+        {% elif total_users_count > 0 %}
+        <div class="summary-info">
+            Showing all {{ total_users_count|intcomma }} users
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">User Engagement Report</div>
+            <div class="section-subtitle">Detailed breakdown of user activity and transaction history</div>
+            <div class="section-subtitle">Report period: <strong>{{ start_date }}</strong> to <strong>{{ end_date }}</strong> </div>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Username</th>
+                        <th style="width: 10%;">Sum of Deposit</th>
+                        <th style="width: 10%;">Sum of Manual Deposit</th>
+                        <th style="width: 12%;">Total Deposits</th>
+                        <th style="width: 10%;">Sum of Withdraw</th>
+                        <th style="width: 10%;">Sum of Manual Withdraw</th>
+                        <th style="width: 12%;">Total Withdrawals</th>
+                        <th style="width: 12%;">Last Activity</th>
+                        <th style="width: 12%;">Days Since Last Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in user_engagement_data %}
+                    <tr>
+                        <td class="username-col">{{ user.username }}</td>
+                        <td class="number-col">{{ user.sum_deposit|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.sum_manual_deposit|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.total_deposits|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.sum_withdraw|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.sum_manual_withdraw|floatformat:2|intcomma }}</td>
+                        <td class="number-col">{{ user.total_withdrawals|floatformat:2|intcomma }}</td>
+                        <td class="date-col">{{ user.last_activity|date:"M d, Y" }}</td>
+                        <td class="days-col">{{ user.days_since_last_activity }} days</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
+                            No user activity found in the selected date range.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if user_engagement_data.has_other_pages %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if user_engagement_data.has_previous %}
+                <a href="?page=1&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                    &laquo; First
+                </a>
+                <a href="?page={{ user_engagement_data.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                    &lsaquo; Previous
+                </a>
+            {% endif %}
+
+            {% for page_num in user_engagement_data.paginator.page_range %}
+                {% if page_num == user_engagement_data.number %}
+                    <span class="page-btn current">{{ page_num }}</span>
+                {% elif page_num > user_engagement_data.number|add:'-3' and page_num < user_engagement_data.number|add:'3' %}
+                    <a href="?page={{ page_num }}&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                        {{ page_num }}
+                    </a>
+                {% elif page_num == 1 or page_num == user_engagement_data.paginator.num_pages %}
+                    <a href="?page={{ page_num }}&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                        {{ page_num }}
+                    </a>
+                {% elif page_num == user_engagement_data.number|add:'-4' or page_num == user_engagement_data.number|add:'4' %}
+                    <span class="page-dots">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if user_engagement_data.has_next %}
+                <a href="?page={{ user_engagement_data.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                    Next &rsaquo;
+                </a>
+                <a href="?page={{ user_engagement_data.paginator.num_pages }}&start_date={{ start_date }}&end_date={{ end_date }}&report=User%20Engagement%20Report" class="page-btn">
+                    Last &raquo;
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="pagination-controls">
+            <div class="page-jump">
+                <form method="get" style="display: flex; gap: 10px; align-items: center;">
+                    <input type="hidden" name="start_date" value="{{ start_date }}">
+                    <input type="hidden" name="end_date" value="{{ end_date }}">
+                    <input type="hidden" name="report" value="User Engagement Report">
+                    <label for="page-input">Go to page:</label>
+                    <input type="number" name="page" id="page-input" min="1" max="{{ user_engagement_data.paginator.num_pages }}" placeholder="{{ user_engagement_data.number }}">
+                    <button type="submit" class="apply-btn small">Go</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="export-section">
+        <form method="post" action="" class="export-form">
+            {% csrf_token %}
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            <input type="hidden" name="_export" value="csv">
+            <button type="submit" class="apply-btn">📥 Download All Data as CSV</button>
+        </form>
+        <p style="margin-top: 10px; color: #64748b; font-size: 0.9rem;">
+            * CSV export includes all {{ total_users_count|default:0|intcomma }} records, not just the current page
+        </p>
+    </div>
+
+    {% if csv_data %}
+        <script>
+            const csvData = "{{ csv_data|escapejs }}";
+            const filename = "{{ filename|escapejs }}";
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

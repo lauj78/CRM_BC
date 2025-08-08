@@ -19,7 +19,7 @@ def report_daily_summary_view(request, tenant_id):
     end_date = request.GET.get('end_date')
 
     # Default dates for the filter form as date objects
-    start_date_default = today - timedelta(days=30)
+    start_date_default = today - timedelta(days=15)
     end_date_default = today
 
     # Use GET parameters if provided, otherwise use defaults

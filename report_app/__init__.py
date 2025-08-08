@@ -10,11 +10,11 @@ REPORTS = [
         'params': ['start_date', 'end_date']
     },
     {
-        'name': 'Inactive User Report',
+        'name': 'User Engagement Report',
         'category': 'Retention Management',
-        'view': 'report_app.reports.report_inactive_users.views',
-        'function_name': 'report_inactive_users_view',
-        'template': 'report_app/reports/report_inactive_users/view.html',
+        'view': 'report_app.reports.report_user_engagement.views',
+        'function_name': 'report_user_engagement_view',
+        'template': 'report_app/reports/report_user_engagement/view.html',
         #'access': ['admin', 'op'],
         'params': ['start_date', 'end_date']
     },
