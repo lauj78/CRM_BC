@@ -38,7 +38,7 @@ REPORTS = [
     },
     {
         'name': 'Member and Transaction Count',
-        'category': 'Member Management',
+        'category': 'Data Management',
         'view': 'report_app.reports.report_dummy_test.views',
         'function_name': 'member_transaction_count_view',
         'template': 'report_app/reports/report_dummy_test/view.html',
@@ -53,4 +53,15 @@ REPORTS = [
         #'access': ['admin', 'op'],
         'params': []  # No parameters required
     },
+    
+    {
+        'name': 'Duplicate Phone Numbers',
+        'category': 'Member Management',
+        'view': 'report_app.reports.report_duplicated_phone_number.views',
+        'function_name': 'report_duplicated_phone_number_view',
+        'template': 'report_app/reports/report_duplicated_phone_number/view.html',
+        # 'access': ['admin', 'op'],
+        'params': ['phone_number', 'start_date', 'end_date']
+    },
+    
 ]

@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Duplicate Phone Numbers{% endblock %}
+
+{% block content %}
+<style>
+    /* Reusing styles from previous reports for consistency */
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        margin: 0;
+    }
+
+    .report-header p {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #e2e8f0;
+    }
+    
+    .filter-form {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 20px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #475569;
+    }
+
+    .form-group input {
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .apply-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .summary-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .summary-text {
+        font-size: 1.1rem;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .summary-text strong {
+        font-size: 1.4rem;
+        color: #1e293b;
+        font-weight: 700;
+    }
+    
+    .summary-info {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-left: auto;
+    }
+    
+    .pagination-info {
+        background: #f8fafc;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #64748b;
+        text-align: left;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .pagination-info p {
+        margin: 0;
+    }
+
+    .section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 5px 0;
+    }
+
+    .section-subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        background: white;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 15px 12px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: normal;
+        border-right: 1px solid #475569;
+        vertical-align: middle;
+        word-wrap: break-word;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 2px solid #cbd5e1;
+        border-right: 1px solid #e2e8f0;
+        font-size: 13px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .username-col {
+        text-align: left !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .user-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;
+    }
+    .user-list li {
+        padding: 5px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .user-list li:last-child {
+        border-bottom: none;
+    }
+    .user-list .username {
+        font-weight: 600;
+    }
+
+    .export-section {
+        margin: 30px 0;
+        text-align: center;
+    }
+
+    .export-form {
+        display: inline-block;
+    }
+
+    .pagination-container {
+        margin: 30px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-btn {
+        padding: 10px 15px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #475569;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .page-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e293b;
+        text-decoration: none;
+    }
+
+    .page-btn.current {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        font-weight: 600;
+    }
+
+    .page-dots {
+        padding: 10px 5px;
+        color: #94a3b8;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .page-jump {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .page-jump label {
+        font-weight: 500;
+        color: #475569;
+    }
+
+    .page-jump input {
+        width: 60px;
+        padding: 8px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    .apply-btn.small {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 10px;
+        }
+        
+        .report-header h1 {
+            font-size: 2rem;
+        }
+        
+        .filter-form {
+            padding: 20px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-group {
+            min-width: auto;
+        }
+
+        .pagination {
+            gap: 3px;
+        }
+        
+        .page-btn {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .count-number {
+            font-size: 2.5rem;
+        }
+        
+        .pagination-controls {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    
+    .filter-options {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #475569;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .filter-options input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📱 Duplicate Phone Numbers</h1>
+        <p>Identify multiple user accounts registered with the same phone number.</p>
+    </div>
+
+    <form class="filter-form" method="get" action="">
+        <input type="hidden" name="report" value="Duplicate Phone Numbers">
+        <div class="form-group">
+            <label for="phone_number">Search Specific Phone Number (Optional)</label>
+            <input type="text" id="phone_number" name="phone_number" 
+                   value="{{ phone_number_query }}" placeholder="e.g., 0123456789">
+        </div>
+        <div class="form-group date-input">
+            <label for="start_date">User Join Start Date</label>
+            <input type="date" id="start_date" name="start_date" 
+                   value="{{ start_date }}" {% if search_all %}disabled{% endif %}>
+        </div>
+        <div class="form-group date-input">
+            <label for="end_date">User Join End Date</label>
+            <input type="date" id="end_date" name="end_date" 
+                   value="{{ end_date }}" {% if search_all %}disabled{% endif %}>
+        </div>
+        <div class="form-group" style="align-self: flex-end;">
+            <div class="filter-options">
+                <input type="checkbox" id="search_all_checkbox" name="search_all" value="true"
+                       {% if search_all %}checked{% endif %}>
+                <label for="search_all_checkbox">Search All Users</label>
+            </div>
+        </div>
+        <button type="submit" class="apply-btn">🔍 Find Duplicates</button>
+    </form>
+
+    <div class="summary-section">
+        <div class="summary-text">
+            {% if search_all %}
+                Searching all users in the database.
+            {% elif start_date and end_date %}
+                Showing users who joined from <strong>{{ start_date }}</strong> to <strong>{{ end_date }}</strong>.
+            {% endif %}
+            
+            {% if phone_number_query %}
+                {% if page_obj.object_list %}
+                    <br>Found <strong>{{ page_obj.paginator.count }}</strong> phone number with multiple users for "<strong>{{ phone_number_query }}</strong>".
+                {% else %}
+                    <br>No duplicate users found for phone number: "<strong>{{ phone_number_query }}</strong>".
+                {% endif %}
+            {% else %}
+                <br>Total Duplicate Phone Groups: <strong>{{ page_obj.paginator.count|default:0|intcomma }}</strong>
+            {% endif %}
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="summary-info">
+            Showing {{ page_obj.start_index|intcomma }} - {{ page_obj.end_index|intcomma }} of {{ page_obj.paginator.count|intcomma }} groups (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
+        </div>
+        {% elif page_obj.paginator.count > 0 %}
+        <div class="summary-info">
+            Showing all {{ page_obj.paginator.count|intcomma }} groups
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Duplicate Phone Number Details</div>
+            <div class="section-subtitle">List of phone numbers and their associated user accounts.</div>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Phone Number</th>
+                        <th style="width: 80%;">Associated Users (Username, Name, Join Date, Email, Referral)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td><strong>{{ item.handphone }}</strong> ({{ item.user_count }} users)</td>
+                        <td>
+                            <ul class="user-list">
+                                {% for user in item.users %}
+                                    <li>
+                                        <span class="username">{{ user.username }}</span> - {{ user.name }} 
+                                        (Joined: {{ user.join_date|date:"M d, Y" }})
+                                        {% if user.email %}<br>Email: {{ user.email }}{% endif %}
+                                        {% if user.referral %}<br>Referral: {{ user.referral }}{% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
+                            {% if phone_number_query %}
+                                No duplicate users found for phone number "<strong>{{ phone_number_query }}</strong>" in the selected date range.
+                            {% else %}
+                                No duplicate phone numbers found{% if not search_all %} for users joined between {{ start_date }} and {{ end_date }}{% endif %}.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">&lsaquo; Previous</a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-btn current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">{{ num }}</a>
+                    {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                        <a href="?page={{ num }}&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">{{ num }}</a>
+                    {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
+                        <span class="page-dots">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">Next &rsaquo;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&report=Duplicate%20Phone%20Numbers{% if phone_number_query %}&phone_number={{ phone_number_query }}{% endif %}{% if search_all %}&search_all=true{% else %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="page-btn">Last &raquo;</a>
+                {% endif %}
+            </div>
+            
+            <div class="pagination-controls">
+                <div class="page-jump">
+                    <form method="get" style="display: flex; gap: 10px; align-items: center;">
+                        <input type="hidden" name="report" value="Duplicate Phone Numbers">
+                        {% if phone_number_query %}<input type="hidden" name="phone_number" value="{{ phone_number_query }}">{% endif %}
+                        {% if search_all %}<input type="hidden" name="search_all" value="true">{% else %}<input type="hidden" name="start_date" value="{{ start_date }}"><input type="hidden" name="end_date" value="{{ end_date }}">{% endif %}
+                        <label for="page-input">Go to page:</label>
+                        <input type="number" name="page" id="page-input" min="1" max="{{ page_obj.paginator.num_pages }}" placeholder="{{ page_obj.number }}">
+                        <button type="submit" class="apply-btn small">Go</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="export-section">
+        <form method="post" action="" class="export-form">
+            {% csrf_token %}
+            {% if phone_number_query %}<input type="hidden" name="phone_number" value="{{ phone_number_query }}">{% endif %}
+            {% if search_all %}<input type="hidden" name="search_all" value="true">{% else %}<input type="hidden" name="start_date" value="{{ start_date }}"><input type="hidden" name="end_date" value="{{ end_date }}">{% endif %}
+            <input type="hidden" name="_export" value="csv">
+            <button type="submit" class="apply-btn">📥 Download All Duplicates as CSV</button>
+        </form>
+        <p style="margin-top: 10px; color: #64748b; font-size: 0.9rem;">
+            * CSV export includes all duplicate phone number groups, not just the current page.
+        </p>
+    </div>
+
+    {% if csv_data %}
+        <script>
+            const csvData = "{{ csv_data|escapejs }}";
+            const filename = "{{ filename|escapejs }}";
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        </script>
+    {% endif %}
+    
+    <script>
+        const searchAllCheckbox = document.getElementById('search_all_checkbox');
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        function toggleDateInputs() {
+            const isDisabled = searchAllCheckbox.checked;
+            startDateInput.disabled = isDisabled;
+            endDateInput.disabled = isDisabled;
+            // Clear values when disabled to prevent them from being sent
+            if (isDisabled) {
+                startDateInput.value = '';
+                endDateInput.value = '';
+            }
+        }
+
+        searchAllCheckbox.addEventListener('change', toggleDateInputs);
+        
+        // Initial state check on page load
+        document.addEventListener('DOMContentLoaded', toggleDateInputs);
+    </script>
+</div>
+{% endblock %}
