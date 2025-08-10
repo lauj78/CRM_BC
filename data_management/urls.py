@@ -5,7 +5,7 @@ app_name = 'data_management'
 
 urlpatterns = [
     path('upload/', views.upload_file, name='upload_file'),
-    path('upload/success/', views.upload_success, name='upload_success'),
+    #path('upload/success/', views.upload_success, name='upload_success'),
     path('upload/summary/', views.upload_summary, name='upload_summary'),
     path('download/errors/', views.download_errors, name='download_errors'),
     path('error-logs/', views.error_logs_list, name='error_logs_list'),

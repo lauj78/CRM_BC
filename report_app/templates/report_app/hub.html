@@ -1,21 +1,133 @@
 {% extends 'base.html' %}
 {% block title %}Report Hub{% endblock %}
+
 {% block content %}
-  <h2>Report Hub</h2>
-  <ul>
-    {% for report in reports %}
-      <li>{{ report.category }} - <a href="?report={{ report.name }}">{{ report.name }}</a></li>
-    {% empty %}
-      <li>No reports available for your role.</li>
-    {% endfor %}
-  </ul>
-  {% if request.GET.report %}
-    {% for report in reports %}
-      {% if report.name == request.GET.report %}
-        {% with selected_report=report %}
-          {% include selected_report.template with members=selected_report.members start_date=selected_report.start_date end_date=selected_report.end_date start_date_default=selected_report.start_date_default end_date_default=selected_report.end_date_default %}
-        {% endwith %}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
+<style>
+    body {
+        background-color: #f0f4f8;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .hub-container {
+        max-width: 100%; /* Make it take full width */
+        margin-left: 40px; /* Keep left margin consistent with the header */
+        padding: 20px;
+        padding-right: 40px; /* Make right padding same as left */
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .hub-header {
+        text-align: left;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .hub-header h1 {
+        font-size: 2.5rem;
+        color: #1a202c;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .hub-header p {
+        font-size: 1.1rem;
+        color: #4a5568;
+        margin-top: 5px;
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 1rem;
+    }
+
+    .report-table th, .report-table td {
+        padding: 12px 15px; /* Slightly reduced horizontal padding */
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .report-table th {
+        background-color: #f8fafc;
+        color: #4a5568;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .report-table thead th:first-child {
+        border-top-left-radius: 8px;
+    }
+
+    .report-table thead th:last-child {
+        border-top-right-radius: 8px;
+    }
+
+    .report-table tbody tr:hover {
+        background-color: #f0f4f8;
+        cursor: pointer;
+    }
+
+    .report-table a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .report-table a:hover {
+        color: #434190;
+    }
+
+    .category-cell {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+
+    .report-name-cell {
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .report-description-cell {
+        color: #718096;
+        font-size: 0.95rem;
+    }
+</style>
+
+<div class="hub-container">
+    <div class="hub-header">
+        <h1>📊 Report Hub</h1>
+        <p>Select a report to view details and insights about your data.</p>
+    </div>
+
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Report Name</th>
+                <th style="width: 20%;">Category</th>
+                <th style="width: 55%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+                <tr>
+                    <td class="report-name-cell">
+                        <a href="?report={{ report.name }}">{{ report.name }}</a>
+                    </td>
+                    <td class="category-cell">{{ report.category }}</td>
+                    <td class="report-description-cell">
+                        {{ report.description }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

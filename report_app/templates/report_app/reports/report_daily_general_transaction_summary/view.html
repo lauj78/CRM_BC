@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Daily General Transaction Summary{% endblock %}
+
+{% block content %}
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        margin: 0;
+    }
+
+    .filter-form {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 20px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #475569;
+    }
+
+    .form-group input {
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .apply-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 5px 0;
+    }
+
+    .section-subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        background: white;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 15px 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: normal;
+        border-right: 1px solid #475569;
+        vertical-align: middle;
+        word-wrap: break-word;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 10px 8px;
+        text-align: center;
+        border-bottom: 2px solid #cbd5e1;
+        border-right: 1px solid #e2e8f0;
+        font-size: 13px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .number-col {
+        text-align: right !important;
+    }
+
+    .date-col {
+        font-weight: 600;
+        color: #1e293b;
+        background-color: #f8fafc !important;
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        border-right: 2px solid #94a3b8 !important;
+        min-width: 100px;
+    }
+
+    .day-col {
+        font-weight: 500;
+        color: #64748b;
+        background-color: #f8fafc !important;
+        position: sticky;
+        left: 100px;
+        z-index: 10;
+        border-right: 2px solid #94a3b8 !important;
+        min-width: 80px;
+    }
+
+    /* Group header styling */
+    .group-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        border-bottom: 1px solid #475569 !important;
+    }
+
+    /* Different color schemes for different metric groups */
+    .frequency-section {
+        background-color: #ecfdf5 !important;
+        color: #047857;
+        font-weight: 600;
+    }
+
+    .age-section {
+        background-color: #fef3c7 !important;
+        color: #d97706;
+        font-weight: 600;
+    }
+
+    .summary-section {
+        background-color: #f0f9ff !important;
+        color: #0369a1;
+        font-weight: 600;
+    }
+
+    /* Percentage styling */
+    .percentage {
+        font-size: 0.85rem;
+        color: #64748b;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .count-with-percent {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 10px;
+        }
+        
+        .report-header h1 {
+            font-size: 2rem;
+        }
+        
+        .filter-form {
+            padding: 20px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-group {
+            min-width: auto;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📊 Daily General Transaction Summary</h1>
+        <p>Comprehensive analysis of deposit frequency, user segmentation, and transaction metrics</p>
+    </div>
+
+    <form class="filter-form" method="get" action="">
+        <input type="hidden" name="report" value="Daily General Transaction Summary">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" 
+                   value="{{ start_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" 
+                   value="{{ end_date }}" required>
+        </div>
+        <button type="submit" class="apply-btn">📈 Generate Report</button>
+    </form>
+
+    <!-- Main Report Section -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Daily Transaction Analysis</div>
+            <div class="section-subtitle">Detailed breakdown of deposit patterns, user age distribution, and transaction metrics</div>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Date</th>
+                        <th rowspan="2">Day</th>
+                        <th rowspan="2">Total<br>Depositors</th>
+                        <th colspan="6" class="group-header">💰 Deposit Frequency</th>
+                        <th colspan="8" class="group-header">👥 Depositor Age Segmentation</th>
+                        <th colspan="2" class="group-header">📊 Summary Metrics</th>
+                    </tr>
+                    <tr>
+                        <!-- Deposit Frequency Headers -->
+                        <th>1 Time</th>
+                        <th>2 Times</th>
+                        <th>3 Times</th>
+                        <th>4 Times</th>
+                        <th>5-9 Times</th>
+                        <th>10+ Times</th>
+                        <!-- Age Segmentation Headers -->
+                        <th>Day 0</th>
+                        <th>1-7 Days</th>
+                        <th>8-14 Days</th>
+                        <th>15-30 Days</th>
+                        <th>31-60 Days</th>
+                        <th>61-90 Days</th>
+                        <th>91-180 Days</th>
+                        <th>180+ Days</th>
+                        <!-- Summary Metrics -->
+                        <th>Avg Deposit</th>
+                        <th>WD/Depo Ratio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in members %}
+                    <tr>
+                        <!-- Date & Day -->
+                        <td class="date-col">{{ data.date|date:"M d, Y" }}</td>
+                        <td class="day-col">{{ data.day }}</td>
+                        
+                        <!-- Total Depositors -->
+                        <td class="summary-section number-col">{{ data.total_unique_depositors }}</td>
+                        
+                        <!-- Deposit Frequency Section -->
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.1_time.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.1_time.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.2_times.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.2_times.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.3_times.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.3_times.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.4_times.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.4_times.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.5_9_times.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.5_9_times.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="frequency-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.deposit_frequency.10_plus_times.count|default:0 }}</span>
+                                <span class="percentage">({{ data.deposit_frequency.10_plus_times.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Age Segmentation Section -->
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_0.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_0.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_1_7.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_1_7.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_8_14.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_8_14.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_15_30.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_15_30.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_31_60.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_31_60.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_61_90.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_61_90.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_91_180.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_91_180.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        <td class="age-section">
+                            <div class="count-with-percent">
+                                <span>{{ data.depositor_age_segmentation.day_180_plus.count|default:0 }}</span>
+                                <span class="percentage">({{ data.depositor_age_segmentation.day_180_plus.percent|default:0|floatformat:1 }}%)</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Summary Metrics -->
+                        <td class="summary-section number-col">{{ data.average_deposit_amount|floatformat:2|intcomma }}</td>
+                        <td class="summary-section number-col">
+                            {% if data.withdrawal_to_deposit_ration == 'inf' or data.withdrawal_to_deposit_ration|stringformat:"f" == 'inf' %}
+                                ∞
+                            {% else %}
+                                {{ data.withdrawal_to_deposit_ration|floatformat:2 }}
+                                <br> 
+                                Total Depo:  {{ data.total_deposit_value|floatformat:2|intcomma }}
+                                <br>
+                                Total WD: {{ data.total_withdrawal_value|floatformat:2|intcomma }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="19" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
+                            No transaction data found in the selected date range.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

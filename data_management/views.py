@@ -246,31 +246,42 @@ def upload_file(request, tenant_id=None):
                 # Clear upload flag
                 request.session.pop('upload_in_progress', None)
 
-                # Handle results - Simple redirect like File 2 but with robust HttpResponseRedirect
+                # --- NEW CONSOLIDATED LOGIC STARTS HERE ---
+                summary_data = {
+                    'file_name': file.name,
+                    'file_type': file_type,
+                    'record_count': len(valid_records),
+                    'error_count': len(errors),
+                    'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'first_record': valid_records[0] if valid_records else None,
+                    'last_record': valid_records[-1] if valid_records else None,
+                    'first_error': errors[0] if errors else None,
+                    'last_error': errors[-1] if errors else None,
+                    'all_errors': errors,
+                    'tenant_id': tenant.tenant_id if tenant else 'default'
+                }
+                
+                # If there are errors, save the error log file and record
                 if errors:
-                    # Create error log file
                     if tenant:
                         tenant_id_clean = re.sub(r'[^\w\.-]', '', tenant.tenant_id)
                     else:
                         tenant_id_clean = 'default'
-                                            
+                        
                     timestamp = upload_time.strftime('%Y%m%d_%H%M%S')
                     file_name = f"{timestamp}_{file_type}_{len(errors)}error{len(valid_records)}success_log.csv"
                     tenant_dir = os.path.join(settings.MEDIA_ROOT, 'error_logs', tenant_id_clean)
                     os.makedirs(tenant_dir, exist_ok=True)
                     file_path = os.path.join(tenant_dir, file_name)
-                                            
+                    
                     with open(file_path, 'w', newline='') as f:
                         writer = csv.writer(f)
                         writer.writerow(['Row', 'Error', 'Row Data'])
                         for error in errors:
                             writer.writerow([error['row'], error['error'], str(error['data'])])
-
-                    # Create error log using correct tenant_id (domain string)
-                    print(f"DEBUG: Creating ErrorLog in {db_alias}: {file_name}")
-                    print(f"DEBUG: Tenant: {tenant.tenant_id if tenant else None} (ID: {tenant.id if tenant else None})")
+                            
                     ErrorLog.objects.using(db_alias).create(
-                        tenant_id=tenant.tenant_id,  # Pass the tenant's domain string
+                        tenant_id=tenant.tenant_id,
                         file_name=file_name,
                         file_path=file_path,
                         upload_time=upload_time,
@@ -278,47 +289,17 @@ def upload_file(request, tenant_id=None):
                         error_count=len(errors),
                         success_count=len(valid_records)
                     )
-                    
-                    # Store summary in session (keep data for display)
-                    request.session['upload_summary'] = {
-                        'file_name': file.name,
-                        'file_type': file_type,
-                        'record_count': len(valid_records),
-                        'error_count': len(errors),
-                        'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
-                        'first_record': valid_records[0] if valid_records else None,
-                        'last_record': valid_records[-1] if valid_records else None,
-                        'first_error': errors[0] if errors else None,
-                        'last_error': errors[-1] if errors else None,
-                        'error_log_path': file_path,
-                        'all_errors': errors,
-                        'tenant_id': tenant.tenant_id if tenant else 'default'
-                    }
-                    
-                    return HttpResponseRedirect(
-                        reverse('data_management:upload_summary', 
-                                kwargs={'tenant_id': tenant.tenant_id if tenant else 'default'}),
-                        status=303
-                    )
-                    
-                # Handle success
-                else:
-                    request.session['upload_success'] = {
-                        'file_name': file.name,
-                        'record_count': len(valid_records),
-                        'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S'),
-                        'first_record': valid_records[0] if valid_records else None,
-                        'last_record': valid_records[-1] if valid_records else None,
-                        'file_type': file_type,
-                        'tenant_id': tenant.tenant_id if tenant else 'default'
-                    }
-                    
-                    return HttpResponseRedirect(
-                        reverse('data_management:upload_success', 
-                                kwargs={'tenant_id': tenant.tenant_id if tenant else 'default'}),
-                        status=303
-                    )
-                    
+                    summary_data['error_log_path'] = file_path
+                
+                request.session['upload_summary'] = summary_data
+
+                return HttpResponseRedirect(
+                    reverse('data_management:upload_summary', 
+                            kwargs={'tenant_id': tenant.tenant_id if tenant else 'default'}),
+                    status=303
+                )
+                # --- NEW CONSOLIDATED LOGIC ENDS HERE ---
+
             except Exception as e:
                 # Clear upload flag on error
                 request.session.pop('upload_in_progress', None)
@@ -349,28 +330,6 @@ def upload_file(request, tenant_id=None):
     print(f"{'='*80}\n")
 
 @login_required
-def upload_success(request, tenant_id=None):
-    print(f"\n{'='*80}")
-    print("DEBUG: REACHED UPLOAD_SUCCESS VIEW")
-    print(f"{'='*80}\n")
-    
-    # Retrieve and remove session data to prevent reuse
-    success_data = request.session.pop('upload_success', {})
-    
-    # Fallback to URL parameter if tenant_id not in session
-    tenant_id = success_data.get('tenant_id', tenant_id)
-    
-    return render(request, 'data_management/upload_success.html', {
-        'file_name': success_data.get('file_name'),
-        'record_count': success_data.get('record_count'),
-        'upload_time': success_data.get('upload_time'),
-        'first_record': success_data.get('first_record'),
-        'last_record': success_data.get('last_record'),
-        'file_type': success_data.get('file_type'),
-        'tenant_id': tenant_id or getattr(request.tenant, 'tenant_id', None)
-    }) 
-
-@login_required
 def upload_summary(request, tenant_id=None):
     # Retrieve and remove session data to prevent reuse
     summary = request.session.pop('upload_summary', {})
@@ -399,6 +358,8 @@ def upload_summary(request, tenant_id=None):
         'all_errors': summary.get('all_errors', [])
     })
 
+# The following views remain unchanged
+# ... (download_errors, error_logs_list, download_log, delete_log, bulk_delete_logs)
 @login_required
 def download_errors(request, tenant_id=None):
     summary = request.session.get('upload_summary', {})

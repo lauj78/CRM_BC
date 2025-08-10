@@ -3,27 +3,125 @@
 {% block title %}Upload Summary{% endblock %}
 
 {% block content %}
-    <h1>Upload Summary</h1>
-    <p><strong>File:</strong> {{ file_name }}</p>
-    <p><strong>File Type:</strong> {{ file_type|title }}</p>
-    <p><strong>Upload Time:</strong> {{ upload_time }}</p>
-    <p><strong>Records Successfully Uploaded:</strong> {{ record_count }}</p>
-    {% if first_record %}
-        <p><strong>First Successful Record:</strong> {{ first_record }}</p>
-    {% endif %}
-    {% if last_record %}
-        <p><strong>Last Successful Record:</strong> {{ last_record }}</p>
-    {% endif %}
-    <p><strong>Records Failed:</strong> {{ error_count }}</p>
-    {% if first_error %}
-        <p><strong>First Failed Record:</strong> Row {{ first_error.row }} - {{ first_error.error }}: {{ first_error.data }}</p>
-    {% endif %}
-    {% if last_error %}
-        <p><strong>Last Failed Record:</strong> Row {{ last_error.row }} - {{ last_error.error }}: {{ last_error.data }}</p>
-    {% endif %}
+<style>
+    /* Main container and header styles */
+    .summary-container {
+        max-width: 800px;
+        margin-left: 40px;
+        margin-right: auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .summary-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .summary-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+
+    /* Card-like sections for success and error */
+    .summary-card {
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .success-card {
+        background-color: #d1fae5; /* Green for success */
+        border-left: 5px solid #10b981;
+    }
+
+    .error-card {
+        background-color: #fee2e2; /* Red for errors */
+        border-left: 5px solid #ef4444;
+    }
+    
+    .summary-card h2 {
+        margin-top: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .summary-card p {
+        margin: 8px 0;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    
+    .summary-card strong {
+        color: #334155;
+    }
+
+    /* Links section */
+    .summary-links {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 30px;
+        text-align: left;
+    }
+
+    .summary-links a {
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .summary-links a:hover {
+        color: #4338ca;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="summary-container">
+    <div class="summary-header">
+        <h1>✅ Upload Summary</h1>
+    </div>
+
+    <div class="summary-card success-card">
+        <h2>Upload Details</h2>
+        <p><strong>File:</strong> {{ file_name }}</p>
+        <p><strong>File Type:</strong> {{ file_type|title }}</p>
+        <p><strong>Upload Time:</strong> {{ upload_time }}</p>
+        <p><strong>Successful Records:</strong> {{ record_count }}</p>
+        {% if first_record %}
+            <p><strong>First Record:</strong> {{ first_record }}</p>
+        {% endif %}
+        {% if last_record %}
+            <p><strong>Last Record:</strong> {{ last_record }}</p>
+        {% endif %}
+    </div>
+
     {% if error_count > 0 %}
-        <p><a href="{% url 'data_management:download_errors' tenant_id=tenant_id %}">Download Error Report (CSV)</a></p>
+    <div class="summary-card error-card">
+        <h2>Errors Found</h2>
+        <p><strong>Failed Records:</strong> {{ error_count }}</p>
+        {% if first_error %}
+            <p><strong>First Error:</strong> Row {{ first_error.row }} - {{ first_error.error }}: {{ first_error.data }}</p>
+        {% endif %}
+        {% if last_error %}
+            <p><strong>Last Error:</strong> Row {{ last_error.row }} - {{ last_error.error }}: {{ last_error.data }}</p>
+        {% endif %}
+    </div>
     {% endif %}
-    <p><a href="{% url 'data_management:error_logs_list' tenant_id=tenant_id %}">View Error Logs</a></p>
-    <p><a href="{% url 'data_management:upload_file' tenant_id=tenant_id %}">Upload another file</a></p>
+
+    <div class="summary-links">
+        {% if error_count > 0 %}
+            <a href="{% url 'data_management:download_errors' tenant_id=tenant_id %}">Download Error Report (CSV)</a>
+        {% endif %}
+        <a href="{% url 'data_management:error_logs_list' tenant_id=tenant_id %}">View Error Logs</a>
+        <a href="{% url 'data_management:upload_file' tenant_id=tenant_id %}">Upload another file</a>
+    </div>
+</div>
 {% endblock %}

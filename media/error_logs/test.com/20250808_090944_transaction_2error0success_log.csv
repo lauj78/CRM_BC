@@ -1,0 +1,7 @@
+Row,Error,Row Data
+2,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(namlih18, Deposit, 2025-05-17 00:01:00+00, 50.00) already exists.
+","{'No': nan, 'CREATE DATE': '17-05-2025 00:01:00', 'USERNAME': 'namlih18', 'EVENT': 'Deposit', 'PROCESS DATE': '17-05-2025 00:00:40', 'PROCESS BY': 'xpukul69', 'AMOUNT': 50.0}"
+3,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(wakkusut, Deposit, 2025-05-10 23:59:22+00, 45.00) already exists.
+","{'No': nan, 'CREATE DATE': '10-05-2025 23:59:22', 'USERNAME': 'wakkusut', 'EVENT': 'Deposit', 'PROCESS DATE': '11-05-2025 0:01:00', 'PROCESS BY': 'xpukul69', 'AMOUNT': 45.0}"

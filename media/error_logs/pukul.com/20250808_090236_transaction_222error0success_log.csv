@@ -1,0 +1,667 @@
+Row,Error,Row Data
+2,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nadira13, Deposit, 2025-08-07 23:58:15+00, 100.00) already exists.
+","{'No': 1, 'CREATE DATE': '07-08-2025 23:58:15', 'USERNAME': 'nadira13', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:58:48', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+3,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kangsupri, Deposit, 2025-08-07 23:35:56+00, 48.00) already exists.
+","{'No': 2, 'CREATE DATE': '07-08-2025 23:35:56', 'USERNAME': 'kangsupri', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:37:18', 'PROCESS BY': 'xpukul69', 'AMOUNT': '48.00'}"
+4,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(admngao09, Deposit, 2025-08-07 23:32:14+00, 25.00) already exists.
+","{'No': 3, 'CREATE DATE': '07-08-2025 23:32:14', 'USERNAME': 'admngao09', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:32:33', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+5,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(neraka86, Deposit, 2025-08-07 23:29:37+00, 300.00) already exists.
+","{'No': 4, 'CREATE DATE': '07-08-2025 23:29:37', 'USERNAME': 'neraka86', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:30:25', 'PROCESS BY': 'xpukul69', 'AMOUNT': '300.00'}"
+6,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sansan780, Deposit, 2025-08-07 23:26:20+00, 49.00) already exists.
+","{'No': 5, 'CREATE DATE': '07-08-2025 23:26:20', 'USERNAME': 'sansan780', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:27:08', 'PROCESS BY': 'xpukul69', 'AMOUNT': '49.00'}"
+7,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(buluduz, Deposit, 2025-08-07 23:23:01+00, 50.00) already exists.
+","{'No': 6, 'CREATE DATE': '07-08-2025 23:23:01', 'USERNAME': 'buluduz', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:23:54', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+8,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bodigat, Deposit, 2025-08-07 23:16:09+00, 40.00) already exists.
+","{'No': 7, 'CREATE DATE': '07-08-2025 23:16:09', 'USERNAME': 'bodigat', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:17:09', 'PROCESS BY': 'xpukul69', 'AMOUNT': '40.00'}"
+9,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(syazul, Manual Deposit, 2025-08-07 23:04:32+00, 25.00) already exists.
+","{'No': 8, 'CREATE DATE': '07-08-2025 23:04:32', 'USERNAME': 'syazul', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 23:04:32', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+10,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kangsupri, Deposit, 2025-08-07 23:01:31+00, 50.00) already exists.
+","{'No': 9, 'CREATE DATE': '07-08-2025 23:01:31', 'USERNAME': 'kangsupri', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 23:02:15', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+11,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(darwar, Manual Deposit, 2025-08-07 22:58:38+00, 25.00) already exists.
+","{'No': 10, 'CREATE DATE': '07-08-2025 22:58:38', 'USERNAME': 'darwar', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 22:58:38', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+12,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sernal, Manual Deposit, 2025-08-07 22:57:16+00, 25.00) already exists.
+","{'No': 11, 'CREATE DATE': '07-08-2025 22:57:16', 'USERNAME': 'sernal', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 22:57:16', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+13,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(blenkan, Manual Deposit, 2025-08-07 22:56:15+00, 25.00) already exists.
+","{'No': 12, 'CREATE DATE': '07-08-2025 22:56:15', 'USERNAME': 'blenkan', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 22:56:15', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+14,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sernal, Deposit, 2025-08-07 22:48:48+00, 50.00) already exists.
+","{'No': 13, 'CREATE DATE': '07-08-2025 22:48:48', 'USERNAME': 'sernal', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:54:56', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+15,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(syazul, Deposit, 2025-08-07 22:47:53+00, 50.00) already exists.
+","{'No': 14, 'CREATE DATE': '07-08-2025 22:47:53', 'USERNAME': 'syazul', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:52:53', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+16,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(darwar, Deposit, 2025-08-07 22:47:54+00, 50.00) already exists.
+","{'No': 15, 'CREATE DATE': '07-08-2025 22:47:54', 'USERNAME': 'darwar', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:52:12', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+17,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sigit99, Deposit, 2025-08-07 22:50:56+00, 24.00) already exists.
+","{'No': 16, 'CREATE DATE': '07-08-2025 22:50:56', 'USERNAME': 'sigit99', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:51:24', 'PROCESS BY': 'xpukul69', 'AMOUNT': '24.00'}"
+18,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(blenkan, Deposit, 2025-08-07 22:48:32+00, 50.00) already exists.
+","{'No': 17, 'CREATE DATE': '07-08-2025 22:48:32', 'USERNAME': 'blenkan', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:51:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+19,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(afendi123, Deposit, 2025-08-07 22:42:37+00, 100.00) already exists.
+","{'No': 18, 'CREATE DATE': '07-08-2025 22:42:37', 'USERNAME': 'afendi123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:43:12', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+20,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(heru58, Deposit, 2025-08-07 22:35:32+00, 25.00) already exists.
+","{'No': 19, 'CREATE DATE': '07-08-2025 22:35:32', 'USERNAME': 'heru58', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:36:16', 'PROCESS BY': 'xpukul69', 'AMOUNT': '25.00'}"
+21,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(303tobi23, Deposit, 2025-08-07 22:35:19+00, 25.00) already exists.
+","{'No': 20, 'CREATE DATE': '07-08-2025 22:35:19', 'USERNAME': '303tobi23', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:35:32', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+22,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rezkyafrianti12, Deposit, 2025-08-07 22:33:39+00, 90.00) already exists.
+","{'No': 21, 'CREATE DATE': '07-08-2025 22:33:39', 'USERNAME': 'rezkyafrianti12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:34:42', 'PROCESS BY': 'xpukul69', 'AMOUNT': '90.00'}"
+23,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(risya34, Deposit, 2025-08-07 22:17:05+00, 63.00) already exists.
+","{'No': 22, 'CREATE DATE': '07-08-2025 22:17:05', 'USERNAME': 'risya34', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:17:47', 'PROCESS BY': 'xpukul69', 'AMOUNT': '63.00'}"
+24,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pukki69, Deposit, 2025-08-07 22:15:36+00, 99.00) already exists.
+","{'No': 23, 'CREATE DATE': '07-08-2025 22:15:36', 'USERNAME': 'pukki69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:16:12', 'PROCESS BY': 'xpukul69', 'AMOUNT': '99.00'}"
+25,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rezkyafrianti12, Deposit, 2025-08-07 22:12:08+00, 100.00) already exists.
+","{'No': 24, 'CREATE DATE': '07-08-2025 22:12:08', 'USERNAME': 'rezkyafrianti12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:14:28', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+26,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(palu123, Deposit, 2025-08-07 22:05:36+00, 20.00) already exists.
+","{'No': 25, 'CREATE DATE': '07-08-2025 22:05:36', 'USERNAME': 'palu123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:05:53', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+27,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rendika69, Deposit, 2025-08-07 22:04:27+00, 44.00) already exists.
+","{'No': 26, 'CREATE DATE': '07-08-2025 22:04:27', 'USERNAME': 'rendika69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 22:05:04', 'PROCESS BY': 'xpukul69', 'AMOUNT': '44.00'}"
+28,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bca69jp, Manual Deposit, 2025-08-07 22:01:13+00, 25.00) already exists.
+","{'No': 27, 'CREATE DATE': '07-08-2025 22:01:13', 'USERNAME': 'bca69jp', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 22:01:13', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+29,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(irwansyah, Deposit, 2025-08-07 21:56:26+00, 50.00) already exists.
+","{'No': 28, 'CREATE DATE': '07-08-2025 21:56:26', 'USERNAME': 'irwansyah', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:58:32', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+30,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bca69jp, Deposit, 2025-08-07 21:57:16+00, 50.00) already exists.
+","{'No': 29, 'CREATE DATE': '07-08-2025 21:57:16', 'USERNAME': 'bca69jp', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:58:31', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+31,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(shahmeer123, Withdraw, 2025-08-07 21:50:53+00, 53.00) already exists.
+","{'No': 30, 'CREATE DATE': '07-08-2025 21:50:53', 'USERNAME': 'shahmeer123', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 21:51:05', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '53.00'}"
+32,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(muhklis28, Deposit, 2025-08-07 21:49:31+00, 100.00) already exists.
+","{'No': 31, 'CREATE DATE': '07-08-2025 21:49:31', 'USERNAME': 'muhklis28', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:50:09', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+33,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(andrisatrio, Deposit, 2025-08-07 21:37:55+00, 26.00) already exists.
+","{'No': 32, 'CREATE DATE': '07-08-2025 21:37:55', 'USERNAME': 'andrisatrio', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:38:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '26.00'}"
+34,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(val778, Manual Deposit, 2025-08-07 21:37:46+00, 25.00) already exists.
+","{'No': 33, 'CREATE DATE': '07-08-2025 21:37:46', 'USERNAME': 'val778', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 21:37:46', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+35,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(val778, Deposit, 2025-08-07 21:34:52+00, 50.00) already exists.
+","{'No': 34, 'CREATE DATE': '07-08-2025 21:34:52', 'USERNAME': 'val778', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:35:30', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+36,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rezkyafrianti12, Deposit, 2025-08-07 21:27:02+00, 60.00) already exists.
+","{'No': 35, 'CREATE DATE': '07-08-2025 21:27:02', 'USERNAME': 'rezkyafrianti12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:28:16', 'PROCESS BY': 'xpukul69', 'AMOUNT': '60.00'}"
+37,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kaguyaa, Withdraw, 2025-08-07 21:27:12+00, 100.00) already exists.
+","{'No': 36, 'CREATE DATE': '07-08-2025 21:27:12', 'USERNAME': 'kaguyaa', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 21:28:04', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+38,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(fumi123, Deposit, 2025-08-07 21:26:58+00, 25.00) already exists.
+","{'No': 37, 'CREATE DATE': '07-08-2025 21:26:58', 'USERNAME': 'fumi123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:27:16', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+39,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 21:20:36+00, 173.00) already exists.
+","{'No': 38, 'CREATE DATE': '07-08-2025 21:20:36', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:21:14', 'PROCESS BY': 'xpukul69', 'AMOUNT': '173.00'}"
+40,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sakit1234, Deposit, 2025-08-07 21:17:30+00, 10.00) already exists.
+","{'No': 39, 'CREATE DATE': '07-08-2025 21:17:30', 'USERNAME': 'sakit1234', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:18:41', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+41,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(puloh122, Deposit, 2025-08-07 21:10:21+00, 198.00) already exists.
+","{'No': 40, 'CREATE DATE': '07-08-2025 21:10:21', 'USERNAME': 'puloh122', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:11:01', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+42,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(milanisti27, Manual Deposit, 2025-08-07 21:09:55+00, 50.00) already exists.
+","{'No': 41, 'CREATE DATE': '07-08-2025 21:09:55', 'USERNAME': 'milanisti27', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 21:09:55', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+43,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(milanisti27, Deposit, 2025-08-07 21:08:45+00, 100.00) already exists.
+","{'No': 42, 'CREATE DATE': '07-08-2025 21:08:45', 'USERNAME': 'milanisti27', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:09:14', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+44,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(antakalah, Deposit, 2025-08-07 21:03:11+00, 99.00) already exists.
+","{'No': 43, 'CREATE DATE': '07-08-2025 21:03:11', 'USERNAME': 'antakalah', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:04:06', 'PROCESS BY': 'xpukul69', 'AMOUNT': '99.00'}"
+45,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kaguyaa, Deposit, 2025-08-07 21:00:19+00, 25.00) already exists.
+","{'No': 44, 'CREATE DATE': '07-08-2025 21:00:19', 'USERNAME': 'kaguyaa', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 21:00:41', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+46,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kemuning77, Deposit, 2025-08-07 20:49:10+00, 98.00) already exists.
+","{'No': 45, 'CREATE DATE': '07-08-2025 20:49:10', 'USERNAME': 'kemuning77', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:50:18', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '98.00'}"
+47,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 20:47:49+00, 198.00) already exists.
+","{'No': 46, 'CREATE DATE': '07-08-2025 20:47:49', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:48:27', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+48,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rezkyafrianti12, Deposit, 2025-08-07 20:46:28+00, 95.00) already exists.
+","{'No': 47, 'CREATE DATE': '07-08-2025 20:46:28', 'USERNAME': 'rezkyafrianti12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:47:30', 'PROCESS BY': 'xpukul69', 'AMOUNT': '95.00'}"
+49,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(yann12345, Deposit, 2025-08-07 20:41:31+00, 18.00) already exists.
+","{'No': 48, 'CREATE DATE': '07-08-2025 20:41:31', 'USERNAME': 'yann12345', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:42:22', 'PROCESS BY': 'xpukul69', 'AMOUNT': '18.00'}"
+50,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(andarax500000, Deposit, 2025-08-07 20:40:02+00, 24.00) already exists.
+","{'No': 49, 'CREATE DATE': '07-08-2025 20:40:02', 'USERNAME': 'andarax500000', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:40:51', 'PROCESS BY': 'xpukul69', 'AMOUNT': '24.00'}"
+51,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kades666, Deposit, 2025-08-07 20:35:07+00, 100.00) already exists.
+","{'No': 50, 'CREATE DATE': '07-08-2025 20:35:07', 'USERNAME': 'kades666', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:39:00', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+52,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(shahmeer123, Manual Deposit, 2025-08-07 20:37:47+00, 25.00) already exists.
+","{'No': 51, 'CREATE DATE': '07-08-2025 20:37:47', 'USERNAME': 'shahmeer123', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 20:37:47', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '25.00'}"
+53,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(shahmeer123, Deposit, 2025-08-07 20:34:20+00, 50.00) already exists.
+","{'No': 52, 'CREATE DATE': '07-08-2025 20:34:20', 'USERNAME': 'shahmeer123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:35:22', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+54,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(otoy17, Deposit, 2025-08-07 20:08:32+00, 20.00) already exists.
+","{'No': 53, 'CREATE DATE': '07-08-2025 20:08:32', 'USERNAME': 'otoy17', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:10:21', 'PROCESS BY': 'xpukul69', 'AMOUNT': '20.00'}"
+55,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(azen1975, Deposit, 2025-08-07 20:08:08+00, 20.00) already exists.
+","{'No': 54, 'CREATE DATE': '07-08-2025 20:08:08', 'USERNAME': 'azen1975', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 20:08:43', 'PROCESS BY': 'xpukul69', 'AMOUNT': '20.00'}"
+56,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(peter928, Deposit, 2025-08-07 19:58:08+00, 118.00) already exists.
+","{'No': 55, 'CREATE DATE': '07-08-2025 19:58:08', 'USERNAME': 'peter928', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:58:44', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '118.00'}"
+57,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(yana69, Deposit, 2025-08-07 19:50:34+00, 24.00) already exists.
+","{'No': 56, 'CREATE DATE': '07-08-2025 19:50:34', 'USERNAME': 'yana69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:54:51', 'PROCESS BY': 'xpukul69', 'AMOUNT': '24.00'}"
+58,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(agunggilabedepo, Deposit, 2025-08-07 19:52:47+00, 19.00) already exists.
+","{'No': 57, 'CREATE DATE': '07-08-2025 19:52:47', 'USERNAME': 'agunggilabedepo', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:53:52', 'PROCESS BY': 'xpukul69', 'AMOUNT': '19.00'}"
+59,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(admngao09, Deposit, 2025-08-07 19:53:22+00, 20.00) already exists.
+","{'No': 58, 'CREATE DATE': '07-08-2025 19:53:22', 'USERNAME': 'admngao09', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:53:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+60,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rajamanchuntan92, Deposit, 2025-08-07 19:49:03+00, 250.00) already exists.
+","{'No': 59, 'CREATE DATE': '07-08-2025 19:49:03', 'USERNAME': 'rajamanchuntan92', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:49:58', 'PROCESS BY': 'xpukul69', 'AMOUNT': '250.00'}"
+61,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(endi55e, Deposit, 2025-08-07 19:32:05+00, 29.00) already exists.
+","{'No': 60, 'CREATE DATE': '07-08-2025 19:32:05', 'USERNAME': 'endi55e', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:33:09', 'PROCESS BY': 'xpukul69', 'AMOUNT': '29.00'}"
+62,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(gaka012, Deposit, 2025-08-07 19:31:46+00, 50.00) already exists.
+","{'No': 61, 'CREATE DATE': '07-08-2025 19:31:46', 'USERNAME': 'gaka012', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:32:25', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+63,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(iis1234, Deposit, 2025-08-07 19:27:41+00, 70.00) already exists.
+","{'No': 62, 'CREATE DATE': '07-08-2025 19:27:41', 'USERNAME': 'iis1234', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:28:02', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '70.00'}"
+64,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dadang69, Withdraw, 2025-08-07 19:25:18+00, 150.00) already exists.
+","{'No': 63, 'CREATE DATE': '07-08-2025 19:25:18', 'USERNAME': 'dadang69', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 19:26:29', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '150.00'}"
+65,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(abang99, Deposit, 2025-08-07 19:10:58+00, 70.00) already exists.
+","{'No': 64, 'CREATE DATE': '07-08-2025 19:10:58', 'USERNAME': 'abang99', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:11:19', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '70.00'}"
+66,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(mbalina, Deposit, 2025-08-07 19:09:56+00, 25.00) already exists.
+","{'No': 65, 'CREATE DATE': '07-08-2025 19:09:56', 'USERNAME': 'mbalina', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:10:44', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+67,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sakit1234, Deposit, 2025-08-07 19:09:29+00, 50.00) already exists.
+","{'No': 66, 'CREATE DATE': '07-08-2025 19:09:29', 'USERNAME': 'sakit1234', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:10:39', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+68,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sufia, Deposit, 2025-08-07 19:06:53+00, 21.00) already exists.
+","{'No': 67, 'CREATE DATE': '07-08-2025 19:06:53', 'USERNAME': 'sufia', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:09:56', 'PROCESS BY': 'xpukul69', 'AMOUNT': '21.00'}"
+69,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zaeni17, Deposit, 2025-08-07 19:08:27+00, 30.00) already exists.
+","{'No': 68, 'CREATE DATE': '07-08-2025 19:08:27', 'USERNAME': 'zaeni17', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:08:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '30.00'}"
+70,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(babam58, Deposit, 2025-08-07 19:06:36+00, 250.00) already exists.
+","{'No': 69, 'CREATE DATE': '07-08-2025 19:06:36', 'USERNAME': 'babam58', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:07:31', 'PROCESS BY': 'xpukul69', 'AMOUNT': '250.00'}"
+71,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pro69dana, Manual Deposit, 2025-08-07 19:06:48+00, 20.00) already exists.
+","{'No': 70, 'CREATE DATE': '07-08-2025 19:06:48', 'USERNAME': 'pro69dana', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 19:06:48', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+72,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(iis1234, Deposit, 2025-08-07 19:05:20+00, 50.00) already exists.
+","{'No': 71, 'CREATE DATE': '07-08-2025 19:05:20', 'USERNAME': 'iis1234', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:05:34', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+73,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pro69dana, Deposit, 2025-08-07 19:00:52+00, 40.00) already exists.
+","{'No': 72, 'CREATE DATE': '07-08-2025 19:00:52', 'USERNAME': 'pro69dana', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:05:16', 'PROCESS BY': 'xpukul69', 'AMOUNT': '40.00'}"
+74,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(iis1234, Deposit, 2025-08-07 19:02:56+00, 50.00) already exists.
+","{'No': 73, 'CREATE DATE': '07-08-2025 19:02:56', 'USERNAME': 'iis1234', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 19:03:10', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+75,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(gelar10, Withdraw, 2025-08-07 19:00:00+00, 80.00) already exists.
+","{'No': 74, 'CREATE DATE': '07-08-2025 19:00:00', 'USERNAME': 'gelar10', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 19:00:57', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '80.00'}"
+76,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(gelar10, Deposit, 2025-08-07 18:48:25+00, 45.00) already exists.
+","{'No': 75, 'CREATE DATE': '07-08-2025 18:48:25', 'USERNAME': 'gelar10', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:48:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '45.00'}"
+77,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dadang69, Deposit, 2025-08-07 18:43:33+00, 50.00) already exists.
+","{'No': 76, 'CREATE DATE': '07-08-2025 18:43:33', 'USERNAME': 'dadang69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:44:03', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+78,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(jiantay19, Deposit, 2025-08-07 18:27:42+00, 34.00) already exists.
+","{'No': 77, 'CREATE DATE': '07-08-2025 18:27:42', 'USERNAME': 'jiantay19', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:28:16', 'PROCESS BY': 'xpukul69', 'AMOUNT': '34.00'}"
+79,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bandit07, Deposit, 2025-08-07 18:24:12+00, 90.00) already exists.
+","{'No': 78, 'CREATE DATE': '07-08-2025 18:24:12', 'USERNAME': 'bandit07', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:25:32', 'PROCESS BY': 'xpukul69', 'AMOUNT': '90.00'}"
+80,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(akey13, Deposit, 2025-08-07 18:17:42+00, 50.00) already exists.
+","{'No': 79, 'CREATE DATE': '07-08-2025 18:17:42', 'USERNAME': 'akey13', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:18:30', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+81,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(frison88, Deposit, 2025-08-07 18:10:23+00, 100.00) already exists.
+","{'No': 80, 'CREATE DATE': '07-08-2025 18:10:23', 'USERNAME': 'frison88', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 18:11:08', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+82,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rendy15, Withdraw, 2025-08-07 18:08:32+00, 51.00) already exists.
+","{'No': 81, 'CREATE DATE': '07-08-2025 18:08:32', 'USERNAME': 'rendy15', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 18:09:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '51.00'}"
+83,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ratim, Deposit, 2025-08-07 17:49:58+00, 10.00) already exists.
+","{'No': 82, 'CREATE DATE': '07-08-2025 17:49:58', 'USERNAME': 'ratim', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 17:51:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+84,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rendy15, Deposit, 2025-08-07 17:48:19+00, 30.00) already exists.
+","{'No': 83, 'CREATE DATE': '07-08-2025 17:48:19', 'USERNAME': 'rendy15', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 17:48:46', 'PROCESS BY': 'xpukul69', 'AMOUNT': '30.00'}"
+85,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(anjay99, Deposit, 2025-08-07 17:21:45+00, 55.00) already exists.
+","{'No': 84, 'CREATE DATE': '07-08-2025 17:21:45', 'USERNAME': 'anjay99', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 17:23:11', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '55.00'}"
+86,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(wakmo777, Deposit, 2025-08-07 17:02:02+00, 47.00) already exists.
+","{'No': 85, 'CREATE DATE': '07-08-2025 17:02:02', 'USERNAME': 'wakmo777', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 17:02:46', 'PROCESS BY': 'xpukul69', 'AMOUNT': '47.00'}"
+87,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(aww123k, Deposit, 2025-08-07 16:57:53+00, 20.00) already exists.
+","{'No': 86, 'CREATE DATE': '07-08-2025 16:57:53', 'USERNAME': 'aww123k', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:59:01', 'PROCESS BY': 'xpukul69', 'AMOUNT': '20.00'}"
+88,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(waras556677, Deposit, 2025-08-07 16:53:42+00, 25.00) already exists.
+","{'No': 87, 'CREATE DATE': '07-08-2025 16:53:42', 'USERNAME': 'waras556677', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:54:07', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+89,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(aww123k, Deposit, 2025-08-07 16:53:00+00, 10.00) already exists.
+","{'No': 88, 'CREATE DATE': '07-08-2025 16:53:00', 'USERNAME': 'aww123k', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:53:26', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+90,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pukki69, Deposit, 2025-08-07 16:42:11+00, 40.00) already exists.
+","{'No': 89, 'CREATE DATE': '07-08-2025 16:42:11', 'USERNAME': 'pukki69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:42:44', 'PROCESS BY': 'xpukul69', 'AMOUNT': '40.00'}"
+91,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(senja378, Deposit, 2025-08-07 16:24:21+00, 50.00) already exists.
+","{'No': 90, 'CREATE DATE': '07-08-2025 16:24:21', 'USERNAME': 'senja378', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:25:13', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+92,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(juara303, Manual Deposit, 2025-08-07 16:09:06+00, 27.00) already exists.
+","{'No': 91, 'CREATE DATE': '07-08-2025 16:09:06', 'USERNAME': 'juara303', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 16:09:06', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '27.00'}"
+93,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Withdraw, 2025-08-07 16:02:53+00, 10000.00) already exists.
+","{'No': 92, 'CREATE DATE': '07-08-2025 16:02:53', 'USERNAME': 'zebra188', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 16:07:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '10,000.00'}"
+94,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(juara303, Deposit, 2025-08-07 16:04:49+00, 55.00) already exists.
+","{'No': 93, 'CREATE DATE': '07-08-2025 16:04:49', 'USERNAME': 'juara303', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:05:37', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '55.00'}"
+95,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kancil, Deposit, 2025-08-07 16:02:05+00, 10.00) already exists.
+","{'No': 94, 'CREATE DATE': '07-08-2025 16:02:05', 'USERNAME': 'kancil', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:02:47', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+96,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kartinih, Deposit, 2025-08-07 16:02:11+00, 40.00) already exists.
+","{'No': 95, 'CREATE DATE': '07-08-2025 16:02:11', 'USERNAME': 'kartinih', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 16:02:37', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '40.00'}"
+97,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(frison88, Deposit, 2025-08-07 15:54:28+00, 50.00) already exists.
+","{'No': 96, 'CREATE DATE': '07-08-2025 15:54:28', 'USERNAME': 'frison88', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:55:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+98,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(delon82, Deposit, 2025-08-07 15:49:05+00, 56.00) already exists.
+","{'No': 97, 'CREATE DATE': '07-08-2025 15:49:05', 'USERNAME': 'delon82', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:49:58', 'PROCESS BY': 'xpukul69', 'AMOUNT': '56.00'}"
+99,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(enah00, Deposit, 2025-08-07 15:45:07+00, 25.00) already exists.
+","{'No': 98, 'CREATE DATE': '07-08-2025 15:45:07', 'USERNAME': 'enah00', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:45:33', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+100,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sanun200195, Deposit, 2025-08-07 15:41:53+00, 47.00) already exists.
+","{'No': 99, 'CREATE DATE': '07-08-2025 15:41:53', 'USERNAME': 'sanun200195', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:42:51', 'PROCESS BY': 'xpukul69', 'AMOUNT': '47.00'}"
+101,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Deposit, 2025-08-07 15:33:00+00, 6000.00) already exists.
+","{'No': 100, 'CREATE DATE': '07-08-2025 15:33:00', 'USERNAME': 'zebra188', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:33:31', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '6,000.00'}"
+102,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(okong00, Deposit, 2025-08-07 15:28:37+00, 50.00) already exists.
+","{'No': 101, 'CREATE DATE': '07-08-2025 15:28:37', 'USERNAME': 'okong00', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:29:21', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+103,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Deposit, 2025-08-07 15:27:09+00, 1000.00) already exists.
+","{'No': 102, 'CREATE DATE': '07-08-2025 15:27:09', 'USERNAME': 'zebra188', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:27:40', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '1,000.00'}"
+104,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Deposit, 2025-08-07 15:08:19+00, 5000.00) already exists.
+","{'No': 103, 'CREATE DATE': '07-08-2025 15:08:19', 'USERNAME': 'zebra188', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:08:57', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '5,000.00'}"
+105,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(frison88, Deposit, 2025-08-07 14:59:50+00, 50.00) already exists.
+","{'No': 104, 'CREATE DATE': '07-08-2025 14:59:50', 'USERNAME': 'frison88', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 15:00:40', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+106,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(qimul14, Deposit, 2025-08-07 14:53:02+00, 100.00) already exists.
+","{'No': 105, 'CREATE DATE': '07-08-2025 14:53:02', 'USERNAME': 'qimul14', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:53:14', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+107,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(fumi123, Deposit, 2025-08-07 14:52:21+00, 25.00) already exists.
+","{'No': 106, 'CREATE DATE': '07-08-2025 14:52:21', 'USERNAME': 'fumi123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:52:38', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+108,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(adip97, Deposit, 2025-08-07 14:47:40+00, 95.00) already exists.
+","{'No': 107, 'CREATE DATE': '07-08-2025 14:47:40', 'USERNAME': 'adip97', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:50:23', 'PROCESS BY': 'xpukul69', 'AMOUNT': '95.00'}"
+109,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ajing99, Deposit, 2025-08-07 14:42:39+00, 25.00) already exists.
+","{'No': 108, 'CREATE DATE': '07-08-2025 14:42:39', 'USERNAME': 'ajing99', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:43:28', 'PROCESS BY': 'xpukul69', 'AMOUNT': '25.00'}"
+110,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(qimul14, Deposit, 2025-08-07 14:42:01+00, 100.00) already exists.
+","{'No': 109, 'CREATE DATE': '07-08-2025 14:42:01', 'USERNAME': 'qimul14', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:42:56', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+111,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(amrullah, Deposit, 2025-08-07 14:27:47+00, 100.00) already exists.
+","{'No': 110, 'CREATE DATE': '07-08-2025 14:27:47', 'USERNAME': 'amrullah', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:28:30', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+112,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(tuwah, Deposit, 2025-08-07 14:25:25+00, 70.00) already exists.
+","{'No': 111, 'CREATE DATE': '07-08-2025 14:25:25', 'USERNAME': 'tuwah', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:26:18', 'PROCESS BY': 'xpukul69', 'AMOUNT': '70.00'}"
+113,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(setan35, Deposit, 2025-08-07 14:24:45+00, 105.00) already exists.
+","{'No': 112, 'CREATE DATE': '07-08-2025 14:24:45', 'USERNAME': 'setan35', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:25:38', 'PROCESS BY': 'xpukul69', 'AMOUNT': '105.00'}"
+114,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(qimul14, Deposit, 2025-08-07 14:14:56+00, 200.00) already exists.
+","{'No': 113, 'CREATE DATE': '07-08-2025 14:14:56', 'USERNAME': 'qimul14', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:15:32', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '200.00'}"
+115,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(amrullah, Deposit, 2025-08-07 14:11:08+00, 50.00) already exists.
+","{'No': 114, 'CREATE DATE': '07-08-2025 14:11:08', 'USERNAME': 'amrullah', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:11:57', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+116,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(qimul14, Deposit, 2025-08-07 14:02:03+00, 100.00) already exists.
+","{'No': 115, 'CREATE DATE': '07-08-2025 14:02:03', 'USERNAME': 'qimul14', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 14:02:24', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '100.00'}"
+117,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Withdraw, 2025-08-07 13:37:47+00, 5000.00) already exists.
+","{'No': 116, 'CREATE DATE': '07-08-2025 13:37:47', 'USERNAME': 'zebra188', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 13:38:51', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '5,000.00'}"
+118,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pikul69, Deposit, 2025-08-07 13:27:58+00, 15.00) already exists.
+","{'No': 117, 'CREATE DATE': '07-08-2025 13:27:58', 'USERNAME': 'pikul69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:29:00', 'PROCESS BY': 'xpukul69', 'AMOUNT': '15.00'}"
+119,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 13:23:05+00, 228.00) already exists.
+","{'No': 118, 'CREATE DATE': '07-08-2025 13:23:05', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:24:37', 'PROCESS BY': 'xpukul69', 'AMOUNT': '228.00'}"
+120,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ngiclikbozq, Deposit, 2025-08-07 13:15:46+00, 50.00) already exists.
+","{'No': 119, 'CREATE DATE': '07-08-2025 13:15:46', 'USERNAME': 'ngiclikbozq', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:17:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+121,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kplplapastik02, Deposit, 2025-08-07 13:15:25+00, 150.00) already exists.
+","{'No': 120, 'CREATE DATE': '07-08-2025 13:15:25', 'USERNAME': 'kplplapastik02', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:15:51', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '150.00'}"
+122,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(zebra188, Deposit, 2025-08-07 13:14:01+00, 3000.00) already exists.
+","{'No': 121, 'CREATE DATE': '07-08-2025 13:14:01', 'USERNAME': 'zebra188', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:14:57', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '3,000.00'}"
+123,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rando, Deposit, 2025-08-07 13:08:09+00, 100.00) already exists.
+","{'No': 122, 'CREATE DATE': '07-08-2025 13:08:09', 'USERNAME': 'rando', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:08:27', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '100.00'}"
+124,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 13:07:29+00, 198.00) already exists.
+","{'No': 123, 'CREATE DATE': '07-08-2025 13:07:29', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 13:08:08', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+125,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(paisal2612, Deposit, 2025-08-07 12:56:58+00, 27.00) already exists.
+","{'No': 124, 'CREATE DATE': '07-08-2025 12:56:58', 'USERNAME': 'paisal2612', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:57:56', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '27.00'}"
+126,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rando, Deposit, 2025-08-07 12:55:15+00, 50.00) already exists.
+","{'No': 125, 'CREATE DATE': '07-08-2025 12:55:15', 'USERNAME': 'rando', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:55:38', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '50.00'}"
+127,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(azizkuy, Deposit, 2025-08-07 12:54:20+00, 50.00) already exists.
+","{'No': 126, 'CREATE DATE': '07-08-2025 12:54:20', 'USERNAME': 'azizkuy', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:54:38', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '50.00'}"
+128,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 12:49:43+00, 198.00) already exists.
+","{'No': 127, 'CREATE DATE': '07-08-2025 12:49:43', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:50:14', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+129,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(mirzha212, Deposit, 2025-08-07 12:37:02+00, 50.00) already exists.
+","{'No': 128, 'CREATE DATE': '07-08-2025 12:37:02', 'USERNAME': 'mirzha212', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:37:56', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '50.00'}"
+130,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dadang69, Deposit, 2025-08-07 12:32:19+00, 50.00) already exists.
+","{'No': 129, 'CREATE DATE': '07-08-2025 12:32:19', 'USERNAME': 'dadang69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:36:41', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+131,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(twis12, Deposit, 2025-08-07 12:29:46+00, 50.00) already exists.
+","{'No': 130, 'CREATE DATE': '07-08-2025 12:29:46', 'USERNAME': 'twis12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:30:33', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+132,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(wawan69, Deposit, 2025-08-07 12:13:43+00, 26.00) already exists.
+","{'No': 131, 'CREATE DATE': '07-08-2025 12:13:43', 'USERNAME': 'wawan69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:15:03', 'PROCESS BY': 'xpukul69', 'AMOUNT': '26.00'}"
+133,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 12:12:12+00, 148.00) already exists.
+","{'No': 132, 'CREATE DATE': '07-08-2025 12:12:12', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:12:44', 'PROCESS BY': 'xpukul69', 'AMOUNT': '148.00'}"
+134,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(meongcongkok, Withdraw, 2025-08-07 12:08:32+00, 106.00) already exists.
+","{'No': 133, 'CREATE DATE': '07-08-2025 12:08:32', 'USERNAME': 'meongcongkok', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 12:09:35', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '106.00'}"
+135,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rajamanchuntan92, Deposit, 2025-08-07 11:58:59+00, 250.00) already exists.
+","{'No': 134, 'CREATE DATE': '07-08-2025 11:58:59', 'USERNAME': 'rajamanchuntan92', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:06:29', 'PROCESS BY': 'xpukul69', 'AMOUNT': '250.00'}"
+136,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 12:05:23+00, 19.00) already exists.
+","{'No': 135, 'CREATE DATE': '07-08-2025 12:05:23', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 12:06:09', 'PROCESS BY': 'xpukul69', 'AMOUNT': '19.00'}"
+137,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(yana69, Withdraw, 2025-08-07 12:00:04+00, 159.00) already exists.
+","{'No': 136, 'CREATE DATE': '07-08-2025 12:00:04', 'USERNAME': 'yana69', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 12:01:00', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '159.00'}"
+138,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(meongcongkok, Deposit, 2025-08-07 11:56:43+00, 30.00) already exists.
+","{'No': 137, 'CREATE DATE': '07-08-2025 11:56:43', 'USERNAME': 'meongcongkok', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:56:59', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '30.00'}"
+139,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 11:50:15+00, 27.00) already exists.
+","{'No': 138, 'CREATE DATE': '07-08-2025 11:50:15', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:51:01', 'PROCESS BY': 'xpukul69', 'AMOUNT': '27.00'}"
+140,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pukulrawan9, Deposit, 2025-08-07 11:46:36+00, 50.00) already exists.
+","{'No': 139, 'CREATE DATE': '07-08-2025 11:46:36', 'USERNAME': 'pukulrawan9', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:47:56', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+141,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(tumbuk009, Deposit, 2025-08-07 11:44:51+00, 97.00) already exists.
+","{'No': 140, 'CREATE DATE': '07-08-2025 11:44:51', 'USERNAME': 'tumbuk009', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:45:18', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '97.00'}"
+142,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kangtono, Deposit, 2025-08-07 11:28:10+00, 10.00) already exists.
+","{'No': 141, 'CREATE DATE': '07-08-2025 11:28:10', 'USERNAME': 'kangtono', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:28:52', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+143,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 11:18:45+00, 142.00) already exists.
+","{'No': 142, 'CREATE DATE': '07-08-2025 11:18:45', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:19:18', 'PROCESS BY': 'xpukul69', 'AMOUNT': '142.00'}"
+144,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 11:15:50+00, 33.00) already exists.
+","{'No': 143, 'CREATE DATE': '07-08-2025 11:15:50', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:16:31', 'PROCESS BY': 'xpukul69', 'AMOUNT': '33.00'}"
+145,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(enah00, Withdraw, 2025-08-07 11:06:29+00, 100.00) already exists.
+","{'No': 144, 'CREATE DATE': '07-08-2025 11:06:29', 'USERNAME': 'enah00', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 11:07:37', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '100.00'}"
+146,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(yana69, Deposit, 2025-08-07 11:01:07+00, 25.00) already exists.
+","{'No': 145, 'CREATE DATE': '07-08-2025 11:01:07', 'USERNAME': 'yana69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 11:03:29', 'PROCESS BY': 'xpukul69', 'AMOUNT': '25.00'}"
+147,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(tommy8, Deposit, 2025-08-07 10:58:56+00, 25.00) already exists.
+","{'No': 146, 'CREATE DATE': '07-08-2025 10:58:56', 'USERNAME': 'tommy8', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 10:59:30', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '25.00'}"
+148,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(birutua99, Deposit, 2025-08-07 10:56:32+00, 20.00) already exists.
+","{'No': 147, 'CREATE DATE': '07-08-2025 10:56:32', 'USERNAME': 'birutua99', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 10:57:58', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '20.00'}"
+149,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(wakmo777, Deposit, 2025-08-07 10:36:55+00, 25.00) already exists.
+","{'No': 148, 'CREATE DATE': '07-08-2025 10:36:55', 'USERNAME': 'wakmo777', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 10:37:39', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '25.00'}"
+150,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bawang93, Deposit, 2025-08-07 10:25:30+00, 24.00) already exists.
+","{'No': 149, 'CREATE DATE': '07-08-2025 10:25:30', 'USERNAME': 'bawang93', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 10:25:52', 'PROCESS BY': 'xpukul69', 'AMOUNT': '24.00'}"
+151,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dwiirawan, Deposit, 2025-08-07 10:22:16+00, 50.00) already exists.
+","{'No': 150, 'CREATE DATE': '07-08-2025 10:22:16', 'USERNAME': 'dwiirawan', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 10:23:31', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+152,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kampreet, Deposit, 2025-08-07 09:57:56+00, 10.00) already exists.
+","{'No': 151, 'CREATE DATE': '07-08-2025 09:57:56', 'USERNAME': 'kampreet', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 09:58:29', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+153,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(cahayaqu, Manual Deposit, 2025-08-07 09:48:54+00, 75.00) already exists.
+","{'No': 152, 'CREATE DATE': '07-08-2025 09:48:54', 'USERNAME': 'cahayaqu', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 09:48:54', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '75.00'}"
+154,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(cahayaqu, Deposit, 2025-08-07 09:43:15+00, 150.00) already exists.
+","{'No': 153, 'CREATE DATE': '07-08-2025 09:43:15', 'USERNAME': 'cahayaqu', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 09:43:42', 'PROCESS BY': 'xpukul69', 'AMOUNT': '150.00'}"
+155,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(enah00, Withdraw, 2025-08-07 09:35:27+00, 150.00) already exists.
+","{'No': 154, 'CREATE DATE': '07-08-2025 09:35:27', 'USERNAME': 'enah00', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 09:36:11', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '150.00'}"
+156,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(enah00, Deposit, 2025-08-07 08:27:40+00, 35.00) already exists.
+","{'No': 155, 'CREATE DATE': '07-08-2025 08:27:40', 'USERNAME': 'enah00', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 08:29:55', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '35.00'}"
+157,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(palembang994, Deposit, 2025-08-07 08:12:20+00, 30.00) already exists.
+","{'No': 156, 'CREATE DATE': '07-08-2025 08:12:20', 'USERNAME': 'palembang994', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 08:12:57', 'PROCESS BY': 'xpukul69', 'AMOUNT': '30.00'}"
+158,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(palembang994, Deposit, 2025-08-07 07:58:06+00, 20.00) already exists.
+","{'No': 157, 'CREATE DATE': '07-08-2025 07:58:06', 'USERNAME': 'palembang994', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:58:47', 'PROCESS BY': 'xpukul69', 'AMOUNT': '20.00'}"
+159,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(sigit10, Deposit, 2025-08-07 07:33:01+00, 50.00) already exists.
+","{'No': 158, 'CREATE DATE': '07-08-2025 07:33:01', 'USERNAME': 'sigit10', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:33:42', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+160,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(agasprima, Manual Deposit, 2025-08-07 07:32:26+00, 25.00) already exists.
+","{'No': 159, 'CREATE DATE': '07-08-2025 07:32:26', 'USERNAME': 'agasprima', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 07:32:26', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '25.00'}"
+161,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(agasprima, Deposit, 2025-08-07 07:30:11+00, 50.00) already exists.
+","{'No': 160, 'CREATE DATE': '07-08-2025 07:30:11', 'USERNAME': 'agasprima', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:30:56', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '50.00'}"
+162,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pupun12, Deposit, 2025-08-07 07:27:53+00, 28.00) already exists.
+","{'No': 161, 'CREATE DATE': '07-08-2025 07:27:53', 'USERNAME': 'pupun12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:29:44', 'PROCESS BY': 'xpukul69', 'AMOUNT': '28.00'}"
+163,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(padel20, Deposit, 2025-08-07 07:24:11+00, 50.00) already exists.
+","{'No': 162, 'CREATE DATE': '07-08-2025 07:24:11', 'USERNAME': 'padel20', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:24:52', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+164,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rumiyati, Deposit, 2025-08-07 07:23:51+00, 35.00) already exists.
+","{'No': 163, 'CREATE DATE': '07-08-2025 07:23:51', 'USERNAME': 'rumiyati', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 07:24:33', 'PROCESS BY': 'xpukul69', 'AMOUNT': '35.00'}"
+165,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(cucus12, Deposit, 2025-08-07 05:56:01+00, 55.00) already exists.
+","{'No': 164, 'CREATE DATE': '07-08-2025 05:56:01', 'USERNAME': 'cucus12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 05:56:11', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '55.00'}"
+166,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(tommy8, Deposit, 2025-08-07 05:53:21+00, 25.00) already exists.
+","{'No': 165, 'CREATE DATE': '07-08-2025 05:53:21', 'USERNAME': 'tommy8', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 05:53:52', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+167,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(damirun, Deposit, 2025-08-07 05:52:05+00, 50.00) already exists.
+","{'No': 166, 'CREATE DATE': '07-08-2025 05:52:05', 'USERNAME': 'damirun', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 05:52:44', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+168,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(cucus12, Deposit, 2025-08-07 05:39:42+00, 45.00) already exists.
+","{'No': 167, 'CREATE DATE': '07-08-2025 05:39:42', 'USERNAME': 'cucus12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 05:40:06', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '45.00'}"
+169,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(cucus12, Deposit, 2025-08-07 05:23:35+00, 29.00) already exists.
+","{'No': 168, 'CREATE DATE': '07-08-2025 05:23:35', 'USERNAME': 'cucus12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 05:24:01', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '29.00'}"
+170,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ansory201, Withdraw, 2025-08-07 05:08:21+00, 53.00) already exists.
+","{'No': 169, 'CREATE DATE': '07-08-2025 05:08:21', 'USERNAME': 'ansory201', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 05:08:45', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '53.00'}"
+171,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ansory201, Withdraw, 2025-08-07 04:58:37+00, 203.00) already exists.
+","{'No': 170, 'CREATE DATE': '07-08-2025 04:58:37', 'USERNAME': 'ansory201', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 04:59:17', 'PROCESS BY': 'zibran@xpukul69', 'AMOUNT': '203.00'}"
+172,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 04:40:29+00, 10.00) already exists.
+","{'No': 171, 'CREATE DATE': '07-08-2025 04:40:29', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 04:41:07', 'PROCESS BY': 'xpukul69', 'AMOUNT': '10.00'}"
+173,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ansory201, Deposit, 2025-08-07 04:34:55+00, 50.00) already exists.
+","{'No': 172, 'CREATE DATE': '07-08-2025 04:34:55', 'USERNAME': 'ansory201', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 04:36:14', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+174,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 04:31:12+00, 36.00) already exists.
+","{'No': 173, 'CREATE DATE': '07-08-2025 04:31:12', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 04:31:55', 'PROCESS BY': 'xpukul69', 'AMOUNT': '36.00'}"
+175,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 03:50:18+00, 27.00) already exists.
+","{'No': 174, 'CREATE DATE': '07-08-2025 03:50:18', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 03:51:01', 'PROCESS BY': 'xpukul69', 'AMOUNT': '27.00'}"
+176,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bawang93, Deposit, 2025-08-07 03:27:31+00, 25.00) already exists.
+","{'No': 175, 'CREATE DATE': '07-08-2025 03:27:31', 'USERNAME': 'bawang93', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 03:29:47', 'PROCESS BY': 'xpukul69', 'AMOUNT': '25.00'}"
+177,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ndohawk20, Manual Deposit, 2025-08-07 03:15:25+00, 25.00) already exists.
+","{'No': 176, 'CREATE DATE': '07-08-2025 03:15:25', 'USERNAME': 'ndohawk20', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 03:15:25', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '25.00'}"
+178,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(ndohawk20, Deposit, 2025-08-07 03:10:12+00, 52.00) already exists.
+","{'No': 177, 'CREATE DATE': '07-08-2025 03:10:12', 'USERNAME': 'ndohawk20', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 03:10:58', 'PROCESS BY': 'xpukul69', 'AMOUNT': '52.00'}"
+179,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(roda12345, Deposit, 2025-08-07 02:44:46+00, 36.00) already exists.
+","{'No': 178, 'CREATE DATE': '07-08-2025 02:44:46', 'USERNAME': 'roda12345', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:45:07', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '36.00'}"
+180,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(geloo123, Withdraw, 2025-08-07 02:38:00+00, 608.00) already exists.
+","{'No': 179, 'CREATE DATE': '07-08-2025 02:38:00', 'USERNAME': 'geloo123', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 02:38:08', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '608.00'}"
+181,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(midedpga, Withdraw, 2025-08-07 02:36:00+00, 1000.00) already exists.
+","{'No': 180, 'CREATE DATE': '07-08-2025 02:36:00', 'USERNAME': 'midedpga', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 02:36:24', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '1,000.00'}"
+182,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dirga93, Manual Deposit, 2025-08-07 02:20:52+00, 50.00) already exists.
+","{'No': 181, 'CREATE DATE': '07-08-2025 02:20:52', 'USERNAME': 'dirga93', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 02:20:52', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+183,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(keepfin, Deposit, 2025-08-07 02:19:45+00, 50.00) already exists.
+","{'No': 182, 'CREATE DATE': '07-08-2025 02:19:45', 'USERNAME': 'keepfin', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:20:14', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+184,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(dirga93, Deposit, 2025-08-07 02:19:24+00, 100.00) already exists.
+","{'No': 183, 'CREATE DATE': '07-08-2025 02:19:24', 'USERNAME': 'dirga93', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:19:56', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+185,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(terjal22, Manual Deposit, 2025-08-07 02:16:52+00, 50.00) already exists.
+","{'No': 184, 'CREATE DATE': '07-08-2025 02:16:52', 'USERNAME': 'terjal22', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 02:16:52', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+186,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(keepfin, Deposit, 2025-08-07 02:16:14+00, 50.00) already exists.
+","{'No': 185, 'CREATE DATE': '07-08-2025 02:16:14', 'USERNAME': 'keepfin', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:16:45', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+187,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kobel35, Deposit, 2025-08-07 02:14:59+00, 50.00) already exists.
+","{'No': 186, 'CREATE DATE': '07-08-2025 02:14:59', 'USERNAME': 'kobel35', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:15:38', 'PROCESS BY': 'xpukul69', 'AMOUNT': '50.00'}"
+188,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(terjal22, Deposit, 2025-08-07 02:14:33+00, 100.00) already exists.
+","{'No': 187, 'CREATE DATE': '07-08-2025 02:14:33', 'USERNAME': 'terjal22', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:15:03', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+189,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(manis69, Deposit, 2025-08-07 02:11:59+00, 30.00) already exists.
+","{'No': 188, 'CREATE DATE': '07-08-2025 02:11:59', 'USERNAME': 'manis69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:12:15', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '30.00'}"
+190,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nanaa, Deposit, 2025-08-07 02:10:14+00, 101.00) already exists.
+","{'No': 189, 'CREATE DATE': '07-08-2025 02:10:14', 'USERNAME': 'nanaa', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 02:11:06', 'PROCESS BY': 'xpukul69', 'AMOUNT': '101.00'}"
+191,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(adip97, Deposit, 2025-08-07 01:57:18+00, 148.00) already exists.
+","{'No': 190, 'CREATE DATE': '07-08-2025 01:57:18', 'USERNAME': 'adip97', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:59:42', 'PROCESS BY': 'xpukul69', 'AMOUNT': '148.00'}"
+192,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 01:55:51+00, 198.00) already exists.
+","{'No': 191, 'CREATE DATE': '07-08-2025 01:55:51', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:56:20', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+193,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(geloo123, Deposit, 2025-08-07 01:52:24+00, 108.00) already exists.
+","{'No': 192, 'CREATE DATE': '07-08-2025 01:52:24', 'USERNAME': 'geloo123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:52:44', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '108.00'}"
+194,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nataro, Withdraw, 2025-08-07 01:48:42+00, 1553.00) already exists.
+","{'No': 193, 'CREATE DATE': '07-08-2025 01:48:42', 'USERNAME': 'nataro', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 01:49:10', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '1,553.00'}"
+195,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 01:44:15+00, 198.00) already exists.
+","{'No': 194, 'CREATE DATE': '07-08-2025 01:44:15', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:46:55', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+196,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(husaini143, Deposit, 2025-08-07 01:40:17+00, 33.00) already exists.
+","{'No': 195, 'CREATE DATE': '07-08-2025 01:40:17', 'USERNAME': 'husaini143', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:40:53', 'PROCESS BY': 'xpukul69', 'AMOUNT': '33.00'}"
+197,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nana02, Deposit, 2025-08-07 01:25:35+00, 20.00) already exists.
+","{'No': 196, 'CREATE DATE': '07-08-2025 01:25:35', 'USERNAME': 'nana02', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:25:48', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+198,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bejo299, Deposit, 2025-08-07 01:23:37+00, 198.00) already exists.
+","{'No': 197, 'CREATE DATE': '07-08-2025 01:23:37', 'USERNAME': 'bejo299', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:24:27', 'PROCESS BY': 'xpukul69', 'AMOUNT': '198.00'}"
+199,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(manis69, Deposit, 2025-08-07 01:23:23+00, 42.00) already exists.
+","{'No': 198, 'CREATE DATE': '07-08-2025 01:23:23', 'USERNAME': 'manis69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:23:33', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '42.00'}"
+200,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nana02, Withdraw, 2025-08-07 01:22:47+00, 51.00) already exists.
+","{'No': 199, 'CREATE DATE': '07-08-2025 01:22:47', 'USERNAME': 'nana02', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 01:23:01', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '51.00'}"
+201,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(m47fxjifuf69, Deposit, 2025-08-07 01:08:18+00, 40.00) already exists.
+","{'No': 200, 'CREATE DATE': '07-08-2025 01:08:18', 'USERNAME': 'm47fxjifuf69', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:08:26', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '40.00'}"
+202,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nana02, Deposit, 2025-08-07 01:06:10+00, 20.00) already exists.
+","{'No': 201, 'CREATE DATE': '07-08-2025 01:06:10', 'USERNAME': 'nana02', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:06:21', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+203,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nataro, Manual Deposit, 2025-08-07 01:05:45+00, 50.00) already exists.
+","{'No': 202, 'CREATE DATE': '07-08-2025 01:05:45', 'USERNAME': 'nataro', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 01:05:45', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+204,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(nataro, Deposit, 2025-08-07 01:02:52+00, 100.00) already exists.
+","{'No': 203, 'CREATE DATE': '07-08-2025 01:02:52', 'USERNAME': 'nataro', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 01:04:42', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+205,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bandeljp, Manual Deposit, 2025-08-07 01:01:49+00, 50.00) already exists.
+","{'No': 204, 'CREATE DATE': '07-08-2025 01:01:49', 'USERNAME': 'bandeljp', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 01:01:49', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+206,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bandeljp, Deposit, 2025-08-07 00:50:20+00, 100.00) already exists.
+","{'No': 205, 'CREATE DATE': '07-08-2025 00:50:20', 'USERNAME': 'bandeljp', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:50:59', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+207,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bodam123, Deposit, 2025-08-07 00:49:30+00, 70.00) already exists.
+","{'No': 206, 'CREATE DATE': '07-08-2025 00:49:30', 'USERNAME': 'bodam123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:50:42', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '70.00'}"
+208,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(endi55e, Deposit, 2025-08-07 00:44:50+00, 29.00) already exists.
+","{'No': 207, 'CREATE DATE': '07-08-2025 00:44:50', 'USERNAME': 'endi55e', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:46:24', 'PROCESS BY': 'xpukul69', 'AMOUNT': '29.00'}"
+209,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(midedpga, Deposit, 2025-08-07 00:44:27+00, 150.00) already exists.
+","{'No': 208, 'CREATE DATE': '07-08-2025 00:44:27', 'USERNAME': 'midedpga', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:46:16', 'PROCESS BY': 'xpukul69', 'AMOUNT': '150.00'}"
+210,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bandit07, Withdraw, 2025-08-07 00:40:35+00, 900.00) already exists.
+","{'No': 209, 'CREATE DATE': '07-08-2025 00:40:35', 'USERNAME': 'bandit07', 'EVENT': 'Withdraw', 'PROCESS DATE': '07-08-2025 00:40:50', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '900.00'}"
+211,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(peyekk888, Deposit, 2025-08-07 00:37:54+00, 100.00) already exists.
+","{'No': 210, 'CREATE DATE': '07-08-2025 00:37:54', 'USERNAME': 'peyekk888', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:40:47', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+212,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(solusi123, Deposit, 2025-08-07 00:40:30+00, 20.00) already exists.
+","{'No': 211, 'CREATE DATE': '07-08-2025 00:40:30', 'USERNAME': 'solusi123', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:40:41', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+213,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kingmoni89, Deposit, 2025-08-07 00:38:51+00, 100.00) already exists.
+","{'No': 212, 'CREATE DATE': '07-08-2025 00:38:51', 'USERNAME': 'kingmoni89', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:39:17', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+214,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(matpler, Deposit, 2025-08-07 00:23:29+00, 100.00) already exists.
+","{'No': 213, 'CREATE DATE': '07-08-2025 00:23:29', 'USERNAME': 'matpler', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:24:06', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '100.00'}"
+215,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pleper391, Manual Deposit, 2025-08-07 00:23:41+00, 27.00) already exists.
+","{'No': 214, 'CREATE DATE': '07-08-2025 00:23:41', 'USERNAME': 'pleper391', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 00:23:41', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '27.00'}"
+216,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(pleper391, Deposit, 2025-08-07 00:21:59+00, 54.00) already exists.
+","{'No': 215, 'CREATE DATE': '07-08-2025 00:21:59', 'USERNAME': 'pleper391', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:22:53', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '54.00'}"
+217,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bojan, Manual Deposit, 2025-08-07 00:22:18+00, 50.00) already exists.
+","{'No': 216, 'CREATE DATE': '07-08-2025 00:22:18', 'USERNAME': 'bojan', 'EVENT': 'Manual Deposit', 'PROCESS DATE': '07-08-2025 00:22:18', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
+218,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(kadap12, Deposit, 2025-08-07 00:19:27+00, 200.00) already exists.
+","{'No': 217, 'CREATE DATE': '07-08-2025 00:19:27', 'USERNAME': 'kadap12', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:21:45', 'PROCESS BY': 'xpukul69', 'AMOUNT': '200.00'}"
+219,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bojan, Deposit, 2025-08-07 00:20:36+00, 100.00) already exists.
+","{'No': 218, 'CREATE DATE': '07-08-2025 00:20:36', 'USERNAME': 'bojan', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:20:59', 'PROCESS BY': 'xpukul69', 'AMOUNT': '100.00'}"
+220,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(drpaul88, Deposit, 2025-08-07 00:15:58+00, 20.00) already exists.
+","{'No': 219, 'CREATE DATE': '07-08-2025 00:15:58', 'USERNAME': 'drpaul88', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:16:07', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '20.00'}"
+221,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(rajamanchuntan92, Deposit, 2025-08-07 00:06:46+00, 300.00) already exists.
+","{'No': 220, 'CREATE DATE': '07-08-2025 00:06:46', 'USERNAME': 'rajamanchuntan92', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:13:05', 'PROCESS BY': 'xpukul69', 'AMOUNT': '300.00'}"
+222,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(bandit07, Deposit, 2025-08-07 00:01:31+00, 200.00) already exists.
+","{'No': 221, 'CREATE DATE': '07-08-2025 00:01:31', 'USERNAME': 'bandit07', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:03:04', 'PROCESS BY': 'xpukul69', 'AMOUNT': '200.00'}"
+223,"duplicate key value violates unique constraint ""data_management_transact_username_event_create_da_920ae5b2_uniq""
+DETAIL:  Key (username, event, create_date, amount)=(qimul14, Deposit, 2025-08-07 00:02:14+00, 50.00) already exists.
+","{'No': 222, 'CREATE DATE': '07-08-2025 00:02:14', 'USERNAME': 'qimul14', 'EVENT': 'Deposit', 'PROCESS DATE': '07-08-2025 00:02:37', 'PROCESS BY': 'rahman@xpukul69', 'AMOUNT': '50.00'}"
