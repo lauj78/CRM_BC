@@ -1,0 +1,7 @@
+Row,Error,Row Data
+34,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(asanasan) already exists.
+","{'No': 33, 'Username': 'asanasan', 'Name': 'Asan', 'Referral': '-', 'Handphone': 6285758747753, 'Join Date': '11-09-2025 02:31:18', 'Email': nan}"
+162,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(karmila69) already exists.
+","{'No': 161, 'Username': 'karmila69', 'Name': 'KARMILA', 'Referral': '-', 'Handphone': 6281255610630, 'Join Date': '07-09-2025 20:39:19', 'Email': nan}"

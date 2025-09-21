@@ -1,0 +1,16 @@
+Row,Error,Row Data
+110,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(arman020213) already exists.
+","{'No': 109, 'Username': 'arman020213', 'Name': 'Rohman', 'Referral': '-', 'Handphone': 6282179410881, 'Join Date': '23-08-2025 23:40:14', 'Email': nan}"
+585,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(jesika) already exists.
+","{'No': 584, 'Username': 'jesika', 'Name': 'Jesika viljana tasya', 'Referral': 'vippremium', 'Handphone': 6281371523630, 'Join Date': '29-08-2025 14:42:43', 'Email': nan}"
+742,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(manap12) already exists.
+","{'No': 741, 'Username': 'manap12', 'Name': 'Manap', 'Referral': 'bond01', 'Handphone': 6289526695193, 'Join Date': '22-08-2025 03:52:08', 'Email': nan}"
+1019,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(riski88) already exists.
+","{'No': 1018, 'Username': 'riski88', 'Name': 'Barli', 'Referral': '-', 'Handphone': 6285279200282, 'Join Date': '30-08-2025 07:08:13', 'Email': nan}"
+1232,"duplicate key value violates unique constraint ""data_management_member_username_key""
+DETAIL:  Key (username)=(wahyudi) already exists.
+","{'No': 1231, 'Username': 'wahyudi', 'Name': 'Wahyudi', 'Referral': 'vippremium', 'Handphone': 6281227834447, 'Join Date': '27-08-2025 23:22:28', 'Email': nan}"

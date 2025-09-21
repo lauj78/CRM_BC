@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'report_app',
     'tenants', 
     'tenant_management',
+    'whatsapp_messaging'
 ]
 
 MIDDLEWARE = [
@@ -193,10 +194,27 @@ LOGGING = {
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_AGE = 3600  # 1 hour
 
-# In settings.py
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.23.5.133', '100.122.81.22', '100.121.155.33']
 
 PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants']
 
 AUTH_USER_MODEL = "auth.User" # Just to make sure it's here
+
+# WhatsApp Evolution API Configuration
+EVOLUTION_API_CONFIG = {
+    'BASE_URL': 'http://localhost:8081',
+    'API_KEY': '429683C4C977415CAAFCCE10F7D57E11',  # Your actual API key
+    'WEBHOOK_URL': 'http://localhost:8000/api/whatsapp/webhooks/evolution/',
+    'DEFAULT_TIMEOUT': 30,
+    'MAX_INSTANCES': 20,
+    'DEFAULT_MESSAGE_LIMIT': 200,  # Per instance per day
+}
+
+# Message Queue Settings
+MESSAGE_QUEUE_CONFIG = {
+    'MAX_RETRY_ATTEMPTS': 3,
+    'RETRY_DELAY': 300,  # 5 minutes
+    'BATCH_SIZE': 50,  # Messages per batch
+    'RATE_LIMIT_PER_INSTANCE': 50,  # Messages per hour per instance
+}

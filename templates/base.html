@@ -131,6 +131,10 @@
                     {% if request.path == '/master/tenants/' %}class="active"{% endif %}>
                     Tenant Management
                     </a>
+                    <a href="{% url 'master_whatsapp:dashboard' %}" 
+                    {% if request.path == '/master/whatsapp/' %}class="active"{% endif %}>
+                    WhatsApp
+                    </a>
                 
                 <!-- Regular User Links (only show if tenant exists) -->
                 {% elif request.tenant %}
@@ -145,6 +149,10 @@
                     <a href="{% url 'report_app:report_hub' tenant_id=request.tenant.tenant_id %}" 
                     {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/report/reports/' %}class="active"{% endif %}>
                     Reporting
+                    </a>
+                    <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=request.tenant.tenant_id %}" 
+                    {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/whatsapp/' %}class="active"{% endif %}>
+                    WhatsApp
                     </a>
                 {% endif %}
             {% endif %}

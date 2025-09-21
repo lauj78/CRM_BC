@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Edit WhatsApp Instance{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+    }
+    .submit-btn {
+        background-color: #28a745;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+    .back-link {
+        color: #337ab7;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="form-container">
+    <h2>Edit WhatsApp Instance</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.instance_name.id_for_label }}">{{ form.instance_name.label }}</label>
+            {{ form.instance_name }}
+            <small class="form-text text-muted">Note: Changing the name here won't update Evolution API. Use this only for display purposes.</small>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}" class="back-link">← Back to Dashboard</a>
+            <button type="submit" class="submit-btn">Update Instance</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

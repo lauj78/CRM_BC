@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}WhatsApp Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+    }
+    .header h2 {
+        color: #333;
+        margin: 0;
+    }
+    .add-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    .add-btn:hover {
+        background-color: #45a049;
+    }
+    .instance-list {
+        list-style: none;
+        padding: 0;
+    }
+    .instance-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .instance-details {
+        flex-grow: 1;
+    }
+    .instance-details h3 {
+        margin: 0 0 5px 0;
+        color: #007bff;
+    }
+    .instance-details p {
+        margin: 0;
+        color: #555;
+    }
+    .instance-actions a {
+        color: #337ab7;
+        text-decoration: none;
+        margin-left: 15px;
+    }
+    .instance-actions a:hover {
+        text-decoration: underline;
+    }
+    .no-instances {
+        text-align: center;
+        color: #777;
+        padding: 50px;
+        border: 1px dashed #ccc;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="header">
+        <h2>WhatsApp Dashboard</h2>
+        <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" class="add-btn">+ Add New Instance</a>
+        <a href="{% url 'whatsapp_messaging:sync_instances' tenant_id=tenant_id %}" class="btn btn-secondary">🔄 Sync with API</a>
+    </div>
+
+
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if instances %}
+        <ul class="instance-list">
+            {% for instance in instances %}
+                <li class="instance-item">
+                    <div class="instance-details">
+                        <h3>{{ instance.instance_name }}</h3>
+                        <p>API Key: {{ instance.api_key }}</p>
+                        <small>Created: {{ instance.created_at|date:"F j, Y" }}</small>
+                    </div>
+                    <div class="instance-actions">
+                    <!--      <a href="{% url 'whatsapp_messaging:edit_instance' tenant_id=tenant_id pk=instance.pk %}">Edit</a> -->
+                        <a href="{% url 'whatsapp_messaging:delete_instance' tenant_id=tenant_id pk=instance.pk %}">Delete</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="no-instances">
+            <p>No WhatsApp instances configured yet. Click the button above to add your first one!</p>
+        </div>
+    {% endif %}
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Delete WhatsApp Instance{% endblock %}
+
+{% block content %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .delete-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #856404;
+    }
+    .warning-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border: 1px solid #f5c6cb;
+    }
+    .instance-details {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+    }
+    .delete-btn {
+        background-color: #dc3545;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .delete-btn:hover {
+        background-color: #c82333;
+    }
+    .back-link {
+        color: #6c757d;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="delete-container">
+    <h2>Delete WhatsApp Instance</h2>
+    
+    <div class="warning-message">
+        <strong>Warning:</strong> This action cannot be undone. The instance will be deleted from both your CRM and Evolution API.
+    </div>
+    
+    <div class="instance-details">
+        <h4>Instance Details:</h4>
+        <p><strong>Name:</strong> {{ instance.instance_name }}</p>
+        <p><strong>Phone:</strong> {{ instance.phone_number }}</p>
+        <p><strong>Status:</strong> {{ instance.get_status_display }}</p>
+        <p><strong>Created:</strong> {{ instance.created_at|date:"M d, Y" }}</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}" class="back-link">← Cancel</a>
+            <button type="submit" class="delete-btn">Delete Instance</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

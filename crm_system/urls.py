@@ -18,6 +18,7 @@ urlpatterns = [
     path('master/', include([
         path('dashboard/', include('dashboard_app.urls', namespace='master_dashboard')),
         path('Tenant Management/', include('tenant_management.urls', namespace='tenant_management')),
+        #path('whatsapp/', include('whatsapp_messaging.urls', namespace='master_whatsapp')),
     ])),
     
     # Tenant-specific apps
@@ -25,6 +26,13 @@ urlpatterns = [
         path('data/', include('data_management.urls', namespace='data_management')),
         path('dashboard/', include('dashboard_app.urls', namespace='dashboard_app')),
         path('report/', include('report_app.urls', namespace='report_app')),
+        path('whatsapp/', include('whatsapp_messaging.urls', namespace='whatsapp_messaging')),
         path('tenant-test/', tenant_test),
     ])),
+    
+    
+    # Global webhook endpoint (outside tenant context)
+    path('api/whatsapp/', include('whatsapp_messaging.urls', namespace='api_whatsapp')),
+    
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,79 @@
+from django.contrib import admin
+from .models import WhatsAppInstance, MessageQueue, WebhookEvent
+
+@admin.register(WhatsAppInstance)
+class WhatsAppInstanceAdmin(admin.ModelAdmin):
+    list_display = ['instance_name', 'phone_number', 'status', 'is_active', 'daily_message_count', 'created_at']
+    list_filter = ['status', 'is_active', 'created_at']
+    search_fields = ['instance_name', 'phone_number', 'owner_jid']
+    readonly_fields = ['evolution_instance_id', 'owner_jid', 'session_data', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('instance_name', 'phone_number', 'is_active')
+        }),
+        ('Connection Status', {
+            'fields': ('status', 'owner_jid', 'evolution_instance_id')
+        }),
+        ('Rate Limiting', {
+            'fields': ('daily_message_limit', 'daily_message_count', 'last_message_sent')
+        }),
+        ('Profile', {
+            'fields': ('profile_name', 'profile_picture_url'),
+            'classes': ('collapse',)
+        }),
+        ('Technical', {
+            'fields': ('qr_code', 'session_data', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(MessageQueue)
+class MessageQueueAdmin(admin.ModelAdmin):
+    list_display = ['recipient_phone', 'whatsapp_instance', 'status', 'priority', 'scheduled_at', 'created_at']
+    list_filter = ['status', 'message_type', 'whatsapp_instance', 'created_at']
+    search_fields = ['recipient_phone', 'recipient_name', 'message_content']
+    readonly_fields = ['evolution_message_id', 'api_response', 'created_at', 'sent_at', 'delivered_at', 'read_at']
+    
+    fieldsets = (
+        ('Message Details', {
+            'fields': ('whatsapp_instance', 'recipient_phone', 'recipient_name')
+        }),
+        ('Content', {
+            'fields': ('message_content', 'message_type', 'media_url')
+        }),
+        ('Scheduling & Priority', {
+            'fields': ('scheduled_at', 'priority')
+        }),
+        ('Status', {
+            'fields': ('status', 'retry_count', 'max_retries', 'error_message')
+        }),
+        ('API Response', {
+            'fields': ('evolution_message_id', 'api_response'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'sent_at', 'delivered_at', 'read_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(WebhookEvent)
+class WebhookEventAdmin(admin.ModelAdmin):
+    list_display = ['event_type', 'instance_name', 'processed', 'created_at']
+    list_filter = ['event_type', 'processed', 'created_at']
+    search_fields = ['instance_name', 'evolution_message_id']
+    readonly_fields = ['payload', 'created_at', 'processed_at']
+    
+    fieldsets = (
+        ('Event Information', {
+            'fields': ('event_type', 'instance_name', 'evolution_message_id', 'whatsapp_message_id')
+        }),
+        ('Processing Status', {
+            'fields': ('processed', 'processed_at', 'processing_error')
+        }),
+        ('Raw Data', {
+            'fields': ('payload',),
+            'classes': ('collapse',)
+        }),
+    )
