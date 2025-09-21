@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Send Test Message - {{ instance.instance_name }}{% endblock %}
+
+{% block content %}
+<style>
+    .message-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .message-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    .form-group textarea {
+        height: 120px;
+        resize: vertical;
+    }
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+    }
+    .send-btn {
+        background-color: #28a745;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .send-btn:hover {
+        background-color: #218838;
+    }
+    .back-link {
+        color: #337ab7;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    .instance-info {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .message {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+
+<div class="message-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h2>Send Test Message</h2>
+    
+    <div class="instance-info">
+        <strong>Instance:</strong> {{ instance.instance_name }}<br>
+        <strong>Status:</strong> {{ instance.get_status_display }}<br>
+        <strong>Phone:</strong> {{ instance.phone_number|default:"Not connected" }}
+    </div>
+    
+    {% if instance.status != 'connected' %}
+        <div class="message error">
+            <strong>Warning:</strong> This instance is not connected to WhatsApp. 
+            <a href="{% url 'whatsapp_messaging:get_qr_code' tenant_id=tenant_id pk=instance.pk %}">Get QR Code</a> to connect first.
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="phone_number">Recipient Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number" 
+                   placeholder="e.g., 60123456789 (with country code)" 
+                   required>
+            <small class="form-text text-muted">Include country code (e.g., 60 for Malaysia)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="message_text">Message</label>
+            <textarea id="message_text" name="message_text" 
+                      placeholder="Enter your test message here..." 
+                      required></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}" class="back-link">← Back to Dashboard</a>
+            <button type="submit" class="send-btn">Send Message</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

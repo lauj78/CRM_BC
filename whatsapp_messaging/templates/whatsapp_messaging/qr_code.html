@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}QR Code - {{ instance.instance_name }}{% endblock %}
+
+{% block content %}
+<style>
+    .qr-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        text-align: center;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+    .qr-code {
+        margin: 20px 0;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    .instructions {
+        background-color: #e7f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        text-align: left;
+    }
+</style>
+
+<div class="qr-container">
+    <h2>Connect WhatsApp Instance: {{ instance.instance_name }}</h2>
+    
+    {% if qr_code %}
+        <div class="qr-code">
+            <img src="{{ qr_code }}" alt="QR Code" style="max-width: 300px;">
+        </div>
+        
+        <div class="instructions">
+            <h4>How to connect:</h4>
+            <ol>
+                <li>Open WhatsApp on your phone</li>
+                <li>Go to Settings → Linked Devices</li>
+                <li>Tap "Link a Device"</li>
+                <li>Scan this QR code</li>
+            </ol>
+        </div>
+        
+        <button onclick="location.reload()" class="btn btn-primary">Refresh QR Code</button>
+    {% else %}
+        <p>No QR code available. The instance might already be connected.</p>
+    {% endif %}
+    
+    <div style="margin-top: 20px;">
+        <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

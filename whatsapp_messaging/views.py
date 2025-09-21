@@ -183,7 +183,6 @@ def add_instance(request, tenant_id):
     })
     
     
-
 @login_required
 def edit_instance(request, tenant_id, pk):
     """
@@ -236,6 +235,7 @@ def delete_instance(request, tenant_id, pk):
     })
     
 @login_required
+@login_required
 def sync_instances(request, tenant_id):
     """
     Sync WhatsApp instances with Evolution API
@@ -269,13 +269,38 @@ def sync_instances(request, tenant_id):
             api_data = api_instance_map.get(db_instance.instance_name)
             
             if api_data:
-                # Update instance with latest data from API
-                db_instance.status = api_data.get('connectionStatus', 'disconnected')
+                # Map Evolution API status to Django model status
+                api_status = api_data.get('connectionStatus', 'disconnected')
+                if api_status == 'open':
+                    db_instance.status = 'connected'
+                elif api_status == 'close':
+                    db_instance.status = 'disconnected'
+                elif api_status == 'connecting':
+                    db_instance.status = 'connecting'
+                else:
+                    db_instance.status = 'disconnected'
+                
+                # Update owner JID
                 db_instance.owner_jid = api_data.get('ownerJid')
+                
+                # Extract phone number from ownerJid if available
+                if api_data.get('ownerJid'):
+                    # ownerJid format: "60123456789@s.whatsapp.net"
+                    phone = api_data.get('ownerJid').split('@')[0]
+                    db_instance.phone_number = phone
+                
+                # Update profile information
                 db_instance.profile_name = api_data.get('profileName')
                 db_instance.profile_picture_url = api_data.get('profilePicUrl')
+                
+                # Update external ID if not set
+                if not db_instance.external_id and api_data.get('id'):
+                    db_instance.external_id = api_data.get('id')
+                
                 db_instance.save()
                 synced_count += 1
+                logger.info(f"Synced instance {db_instance.instance_name}: status={db_instance.status}, phone={db_instance.phone_number}")
+                
             else:
                 # Instance exists in DB but not in Evolution API - delete from DB
                 logger.info(f"Deleting instance {db_instance.instance_name} - not found in Evolution API")
@@ -295,6 +320,81 @@ def sync_instances(request, tenant_id):
             
     except Exception as e:
         logger.error(f"Sync failed: {e}")
-        messages.error(request, "Sync failed due to an unexpected error")
+        messages.error(request, f"Sync failed: {str(e)}")
     
     return redirect('whatsapp_messaging:dashboard', tenant_id=request.tenant.tenant_id)
+
+
+
+@login_required
+def get_qr_code(request, tenant_id, pk):
+    """
+    Get and display QR code for WhatsApp instance connection
+    """
+    if not request.tenant:
+        messages.error(request, "Tenant not found.")
+        return redirect('account_locked')
+    
+    instance = get_object_or_404(WhatsAppInstance, pk=pk, tenant_id=request.tenant.id)
+    
+    try:
+        service = EvolutionAPIService()
+        result = service.get_qr_code(instance.instance_name)
+        
+        if result['success']:
+            qr_data = result['data']
+            # Update instance with QR code
+            instance.qr_code = qr_data.get('base64', '')
+            instance.save()
+            
+            context = {
+                'instance': instance,
+                'qr_code': qr_data.get('base64', ''),
+                'tenant_id': request.tenant.tenant_id
+            }
+            return render(request, 'whatsapp_messaging/qr_code.html', context)
+        else:
+            messages.error(request, f"Failed to get QR code: {result.get('error', 'Unknown error')}")
+            
+    except Exception as e:
+        logger.error(f"Error getting QR code: {e}")
+        messages.error(request, "Failed to generate QR code")
+    
+    return redirect('whatsapp_messaging:dashboard', tenant_id=request.tenant.tenant_id)
+
+@login_required
+def send_test_message(request, tenant_id, pk):
+    """
+    Send a test message from WhatsApp instance
+    """
+    if not request.tenant:
+        messages.error(request, "Tenant not found.")
+        return redirect('account_locked')
+    
+    instance = get_object_or_404(WhatsAppInstance, pk=pk, tenant_id=request.tenant.id)
+    
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number')
+        message_text = request.POST.get('message_text')
+        
+        if phone_number and message_text:
+            try:
+                service = EvolutionAPIService()
+                result = service.send_text_message(instance.instance_name, phone_number, message_text)
+                
+                if result['success']:
+                    messages.success(request, f"Message sent successfully to {phone_number}")
+                else:
+                    messages.error(request, f"Failed to send message: {result.get('error', 'Unknown error')}")
+                    
+            except Exception as e:
+                logger.error(f"Error sending message: {e}")
+                messages.error(request, "Failed to send message")
+        else:
+            messages.error(request, "Phone number and message are required")
+    
+    context = {
+        'instance': instance,
+        'tenant_id': request.tenant.tenant_id
+    }
+    return render(request, 'whatsapp_messaging/send_message.html', context)

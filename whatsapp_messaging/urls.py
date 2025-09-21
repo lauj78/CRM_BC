@@ -11,7 +11,9 @@ urlpatterns = [
     path('edit/<int:pk>/', views.edit_instance, name='edit_instance'),
     path('delete/<int:pk>/', views.delete_instance, name='delete_instance'),
     path('sync/', views.sync_instances, name='sync_instances'), 
-    
+    path('<int:pk>/qr-code/', views.get_qr_code, name='get_qr_code'),  # Add this
+    path('<int:pk>/send-message/', views.send_test_message, name='send_message'),  # Add this
+
     # Webhook endpoint for incoming messages from Evolution API
     path('webhooks/evolution/', views.webhook_handler, name='evolution_webhook'),
 ]

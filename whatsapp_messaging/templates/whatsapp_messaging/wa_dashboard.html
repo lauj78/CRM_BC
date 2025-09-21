@@ -58,6 +58,9 @@
     .instance-details h3 {
         margin: 0 0 5px 0;
         color: #007bff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     .instance-details p {
         margin: 0;
@@ -78,6 +81,66 @@
         border: 1px dashed #ccc;
         border-radius: 8px;
     }
+    
+    /* Status Badge Styles */
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        min-width: 80px;
+        display: inline-block;
+    }
+    .status-badge.connected {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .status-badge.connecting {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    .status-badge.disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .status-badge.closed {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .instance-phone {
+        color: #28a745;
+        font-weight: bold;
+    }
+    .messages {
+        margin-bottom: 20px;
+        padding: 0;
+        list-style: none;
+    }
+    .messages li {
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+    }
+    .messages .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .messages .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .messages .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
 </style>
 
 <div class="dashboard-container">
@@ -86,8 +149,6 @@
         <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" class="add-btn">+ Add New Instance</a>
         <a href="{% url 'whatsapp_messaging:sync_instances' tenant_id=tenant_id %}" class="btn btn-secondary">🔄 Sync with API</a>
     </div>
-
-
 
     {% if messages %}
         <ul class="messages">
@@ -102,23 +163,64 @@
             {% for instance in instances %}
                 <li class="instance-item">
                     <div class="instance-details">
-                        <h3>{{ instance.instance_name }}</h3>
-                        <p>API Key: {{ instance.api_key }}</p>
+                        <h3>
+                            {{ instance.instance_name }}
+                            <!-- Status Badge -->
+                            {% if instance.status == 'connected' %}
+                                <span class="status-badge connected">🟢 Connected</span>
+                            {% elif instance.status == 'connecting' %}
+                                <span class="status-badge connecting">🟡 Connecting</span>
+                            {% elif instance.status == 'disconnected' %}
+                                <span class="status-badge disconnected">🔴 Disconnected</span>
+                            {% elif instance.status == 'closed' %}
+                                <span class="status-badge closed">🔴 Closed</span>
+                            {% else %}
+                                <span class="status-badge disconnected">⚫ {{ instance.status|title }}</span>
+                            {% endif %}
+                        </h3>
+                        
+                        <!-- Phone Number (if connected) -->
+                        {% if instance.phone_number and instance.status == 'connected' %}
+                            <p class="instance-phone">📱 Phone: {{ instance.phone_number }}</p>
+                        {% endif %}
+                        
+                        <p>API Key: {{ instance.api_key|truncatechars:30 }}...</p>
                         <small>Created: {{ instance.created_at|date:"F j, Y" }}</small>
                     </div>
                     <div class="instance-actions">
-                    <!--      <a href="{% url 'whatsapp_messaging:edit_instance' tenant_id=tenant_id pk=instance.pk %}">Edit</a> -->
-                        <a href="{% url 'whatsapp_messaging:delete_instance' tenant_id=tenant_id pk=instance.pk %}">Delete</a>
+                        <!-- Show different buttons based on status -->
+                        {% if instance.status == 'connected' %}
+                            <a href="{% url 'whatsapp_messaging:send_message' tenant_id=tenant_id pk=instance.pk %}" style="color: #28a745; font-weight: bold;">✉️ Send Message</a>
+                        {% else %}
+                            <a href="{% url 'whatsapp_messaging:get_qr_code' tenant_id=tenant_id pk=instance.pk %}" style="color: #17a2b8; font-weight: bold;">📱 Get QR Code</a>
+                        {% endif %}
+                        
+                        <a href="{% url 'whatsapp_messaging:delete_instance' tenant_id=tenant_id pk=instance.pk %}" style="color: #dc3545;">🗑️ Delete</a>
                     </div>
                 </li>
             {% endfor %}
         </ul>
+        
+        <!-- Summary Stats -->
+        <div style="margin-top: 30px; padding: 15px; background-color: #e9ecef; border-radius: 5px;">
+            <strong>Summary:</strong> 
+            {{ instances|length }} instance{{ instances|length|pluralize }}, 
+            Connected: 
+            <span style="color: #28a745; font-weight: bold;">
+                {% regroup instances by status as status_groups %}
+                {% for group in status_groups %}
+                    {% if group.grouper == 'connected' %}
+                        {{ group.list|length }}
+                    {% endif %}
+                {% empty %}
+                    0
+                {% endfor %}
+            </span>
+        </div>
     {% else %}
         <div class="no-instances">
             <p>No WhatsApp instances configured yet. Click the button above to add your first one!</p>
         </div>
     {% endif %}
-
-
 </div>
 {% endblock %}
