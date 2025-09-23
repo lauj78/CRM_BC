@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview: {{ template.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <h2>Template Preview: {{ template.name }}</h2>
+    <p style="color: #666;">{{ template.description }}</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Template Info -->
+    <div>
+        <h3>Template Information</h3>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+            <p><strong>Category:</strong> 
+                <span style="background: {{ template.category.color }}; color: white; padding: 2px 8px; border-radius: 3px;">
+                    {{ template.category.name }}
+                </span>
+            </p>
+            <p><strong>Type:</strong> 
+                {% if template.is_system_template %}🔧 System Template{% else %}👤 User Template{% endif %}
+            </p>
+            <p><strong>Usage Count:</strong> {{ template.usage_count }}</p>
+            {% if template.use_variations %}
+                <p><strong>Anti-ban:</strong> <span style="color: #4CAF50;">✓ Has variations</span></p>
+            {% endif %}
+        </div>
+
+        <h4 style="margin-top: 20px;">Variables Used</h4>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+            {% for variable in template.variables_used %}
+                <span style="background: #e9ecef; color: #495057; padding: 4px 8px; border-radius: 3px; margin: 2px; display: inline-block;">
+                    {{variable}}
+                </span>
+            {% empty %}
+                <span style="color: #666;">No variables used</span>
+            {% endfor %}
+        </div>
+
+        <h4 style="margin-top: 20px;">Sample Data</h4>
+        <div style="background: #f0f8f0; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 14px;">
+            {% for key, value in sample_data.items %}
+                <strong>{{ key }}:</strong> {{ value }}<br>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Preview -->
+    <div>
+        <h3>Message Preview</h3>
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3;">
+            <h4>📱 WhatsApp Message:</h4>
+            <div style="background: white; padding: 12px; border-radius: 8px; font-family: sans-serif; line-height: 1.4; white-space: pre-wrap;">{{ preview_content }}</div>
+        </div>
+
+        {% if template.variation_a %}
+            <div style="background: #f3e5f5; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #9c27b0;">
+                <h4>📱 Variation A:</h4>
+                <div style="background: white; padding: 12px; border-radius: 8px; font-family: sans-serif; line-height: 1.4; white-space: pre-wrap;">{{ template.variation_a }}</div>
+            </div>
+        {% endif %}
+
+        {% if template.variation_b %}
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #4caf50;">
+                <h4>📱 Variation B:</h4>
+                <div style="background: white; padding: 12px; border-radius: 8px; font-family: sans-serif; line-height: 1.4; white-space: pre-wrap;">{{ template.variation_b }}</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div style="margin-top: 30px; text-align: center;">
+    <a href="{% url 'marketing_campaigns:template_edit' request.resolver_match.kwargs.tenant_id template.pk %}" 
+       style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+        ✏️ Edit Template
+    </a>
+    <a href="{% url 'marketing_campaigns:templates_list' request.resolver_match.kwargs.tenant_id %}" 
+       style="background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        ← Back to Templates
+    </a>
+</div>
+{% endblock %}

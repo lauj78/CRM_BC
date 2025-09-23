@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Marketing Campaigns{% endblock %}
+
+{% block content %}
+<h2>Marketing Campaigns Dashboard</h2>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+        <h3>{{ total_templates }}</h3>
+        <p>Message Templates</p>
+        <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}">Manage Templates</a>
+    </div>
+    
+    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+        <h3>{{ total_categories }}</h3>
+        <p>Categories</p>
+    </div>
+</div>
+
+<div style="margin-top: 30px;">
+    <h3>Quick Actions</h3>
+    <a href="{% url 'marketing_campaigns:template_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" 
+       style="display: inline-block; background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+       Create Template
+    </a>
+    <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" 
+       style="display: inline-block; background: #008CBA; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+       View All Templates
+    </a>
+    <!-- Add this after the templates section -->
+    <a href="{% url 'marketing_campaigns:audience_upload' tenant_id=request.resolver_match.kwargs.tenant_id %}" 
+        style="display: inline-block; background: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+        Upload Audience
+    </a>
+    <a href="{% url 'marketing_campaigns:audiences_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" 
+        style="display: inline-block; background: #9c27b0; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        View Audiences
+    </a>
+</div>
+
+{% endblock %}

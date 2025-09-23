@@ -33,14 +33,18 @@ class DatabaseTenantRouter:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         PUBLIC_APPS = [
-            'admin', 'auth', 'contenttypes', 'sessions', 'tenants'
+            'admin', 'auth', 'contenttypes', 'sessions', 'tenants', 'whatsapp_messaging'
         ]
         TENANT_APPS = [
-            'data_management', 'dashboard_app', 'report_app'
+            'data_management', 'dashboard_app', 'report_app', 'marketing_campaigns'
         ]
         
         if app_label in PUBLIC_APPS:
-            return True
+            # Public apps only migrate on default database
+            return db == 'default'
         if app_label in TENANT_APPS:
-            return (db != 'default')
+            # Tenant apps only migrate on tenant databases (not default)
+            return db != 'default'
+        
+        # For any other apps, allow migration on all databases
         return True

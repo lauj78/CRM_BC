@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'report_app',
     'tenants', 
     'tenant_management',
-    'whatsapp_messaging'
+    'whatsapp_messaging',
+    'marketing_campaigns',
 ]
 
 MIDDLEWARE = [
@@ -197,7 +198,8 @@ SESSION_COOKIE_AGE = 3600  # 1 hour
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.23.5.133', '100.122.81.22', '100.121.155.33']
 
-PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants']
+PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants', 'whatsapp_messaging']
+
 
 AUTH_USER_MODEL = "auth.User" # Just to make sure it's here
 

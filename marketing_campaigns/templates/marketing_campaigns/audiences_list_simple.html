@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Audiences{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Audiences</h2>
+        <a href="{% url 'marketing_campaigns:audience_upload' request.resolver_match.kwargs.tenant_id %}" 
+           style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            + Upload New Audience
+        </a>
+    </div>
+    <p style="color: #666; margin: 5px 0;">Manage your audience lists for campaigns</p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div style="padding: 10px; margin-bottom: 15px; border-radius: 5px; 
+                    {% if message.tags == 'success' %}background: #d4edda; color: #155724; border: 1px solid #c3e6cb;{% endif %}
+                    {% if message.tags == 'error' %}background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;{% endif %}
+                    {% if message.tags == 'warning' %}background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div style="background: white; padding: 30px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 0 -10px;">
+    {% if audiences %}
+        <div style="margin-bottom: 20px;">
+            <p style="color: #666; margin: 0; font-size: 14px;">{{ audiences.paginator.count }} audience{{ audiences.paginator.count|pluralize }} total</p>
+        </div>
+        
+        <div style="overflow-x: auto; width: 100%;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 15px 12px; text-align: left; font-weight: 600; width: 18%; border-right: 1px solid #dee2e6;">Name</th>
+                        <th style="padding: 15px 12px; text-align: left; font-weight: 600; width: 35%; border-right: 1px solid #dee2e6;">Description</th>
+                        <th style="padding: 15px 12px; text-align: center; font-weight: 600; width: 10%; border-right: 1px solid #dee2e6;">Members</th>
+                        <th style="padding: 15px 12px; text-align: center; font-weight: 600; width: 12%; border-right: 1px solid #dee2e6;">Valid</th>
+                        <th style="padding: 15px 12px; text-align: center; font-weight: 600; width: 12%; border-right: 1px solid #dee2e6;">Created</th>
+                        <th style="padding: 15px 12px; text-align: center; font-weight: 600; width: 13%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for audience in audiences %}
+                        <tr style="border-bottom: 1px solid #eee; {% cycle '' 'background: #fafafa;' %}">
+                            <td style="padding: 15px 12px; vertical-align: top; border-right: 1px solid #f0f0f0;">
+                                <div style="font-weight: 500; color: #333; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;">
+                                    {{ audience.name }}
+                                </div>
+                                <div style="font-size: 11px; color: #666; margin-top: 4px; text-transform: capitalize;">
+                                    {{ audience.upload_method|title }}
+                                </div>
+                            </td>
+                            <td style="padding: 15px 12px; vertical-align: top; border-right: 1px solid #f0f0f0;">
+                                <div style="color: #555; line-height: 1.4; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-height: 60px; overflow: hidden;">
+                                    {% if audience.description %}
+                                        {{ audience.description }}
+                                    {% else %}
+                                        <span style="color: #bbb; font-style: italic;">No description provided</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td style="padding: 15px 12px; text-align: center; vertical-align: middle; border-right: 1px solid #f0f0f0;">
+                                <span style="font-weight: 600; color: #333; font-size: 18px;">{{ audience.total_numbers }}</span>
+                            </td>
+                            <td style="padding: 15px 12px; text-align: center; vertical-align: top; border-right: 1px solid #f0f0f0;">
+                                <div style="margin-bottom: 4px;">
+                                    <span style="color: #28a745; font-weight: 600; font-size: 16px;">{{ audience.valid_numbers }}</span>
+                                </div>
+                                {% if audience.flagged_numbers > 0 %}
+                                    <div style="font-size: 10px; color: #ffc107; margin-bottom: 2px; font-weight: 500;">
+                                        {{ audience.flagged_numbers }} flagged
+                                    </div>
+                                {% endif %}
+                                {% if audience.invalid_numbers > 0 %}
+                                    <div style="font-size: 10px; color: #dc3545; font-weight: 500;">
+                                        {{ audience.invalid_numbers }} invalid
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px 12px; text-align: center; color: #666; font-size: 12px; vertical-align: middle; border-right: 1px solid #f0f0f0;">
+                                <div style="font-weight: 500;">{{ audience.created_at|date:"M j, Y" }}</div>
+                                <div style="margin-top: 2px; font-size: 11px;">{{ audience.created_at|time:"g:i A" }}</div>
+                            </td>
+                            <td style="padding: 15px 12px; text-align: center; vertical-align: middle;">
+                                <div style="display: flex; flex-direction: row; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                                    <a href="{% url 'marketing_campaigns:audience_view' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+                                       style="background: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: 500; white-space: nowrap;">
+                                        View
+                                    </a>
+                                    <a href="{% url 'marketing_campaigns:audience_delete' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+                                       style="background: #dc3545; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: 500; white-space: nowrap;"
+                                       onclick="return confirm('Delete audience {{ audience.name }}?')">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if audiences.has_other_pages %}
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px;">
+                {% if audiences.has_previous %}
+                    <a href="?page=1" style="padding: 8px 12px; text-decoration: none; color: #007bff; border: 1px solid #dee2e6; border-radius: 3px;">First</a>
+                    <a href="?page={{ audiences.previous_page_number }}" style="padding: 8px 12px; text-decoration: none; color: #007bff; border: 1px solid #dee2e6; border-radius: 3px;">Previous</a>
+                {% endif %}
+                
+                <span style="padding: 8px 12px; background: #007bff; color: white; border-radius: 3px;">
+                    Page {{ audiences.number }} of {{ audiences.paginator.num_pages }}
+                </span>
+                
+                {% if audiences.has_next %}
+                    <a href="?page={{ audiences.next_page_number }}" style="padding: 8px 12px; text-decoration: none; color: #007bff; border: 1px solid #dee2e6; border-radius: 3px;">Next</a>
+                    <a href="?page={{ audiences.paginator.num_pages }}" style="padding: 8px 12px; text-decoration: none; color: #007bff; border: 1px solid #dee2e6; border-radius: 3px;">Last</a>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <!-- Empty State -->
+        <div style="text-align: center; padding: 60px 20px; color: #666;">
+            <div style="font-size: 64px; margin-bottom: 20px;">👥</div>
+            <h3 style="margin: 0 0 10px 0; color: #333;">No Audiences Yet</h3>
+            <p style="margin: 0 0 20px 0;">Create your first audience to start sending campaigns</p>
+            <a href="{% url 'marketing_campaigns:audience_upload' request.resolver_match.kwargs.tenant_id %}" 
+               style="background: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                Upload Your First Audience
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Stats Summary -->
+{% if audiences %}
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+        <h4 style="margin: 0 0 10px 0; color: #333;">Quick Summary</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 600; color: #007bff;">{{ audiences.paginator.count }}</div>
+                <div style="font-size: 12px; color: #666;">Total Audiences</div>
+            </div>
+            {% comment %}
+            <!-- These would need aggregation in the view -->
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 600; color: #28a745;">{{ total_valid }}</div>
+                <div style="font-size: 12px; color: #666;">Valid Numbers</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 600; color: #17a2b8;">{{ total_members }}</div>
+                <div style="font-size: 12px; color: #666;">Total Members</div>
+            </div>
+            {% endcomment %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

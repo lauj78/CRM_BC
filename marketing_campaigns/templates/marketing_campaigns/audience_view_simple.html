@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ audience.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>{{ audience.name }}</h2>
+            {% if audience.description %}
+                <p style="color: #666; margin: 5px 0;">{{ audience.description }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{% url 'marketing_campaigns:audiences_list' request.resolver_match.kwargs.tenant_id %}" 
+               style="background: #6c757d; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px; margin-right: 10px;">
+                ← Back
+            </a>
+            <a href="{% url 'marketing_campaigns:audience_edit' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+               style="background: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px; margin-right: 10px;">
+                Edit
+            </a>
+            <a href="{% url 'marketing_campaigns:audience_delete' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+               style="background: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px;"
+               onclick="return confirm('Delete audience {{ audience.name }}?')">
+                Delete
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+    <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #4caf50;">
+        <h3 style="margin: 0; color: #4caf50;">{{ audience.valid_numbers }}</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Valid Numbers</p>
+    </div>
+    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #ffc107;">
+        <h3 style="margin: 0; color: #ffc107;">{{ audience.flagged_numbers }}</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Flagged Numbers</p>
+    </div>
+    <div style="background: #f8d7da; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #dc3545;">
+        <h3 style="margin: 0; color: #dc3545;">{{ audience.invalid_numbers }}</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Invalid Numbers</p>
+    </div>
+    <div style="background: #d1ecf1; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #17a2b8;">
+        <h3 style="margin: 0; color: #17a2b8;">{{ audience.total_numbers }}</h3>
+        <p style="margin: 5px 0 0 0; color: #666;">Total Numbers</p>
+    </div>
+</div>
+
+<!-- Processing Errors -->
+{% if processing_errors %}
+    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+        <h4 style="margin: 0 0 10px 0; color: #856404;">Processing Errors ({{ processing_errors|length }})</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            {% for error in processing_errors %}
+                <div style="background: white; padding: 8px; border-radius: 3px; font-size: 12px; color: #721c24;">
+                    • {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Members List -->
+<div style="background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Members ({{ audience.total_numbers }})</h3>
+    </div>
+    
+    {% if members %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 10px; text-align: left; border: 1px solid #dee2e6;">Phone Number</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid #dee2e6;">Name</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid #dee2e6;">Custom Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px; border: 1px solid #dee2e6;">
+                                <code>{{ member.phone_number }}</code>
+                                {% if member.country_code %}
+                                    <small style="color: #666;">({{ member.country_code }})</small>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6;">{{ member.name|default:"-" }}</td>
+                            <td style="padding: 10px; border: 1px solid #dee2e6;">
+                                {% for key, value in member.items %}
+                                    {% if key not in "phone_number,name,country_code,is_flagged,risk_level,whatsapp_status,success_rate" %}
+                                        <span style="background: #e9ecef; color: #495057; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 5px;">
+                                            {{ key }}: {{ value }}
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
+            <p>No members in this audience</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

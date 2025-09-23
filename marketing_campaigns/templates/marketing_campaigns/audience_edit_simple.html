@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Audience{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>Edit Audience</h2>
+            <p style="color: #666; margin: 5px 0;">Modify audience details and data</p>
+        </div>
+        <a href="{% url 'marketing_campaigns:audience_view' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+           style="background: #6c757d; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px;">
+            ← Back to View
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div style="padding: 10px; margin-bottom: 15px; border-radius: 5px; 
+                    {% if message.tags == 'success' %}background: #d4edda; color: #155724; border: 1px solid #c3e6cb;{% endif %}
+                    {% if message.tags == 'error' %}background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;{% endif %}
+                    {% if message.tags == 'warning' %}background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div style="background: white; padding: 25px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <form method="post" style="max-width: 600px;">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div style="margin-bottom: 25px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 2px solid #f8f9fa; padding-bottom: 8px;">
+                Basic Information
+            </h4>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                    Audience Name *
+                </label>
+                <input type="text" name="name" value="{{ audience.name }}" required 
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px;"
+                       placeholder="e.g., VIP Customers Q4 2024">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                    Description
+                </label>
+                <textarea name="description" rows="3"
+                          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; resize: vertical;"
+                          placeholder="Brief description of this audience...">{{ audience.description }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Current Stats -->
+        <div style="margin-bottom: 25px;">
+            <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 2px solid #f8f9fa; padding-bottom: 8px;">
+                Current Statistics
+            </h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: 600; color: #007bff;">{{ audience.total_numbers }}</div>
+                    <div style="font-size: 11px; color: #666;">Total</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: 600; color: #28a745;">{{ audience.valid_numbers }}</div>
+                    <div style="font-size: 11px; color: #666;">Valid</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: 600; color: #ffc107;">{{ audience.flagged_numbers }}</div>
+                    <div style="font-size: 11px; color: #666;">Flagged</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: 600; color: #dc3545;">{{ audience.invalid_numbers }}</div>
+                    <div style="font-size: 11px; color: #666;">Invalid</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Editing (only for textbox uploads) -->
+        {% if audience.upload_method == 'textbox' %}
+            <div style="margin-bottom: 25px;">
+                <h4 style="margin: 0 0 15px 0; color: #333; border-bottom: 2px solid #f8f9fa; padding-bottom: 8px;">
+                    Data Editing
+                </h4>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" name="reprocess_data" value="1" 
+                               style="margin-right: 8px;">
+                        <span style="font-weight: 500; color: #333;">
+                            Reprocess CSV data (check this to update the member list)
+                        </span>
+                    </label>
+                    <small style="color: #666; display: block; margin-bottom: 10px;">
+                        Only check this if you want to modify the CSV data below and regenerate the member list.
+                    </small>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">
+                        CSV Data
+                    </label>
+                    <textarea name="textbox_data" rows="10"
+                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; font-family: monospace; resize: vertical;"
+                              placeholder="phone_number,name,bonus_amount...">{{ audience.raw_data }}</textarea>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Modify the CSV data above and check "Reprocess data" to update the member list.
+                    </small>
+                </div>
+            </div>
+        {% else %}
+            <div style="margin-bottom: 25px;">
+                <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107;">
+                    <h5 style="margin: 0 0 5px 0; color: #856404;">File Upload Method</h5>
+                    <p style="margin: 0; color: #856404; font-size: 14px;">
+                        This audience was uploaded via {{ audience.upload_method }}. Only basic information can be edited.
+                        To modify the member data, you'll need to create a new audience.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Submit Buttons -->
+        <div style="display: flex; gap: 10px; border-top: 1px solid #f8f9fa; padding-top: 20px;">
+            <button type="submit" 
+                    style="background: #28a745; color: white; padding: 12px 25px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px;">
+                {% if audience.upload_method == 'textbox' %}
+                    Update Audience
+                {% else %}
+                    Update Basic Info
+                {% endif %}
+            </button>
+            <a href="{% url 'marketing_campaigns:audience_view' request.resolver_match.kwargs.tenant_id audience.pk %}" 
+               style="background: #6c757d; color: white; padding: 12px 20px; text-decoration: none; border-radius: 3px; font-size: 14px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Help Section -->
+{% if audience.upload_method == 'textbox' %}
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 20px;">
+        <h4 style="margin: 0 0 15px 0; color: #333;">💡 Editing Tips</h4>
+        
+        <div style="color: #666; font-size: 14px;">
+            <p style="margin: 0 0 10px 0;"><strong>Basic Info Only:</strong> Leave "Reprocess data" unchecked to only update name and description.</p>
+            <p style="margin: 0 0 10px 0;"><strong>Update Member Data:</strong> Modify the CSV data, check "Reprocess data", and submit to regenerate the member list.</p>
+            <p style="margin: 0 0 10px 0;"><strong>Safety:</strong> The original data is preserved until you successfully reprocess.</p>
+            <p style="margin: 0;"><strong>Validation:</strong> Invalid phone numbers will be flagged but not removed from the list.</p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,3 +1,5 @@
+#crm_system/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
@@ -27,6 +29,7 @@ urlpatterns = [
         path('dashboard/', include('dashboard_app.urls', namespace='dashboard_app')),
         path('report/', include('report_app.urls', namespace='report_app')),
         path('whatsapp/', include('whatsapp_messaging.urls', namespace='whatsapp_messaging')),
+        path('campaigns/', include('marketing_campaigns.urls', namespace='marketing_campaigns')),
         path('tenant-test/', tenant_test),
     ])),
     

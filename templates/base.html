@@ -154,6 +154,10 @@
                     {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/whatsapp/' %}class="active"{% endif %}>
                     WhatsApp
                     </a>
+                    <a href="{% url 'marketing_campaigns:dashboard_home' tenant_id=request.tenant.tenant_id %}" 
+                    {% if '/campaigns/' in request.path %}class="active"{% endif %}>
+                    Campaigns
+                    </a>
                 {% endif %}
             {% endif %}
     
