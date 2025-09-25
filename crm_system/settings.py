@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_celery_beat',
+    'django_celery_results',
     'data_management',
     'dashboard_app',
     'report_app',
@@ -198,8 +200,8 @@ SESSION_COOKIE_AGE = 3600  # 1 hour
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.23.5.133', '100.122.81.22', '100.121.155.33']
 
-PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants', 'whatsapp_messaging']
-
+PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants']
+TENANT_APPS = ['data_management','dashboard_app', 'report_app','marketing_campaigns', 'whatsapp_messaging']
 
 AUTH_USER_MODEL = "auth.User" # Just to make sure it's here
 
@@ -220,3 +222,62 @@ MESSAGE_QUEUE_CONFIG = {
     'BATCH_SIZE': 50,  # Messages per batch
     'RATE_LIMIT_PER_INSTANCE': 50,  # Messages per hour per instance
 }
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+# Celery Beat (Scheduler) Settings
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Task routing (optional - for organizing tasks)
+# temporary remove this
+#CELERY_TASK_ROUTES = {
+#    'marketing_campaigns.tasks.process_campaign_messages': {'queue': 'campaigns'},
+#    'marketing_campaigns.tasks.send_single_message': {'queue': 'messages'},
+#}
+
+# Task time limits
+CELERY_TASK_TIME_LIMIT = 300  # 5 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4 minutes
+
+# Enhanced Logging for Celery
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'marketing_campaigns': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+

@@ -1,15 +1,30 @@
-# whatsapp_messaging/models.py
+# whatsapp_messaging/models.py - FIXED VERSION
 
 from django.db import models
 from django.utils import timezone
-from tenants.models import Tenant # This import is still useful for reference but no longer for the ForeignKey
+
+class TenantWhatsAppManager(models.Manager):
+    """Manager for tenant-aware WhatsApp queries"""
+    
+    def for_tenant(self, tenant_id):
+        """Get all instances for a specific tenant"""
+        return self.get_queryset().filter(tenant_id=tenant_id)
+    
+    def active_for_tenant(self, tenant_id):
+        """Get active instances for a specific tenant"""
+        return self.for_tenant(tenant_id).filter(is_active=True)
+    
+    def connected_for_tenant(self, tenant_id):
+        """Get connected instances for a specific tenant"""
+        return self.active_for_tenant(tenant_id).filter(status='connected')
 
 class WhatsAppInstance(models.Model):
     """WhatsApp instance linked to a tenant and an external API."""
     
+    # Custom manager
+    objects = TenantWhatsAppManager()
+    
     # Instance identification
-    # We are replacing the ForeignKey with a simple IntegerField
-    # to avoid the cross-database foreign key constraint.
     tenant_id = models.IntegerField(
         db_index=True,
         help_text="The ID of the tenant this WhatsApp instance belongs to."
@@ -93,9 +108,33 @@ class WhatsAppInstance(models.Model):
     profile_picture_url = models.URLField(blank=True, null=True)
     
     class Meta:
-        db_table = 'whatsapp_instances'
+        db_table = 'wa_whatsappinstance'
         ordering = ['-created_at']
-        # IMPORTANT: Updated the unique_together constraint to use 'tenant_id'.
+        
+        # Database constraints for tenant isolation
+        constraints = [
+            # Ensure unique instance names per tenant
+            models.UniqueConstraint(
+                fields=['tenant_id', 'instance_name'],
+                name='wa_unique_instance_per_tenant'
+            ),
+            # Ensure unique phone numbers per tenant (allow null)
+            models.UniqueConstraint(
+                fields=['tenant_id', 'phone_number'],
+                name='wa_unique_phone_per_tenant',
+                condition=models.Q(phone_number__isnull=False)
+            ),
+        ]
+        
+        # Indexes for performance
+        indexes = [
+            models.Index(fields=['tenant_id', 'is_active']),
+            models.Index(fields=['tenant_id', 'status']),
+            models.Index(fields=['external_id']),
+            models.Index(fields=['api_key']),
+        ]
+        
+        # Keep existing unique_together for backwards compatibility
         unique_together = ('tenant_id', 'instance_name')
     
     def __str__(self):
@@ -208,11 +247,15 @@ class MessageQueue(models.Model):
     read_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
-        db_table = 'message_queue'
+        db_table = 'wa_messagequeue'
         ordering = ['priority', 'scheduled_at']
+        
+        # FIXED INDEXES - no foreign key lookups
         indexes = [
             models.Index(fields=['status', 'scheduled_at']),
             models.Index(fields=['whatsapp_instance', 'status']),
+            models.Index(fields=['scheduled_at']),
+            models.Index(fields=['priority']),
         ]
     
     def __str__(self):
@@ -228,7 +271,7 @@ class WebhookEvent(models.Model):
     # Event identification
     whatsapp_instance = models.ForeignKey(
         WhatsAppInstance,
-        on_delete=models.SET_NULL, # Set to null if the instance is deleted
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         help_text="The WhatsApp instance this event is related to."
@@ -257,11 +300,15 @@ class WebhookEvent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        db_table = 'webhook_events'
+        db_table = 'wa_webhookevent'
         ordering = ['-created_at']
+        
+        # FIXED INDEXES - no foreign key lookups
         indexes = [
             models.Index(fields=['processed', 'created_at']),
             models.Index(fields=['whatsapp_instance', 'event_type']),
+            models.Index(fields=['event_type']),
+            models.Index(fields=['created_at']),
         ]
     
     def __str__(self):

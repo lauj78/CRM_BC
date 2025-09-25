@@ -32,19 +32,29 @@ class DatabaseTenantRouter:
         return 'default'
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        PUBLIC_APPS = [
-            'admin', 'auth', 'contenttypes', 'sessions', 'tenants', 'whatsapp_messaging'
-        ]
-        TENANT_APPS = [
-            'data_management', 'dashboard_app', 'report_app', 'marketing_campaigns'
-        ]
+        # Get app classifications from settings
+        public_apps = getattr(settings, 'PUBLIC_APPS', [])
+        tenant_apps = getattr(settings, 'TENANT_APPS', [])
         
-        if app_label in PUBLIC_APPS:
+        if app_label in public_apps:
             # Public apps only migrate on default database
-            return db == 'default'
-        if app_label in TENANT_APPS:
+            allow = db == 'default'
+            logger.debug(f"Migration {app_label} on {db}: {'ALLOWED' if allow else 'BLOCKED'} (public app)")
+            return allow
+            
+        if app_label in tenant_apps:
             # Tenant apps only migrate on tenant databases (not default)
-            return db != 'default'
+            allow = db != 'default'
+            logger.debug(f"Migration {app_label} on {db}: {'ALLOWED' if allow else 'BLOCKED'} (tenant app)")
+            return allow
         
-        # For any other apps, allow migration on all databases
+        # For Django core apps, allow migration on all databases
+        django_core_apps = ['admin', 'auth', 'contenttypes', 'sessions', 'django_celery_beat', 'django_celery_results']
+        if app_label in django_core_apps:
+            allow = True
+            logger.debug(f"Migration {app_label} on {db}: ALLOWED (django core)")
+            return allow
+        
+        # Default: allow migration everywhere
+        logger.debug(f"Migration {app_label} on {db}: ALLOWED (default)")
         return True

@@ -4,14 +4,20 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.db import transaction
 
-from .models import MessageTemplate, CampaignCategory, TenantCampaignSettings, CustomAudience
-from .forms import MessageTemplateForm 
+from .models import MessageTemplate, CampaignCategory, TenantCampaignSettings, CustomAudience, Campaign, CampaignMessage, CampaignTarget
+from .forms import MessageTemplateForm, CampaignForm   
+from .tasks import process_campaign_messages
+from whatsapp_messaging.models import WhatsAppInstance
 
 import csv
 from io import StringIO
 import re
 
+import logging
+logger = logging.getLogger(__name__)
 
 # ================================
 # DASHBOARD HOME (Temporary)
@@ -315,3 +321,299 @@ def audience_edit(request, tenant_id, pk):
     }
     
     return render(request, 'marketing_campaigns/audience_edit_simple.html', context)
+
+
+# ================================
+# CAMPAIGN MANAGEMENT 
+# ================================
+
+@login_required
+def campaigns_list(request, tenant_id):
+    """List all campaigns"""
+    
+    # Filter campaigns - no direct tenant filtering since campaigns are in tenant DB
+    campaigns = Campaign.objects.order_by('-created_at')
+    
+    # Add search and status filters
+    status_filter = request.GET.get('status')
+    search_filter = request.GET.get('search')
+    
+    if status_filter:
+        campaigns = campaigns.filter(status=status_filter)
+    
+    if search_filter:
+        campaigns = campaigns.filter(
+            Q(name__icontains=search_filter) | 
+            Q(description__icontains=search_filter)
+        )
+    
+    # Pagination
+    paginator = Paginator(campaigns, 10)
+    page_number = request.GET.get('page')
+    campaigns_page = paginator.get_page(page_number)
+    
+    # Get status choices for filter dropdown
+    status_choices = Campaign.STATUS_CHOICES
+    
+    context = {
+        'campaigns': campaigns_page,
+        'status_choices': status_choices,
+        'current_status': status_filter,
+        'search_query': search_filter,
+    }
+    
+    return render(request, 'marketing_campaigns/campaigns_list.html', context)
+
+@login_required
+def campaign_edit(request, tenant_id, pk):
+    """Edit campaign (only if not started)"""
+    
+    campaign = get_object_or_404(Campaign, pk=pk)
+    
+    # Only allow editing of draft/scheduled campaigns
+    if campaign.status not in ['draft', 'scheduled']:
+        messages.error(request, "Cannot edit campaign that is running or completed")
+        return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=pk)
+    
+    if request.method == 'POST':
+        form = CampaignForm(request.POST, instance=campaign, tenant_id=request.tenant.id)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Campaign "{campaign.name}" updated successfully!')
+            return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=pk)
+    else:
+        form = CampaignForm(instance=campaign, tenant_id=request.tenant.id)
+    
+    context = {
+        'form': form,
+        'campaign': campaign,
+        'page_title': 'Edit Campaign',
+    }
+    
+    return render(request, 'marketing_campaigns/campaign_create.html', context)
+
+@login_required
+def campaign_delete(request, tenant_id, pk):
+    """Delete campaign - recommended to stop running campaigns first"""
+    
+    campaign = get_object_or_404(Campaign, pk=pk)
+    
+    if request.method == 'POST':
+        campaign_name = campaign.name
+        campaign_status = campaign.status
+        
+        # Delete the campaign (this will cascade delete targets, etc.)
+        campaign.delete()
+        
+        messages.success(request, f'Campaign "{campaign_name}" deleted successfully!')
+        return redirect('marketing_campaigns:campaigns_list', tenant_id=tenant_id)
+    
+    context = {'campaign': campaign}
+    return render(request, 'marketing_campaigns/campaign_delete.html', context)
+
+@login_required
+def campaign_pause(request, tenant_id, pk):
+    """Pause a running campaign with debug logging"""
+    
+    campaign = get_object_or_404(Campaign, pk=pk)
+    logger.info(f"[CAMPAIGN DEBUG] Attempting to pause campaign {campaign.pk} '{campaign.name}'")
+    logger.info(f"[CAMPAIGN DEBUG] Current status: {campaign.status}")
+    
+    if request.method == 'POST':
+        if campaign.status == 'running':
+            old_status = campaign.status
+            campaign.status = 'paused'
+            campaign.save()
+            
+            logger.info(f"[CAMPAIGN DEBUG] Status changed: {old_status} -> {campaign.status}")
+            
+            # TODO: Signal Celery tasks to pause processing
+            logger.warning(f"[CAMPAIGN DEBUG] Campaign paused but NO CELERY TASK PAUSING IMPLEMENTED YET!")
+            
+            messages.success(request, f'Campaign "{campaign.name}" paused!')
+        else:
+            logger.warning(f"[CAMPAIGN DEBUG] Cannot pause campaign with status: {campaign.status}")
+            messages.error(request, f'Cannot pause campaign with status: {campaign.get_status_display()}')
+    
+    return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=pk)
+
+@login_required
+def campaign_view(request, tenant_id, pk):
+    """View campaign details with debug info"""
+    
+    campaign = get_object_or_404(Campaign, pk=pk)
+    logger.info(f"[CAMPAIGN DEBUG] Viewing campaign {campaign.pk} '{campaign.name}' - Status: {campaign.status}")
+    
+    # Get campaign targets with status breakdown
+    targets = campaign.targets.all()
+    logger.info(f"[CAMPAIGN DEBUG] Total targets in view: {targets.count()}")
+    
+    # Get status breakdown
+    status_breakdown = {}
+    for status_choice in CampaignTarget.STATUS_CHOICES:
+        status_key = status_choice[0]
+        count = targets.filter(status=status_key).count()
+        status_breakdown[status_key] = {
+            'count': count,
+            'label': status_choice[1]
+        }
+        if count > 0:
+            logger.info(f"[CAMPAIGN DEBUG] Status '{status_key}': {count} targets")
+    
+    # Get recent targets (last 20)
+    recent_targets = targets.order_by('-created_at')[:20]
+    
+    # Get campaign messages (templates)
+    campaign_messages = campaign.campaign_messages.all()
+    logger.info(f"[CAMPAIGN DEBUG] Campaign uses {campaign_messages.count()} templates")
+    
+    # Calculate progress percentage
+    total_targets = campaign.total_targeted
+    sent_targets = campaign.total_sent
+    progress_percentage = (sent_targets / total_targets * 100) if total_targets > 0 else 0
+    
+    logger.info(f"[CAMPAIGN DEBUG] Progress: {sent_targets}/{total_targets} = {progress_percentage}%")
+    
+    context = {
+        'campaign': campaign,
+        'targets': recent_targets,
+        'status_breakdown': status_breakdown,
+        'campaign_messages': campaign_messages,
+        'progress_percentage': round(progress_percentage, 1),
+    }
+    
+    return render(request, 'marketing_campaigns/campaign_view.html', context)
+
+@login_required
+def campaign_start(request, tenant_id, pk):
+    """Start/resume a campaign and trigger message processing"""
+    
+    campaign = get_object_or_404(Campaign, pk=pk)
+    logger.info(f"Starting campaign {campaign.pk} '{campaign.name}' - Status: {campaign.status}")
+    
+    if request.method == 'POST':
+        if campaign.status in ['draft', 'scheduled', 'paused']:
+            # Check if we have targets
+            targets_count = campaign.targets.count()
+            queued_count = campaign.targets.filter(status='queued').count()
+            
+            logger.info(f"Campaign has {targets_count} total targets, {queued_count} queued")
+            
+            # Regenerate targets if none exist
+            if targets_count == 0:
+                logger.warning("No targets found, regenerating...")
+                try:
+                    targets_created = campaign.generate_targets()
+                    campaign.total_targeted = targets_created
+                    campaign.total_queued = targets_created
+                    campaign.save()
+                    logger.info(f"Generated {targets_created} new targets")
+                except Exception as e:
+                    logger.error(f"Error generating targets: {str(e)}")
+                    messages.error(request, f"Error preparing campaign: {str(e)}")
+                    return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=pk)
+            
+            # Update campaign status to running
+            old_status = campaign.status
+            campaign.status = 'running'
+            campaign.start_date = timezone.now()
+            campaign.save()
+            
+            logger.info(f"Campaign status: {old_status} → {campaign.status}")
+            
+            # TRIGGER CELERY TASK FOR MESSAGE PROCESSING
+            try:
+                task_result = process_campaign_messages.delay(campaign.pk)
+                logger.info(f"Celery task started: {task_result.id}")
+                messages.success(request, f'Campaign "{campaign.name}" started! Messages processing in background.')
+            except Exception as e:
+                logger.error(f"Failed to start Celery task: {str(e)}")
+                # Campaign is still running, but warn user
+                messages.warning(request, f'Campaign started but background processing failed: {str(e)}')
+            
+        else:
+            logger.warning(f"Cannot start campaign with status: {campaign.status}")
+            messages.error(request, f'Cannot start campaign with status: {campaign.get_status_display()}')
+    
+    return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=pk)
+
+@login_required
+def campaign_create(request, tenant_id):
+    """Create new campaign - SIMPLIFIED for clean tenant architecture"""
+    
+    if request.method == 'POST':
+        form = CampaignForm(request.POST, tenant_id=request.tenant.id)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    campaign = form.save(commit=False)
+                    campaign.created_by = request.user.username if hasattr(request.user, 'username') else 'admin'
+                    
+                    logger.info(f"[CAMPAIGN] Creating '{campaign.name}' for {tenant_id}")
+                    campaign.save()
+                    
+                    # Save the form to create CampaignMessage relation
+                    form.save()
+                    
+                    # Generate campaign targets from audience
+                    targets_created = campaign.generate_targets()
+                    campaign.total_queued = targets_created
+                    campaign.total_targeted = targets_created
+                    campaign.save()
+                    
+                    logger.info(f"[CAMPAIGN] Created {targets_created} targets for campaign {campaign.pk}")
+                    
+                    # Auto-start campaign if requested - SIMPLIFIED!
+                    if form.cleaned_data.get('start_immediately'):
+                        logger.info(f"[CAMPAIGN] Auto-starting campaign {campaign.pk}")
+                        
+                        try:
+                            # Import here to avoid circular imports
+                            from marketing_campaigns.tasks import process_campaign_messages
+                            
+                            # Simple task call - no tenant_db parameter needed!
+                            task_result = process_campaign_messages.delay(campaign.pk)
+                            logger.info(f"[CAMPAIGN] Task scheduled: {task_result.id}")
+                            
+                            messages.success(
+                                request, 
+                                f'Campaign "{campaign.name}" created with {targets_created} targets and started automatically!'
+                            )
+                        except Exception as task_error:
+                            logger.error(f"[CAMPAIGN] Failed to start task: {str(task_error)}")
+                            messages.warning(
+                                request, 
+                                f'Campaign "{campaign.name}" created with {targets_created} targets, but auto-start failed. You can start it manually.'
+                            )
+                    else:
+                        messages.success(
+                            request, 
+                            f'Campaign "{campaign.name}" created with {targets_created} targets. Start it when ready!'
+                        )
+                    
+                    return redirect('marketing_campaigns:campaign_view', tenant_id=tenant_id, pk=campaign.pk)
+                    
+            except Exception as e:
+                logger.error(f"[CAMPAIGN] Error creating campaign: {str(e)}")
+                messages.error(request, f"Error creating campaign: {str(e)}")
+                
+        else:
+            logger.error(f"[CAMPAIGN] Form validation failed: {form.errors}")
+            messages.error(request, "Please correct the errors in the form.")
+    else:
+        form = CampaignForm(tenant_id=request.tenant.id)
+    
+    # Get counts for dashboard info - simplified queries
+    total_templates = MessageTemplate.objects.filter(is_active=True).count()
+    total_audiences = CustomAudience.objects.count()
+    total_instances = WhatsAppInstance.objects.filter(is_active=True).count()
+    
+    context = {
+        'form': form,
+        'total_templates': total_templates,
+        'total_audiences': total_audiences,
+        'total_instances': total_instances,
+        'page_title': 'Create Campaign',
+    }
+    
+    return render(request, 'marketing_campaigns/campaign_create.html', context)
