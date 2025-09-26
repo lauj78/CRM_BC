@@ -21,6 +21,7 @@ urlpatterns = [
     path('audiences/<int:pk>/view/', views.audience_view, name='audience_view'),
     path('audiences/<int:pk>/edit/', views.audience_edit, name='audience_edit'),
     path('audiences/<int:pk>/delete/', views.audience_delete, name='audience_delete'),
+    path('audiences/<int:pk>/variables/', views.get_audience_variables, name='get_audience_variables'),
     
     # Campaign Management - ADD THESE LINES
     path('campaigns/', views.campaigns_list, name='campaigns_list'),

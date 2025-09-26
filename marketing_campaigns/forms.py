@@ -1,13 +1,13 @@
-# marketing_campaigns/forms.py
+# marketing_campaigns/forms.py - Updated with Option 3 (no category selection)
 
 from django import forms
 from django.utils import timezone
 from datetime import datetime, timedelta
-from .models import Campaign, MessageTemplate, CustomAudience, CampaignCategory
+from .models import Campaign, MessageTemplate, CustomAudience, CampaignCategory, CampaignMessage
 from whatsapp_messaging.models import WhatsAppInstance
 
 class CampaignForm(forms.ModelForm):
-    """Form for creating and editing campaigns"""
+    """Form for creating and editing campaigns - no category selection"""
     
     # Template selection
     template = forms.ModelChoiceField(
@@ -111,7 +111,7 @@ class CampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign
         fields = [
-            'name', 'description', 'category',
+            'name', 'description',  # REMOVED 'category' from here
             'template', 'target_audience', 'whatsapp_instance',
             'start_immediately', 'start_date',
             'rate_limit_per_hour', 'min_delay_minutes', 'max_delay_minutes',
@@ -126,10 +126,8 @@ class CampaignForm(forms.ModelForm):
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': 'Brief description of this campaign...'
-            }),
-            'category': forms.Select(attrs={
-                'class': 'form-control'
             })
+            # REMOVED category widget
         }
     
     def __init__(self, *args, **kwargs):
@@ -173,6 +171,20 @@ class CampaignForm(forms.ModelForm):
     def save(self, commit=True):
         campaign = super().save(commit=False)
         
+        # AUTO-ASSIGN DEFAULT CATEGORY (Option 3 implementation)
+        if not campaign.category_id:
+            default_category, created = CampaignCategory.objects.get_or_create(
+                name='General',
+                defaults={
+                    'description': 'Default category for all campaigns and templates',
+                    'color': '#007bff',
+                    'icon': 'folder',
+                    'is_system_default': True,
+                    'is_active': True
+                }
+            )
+            campaign.category = default_category
+        
         # Set start date based on start_immediately checkbox
         if self.cleaned_data.get('start_immediately'):
             campaign.start_date = timezone.now()
@@ -187,7 +199,6 @@ class CampaignForm(forms.ModelForm):
             # Create CampaignMessage link to template
             template = self.cleaned_data.get('template')
             if template:
-                from .models import CampaignMessage
                 CampaignMessage.objects.get_or_create(
                     campaign=campaign,
                     template=template,
@@ -197,19 +208,64 @@ class CampaignForm(forms.ModelForm):
         return campaign
 
 class MessageTemplateForm(forms.ModelForm):
+    """Form for creating/editing message templates - no category selection"""
+    
     class Meta:
         model = MessageTemplate
-        fields = ['name', 'description', 'category', 'content', 'variation_a', 'variation_b', 'use_variations']
+        fields = ['name', 'description', 'content', 'variation_a', 'variation_b', 'use_variations']  # REMOVED 'category'
         widgets = {
-            'name': forms.TextInput(attrs={'style': 'width: 100%; padding: 8px;'}),
-            'description': forms.Textarea(attrs={'style': 'width: 100%; padding: 8px; height: 60px;'}),
-            'category': forms.Select(attrs={'style': 'width: 100%; padding: 8px;'}),
-            'content': forms.Textarea(attrs={'style': 'width: 100%; padding: 8px; height: 120px;', 'placeholder': 'Enter your message. Use {{variable_name}} for dynamic content.'}),
-            'variation_a': forms.Textarea(attrs={'style': 'width: 100%; padding: 8px; height: 100px;', 'placeholder': 'Alternative version A (optional)'}),
-            'variation_b': forms.Textarea(attrs={'style': 'width: 100%; padding: 8px; height: 100px;', 'placeholder': 'Alternative version B (optional)'}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'style': 'width: 100%; padding: 8px;',
+                'placeholder': 'Enter template name (e.g., Welcome Bonus)'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'width: 100%; padding: 8px; height: 60px;',
+                'placeholder': 'Brief description of this template'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'width: 100%; padding: 8px; height: 120px;', 
+                'placeholder': 'Enter your message. Use {{variable_name}} for dynamic content.'
+            }),
+            'variation_a': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'width: 100%; padding: 8px; height: 100px;', 
+                'placeholder': 'Alternative version A (optional for anti-ban)'
+            }),
+            'variation_b': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'width: 100%; padding: 8px; height: 100px;', 
+                'placeholder': 'Alternative version B (optional for anti-ban)'
+            }),
+            'use_variations': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only show active categories
-        self.fields['category'].queryset = CampaignCategory.objects.filter(is_active=True)
+        # No longer need to filter categories since we're not showing the field
+    
+    def save(self, commit=True):
+        template = super().save(commit=False)
+        
+        # AUTO-ASSIGN DEFAULT CATEGORY (Option 3 implementation)
+        if not template.category_id:
+            default_category, created = CampaignCategory.objects.get_or_create(
+                name='General',
+                defaults={
+                    'description': 'Default category for all campaigns and templates',
+                    'color': '#007bff',
+                    'icon': 'folder',
+                    'is_system_default': True,
+                    'is_active': True
+                }
+            )
+            template.category = default_category
+        
+        if commit:
+            template.save()
+        
+        return template

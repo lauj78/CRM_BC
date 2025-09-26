@@ -16,21 +16,12 @@
         <div style="margin-bottom: 20px;">
             <h3 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Basic Information</h3>
             
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Template Name *</label>
-                    {{ form.name }}
-                    {% if form.name.errors %}
-                        <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Category *</label>
-                    {{ form.category }}
-                    {% if form.category.errors %}
-                        <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.category.errors.0 }}</div>
-                    {% endif %}
-                </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Template Name *</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.name.errors.0 }}</div>
+                {% endif %}
             </div>
             
             <div>
@@ -42,80 +33,139 @@
             </div>
         </div>
 
-        <!-- Available Variables -->
+        <!-- Audience Variable Detection -->
         <div style="margin-bottom: 20px;">
-            <h4 style="color: #333;">Available Variables</h4>
-            <div style="background: #f0f8f0; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-                <p style="margin: 0 0 10px 0; color: #666;">Click on a variable to insert it into your message:</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    {% for var_name, var_info in available_variables.items %}
-                        <button type="button" onclick="insertVariable('{{ var_name }}')" 
-                                style="background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;"
-                                title="{{ var_info.description }}">
-                            {{var_name}}
-                        </button>
-                    {% endfor %}
+            <h3 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Variable Detection</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Select Audience (Optional)</label>
+                <select id="audienceSelector" onchange="loadAudienceVariables()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">-- Select an audience to detect available variables --</option>
+                    {% if audiences %}
+                        {% for audience in audiences %}
+                            <option value="{{ audience.pk }}">{{ audience.name }} ({{ audience.total_numbers }} numbers)</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled>No audiences available - upload an audience first</option>
+                    {% endif %}
+                </select>
+                <div style="color: #666; font-size: 12px; margin-top: 5px;">
+                    Variables will be detected from audience CSV headers and displayed below
                 </div>
             </div>
         </div>
 
-        <!-- Message Content -->
+        <!-- Available Variables -->
         <div style="margin-bottom: 20px;">
-            <h3 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Message Content</h3>
+            <h4 style="color: #333;">Available Variables</h4>
+            <div style="background: #f0f8f0; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                <p style="margin: 0 0 10px 0; color: #666;">Examples of variables you can use in your messages (copy and paste):</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                    {% for var_name, var_info in available_variables.items %}
+                        <div style="background: white; padding: 8px 12px; border-radius: 4px; border-left: 4px solid #4CAF50;">
+                            <div style="font-family: monospace; font-weight: bold; color: #2563eb; font-size: 14px;">
+                                &#123;&#123;{{ var_name }}&#125;&#125;
+                            </div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                                {{ var_info.description }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div id="audienceVariables" style="margin-top: 15px; display: none;">
+                    <p style="margin: 0 0 10px 0; color: #666; font-weight: bold;">Variables from selected audience:</p>
+                    <div id="audienceVariablesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Content - All 3 Required -->
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Message Content (All Required)</h3>
+            <p style="color: #666; margin-bottom: 20px;">Create 3 different versions of your message for anti-ban protection. System will randomly select one during campaign sending.</p>
             
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Main Message *</label>
+            <!-- Main Message -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #2563eb;">Main Message *</label>
                 {{ form.content }}
                 {% if form.content.errors %}
                     <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.content.errors.0 }}</div>
                 {% endif %}
                 <div style="color: #666; font-size: 12px; margin-top: 5px;">
-                    Use {{variable_name}} for dynamic content. Variables detected: <span id="detectedVariables" style="font-weight: bold; color: #4CAF50;">None</span>
+                    Copy variables from above. Example: Hello {{name}}, your bonus is {{bonus}}. Variables detected: <span id="detectedVariables" style="font-weight: bold; color: #4CAF50;">None</span>
+                </div>
+            </div>
+
+            <!-- Variation A -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label style="font-weight: bold; color: #059669;">Variation A *</label>
+                    <button type="button" onclick="duplicateFromMain('variation_a')" 
+                            style="background: #6b7280; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                        📋 Duplicate from Main
+                    </button>
+                </div>
+                {{ form.variation_a }}
+                {% if form.variation_a.errors %}
+                    <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.variation_a.errors.0 }}</div>
+                {% endif %}
+                <div style="color: #666; font-size: 12px; margin-top: 5px;">
+                    Alternative version A for anti-ban protection
+                </div>
+            </div>
+
+            <!-- Variation B -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label style="font-weight: bold; color: #dc2626;">Variation B *</label>
+                    <button type="button" onclick="duplicateFromMain('variation_b')" 
+                            style="background: #6b7280; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                        📋 Duplicate from Main
+                    </button>
+                </div>
+                {{ form.variation_b }}
+                {% if form.variation_b.errors %}
+                    <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.variation_b.errors.0 }}</div>
+                {% endif %}
+                <div style="color: #666; font-size: 12px; margin-top: 5px;">
+                    Alternative version B for anti-ban protection
                 </div>
             </div>
 
             <!-- Live Preview -->
             <div style="margin-bottom: 20px;">
                 <h4 style="color: #333;">Live Preview</h4>
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; border-left: 4px solid #2196F3;">
-                    <div id="messagePreview" style="background: white; padding: 12px; border-radius: 8px; font-family: sans-serif; line-height: 1.4; min-height: 40px; white-space: pre-wrap;">
-                        <em style="color: #999;">Type your message above to see preview...</em>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <!-- Main Preview -->
+                    <div>
+                        <div style="font-weight: bold; color: #2563eb; margin-bottom: 8px;">Main Message</div>
+                        <div id="previewMain" style="background: #e3f2fd; padding: 12px; border-radius: 8px; min-height: 60px; font-size: 14px; line-height: 1.4; border-left: 4px solid #2196F3;">
+                            <em style="color: #999;">Type main message to see preview...</em>
+                        </div>
+                    </div>
+                    
+                    <!-- Variation A Preview -->
+                    <div>
+                        <div style="font-weight: bold; color: #059669; margin-bottom: 8px;">Variation A</div>
+                        <div id="previewVariationA" style="background: #d1fae5; padding: 12px; border-radius: 8px; min-height: 60px; font-size: 14px; line-height: 1.4; border-left: 4px solid #10b981;">
+                            <em style="color: #999;">Type variation A to see preview...</em>
+                        </div>
+                    </div>
+                    
+                    <!-- Variation B Preview -->
+                    <div>
+                        <div style="font-weight: bold; color: #dc2626; margin-bottom: 8px;">Variation B</div>
+                        <div id="previewVariationB" style="background: #fee2e2; padding: 12px; border-radius: 8px; min-height: 60px; font-size: 14px; line-height: 1.4; border-left: 4px solid #ef4444;">
+                            <em style="color: #999;">Type variation B to see preview...</em>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Anti-ban Variations -->
-        <div style="margin-bottom: 20px;">
-            <h3 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">Anti-ban Protection (Optional)</h3>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    {{ form.use_variations }}
-                    <span style="margin-left: 8px; font-weight: bold;">Enable Message Variations</span>
-                </label>
-                <div style="color: #666; font-size: 12px; margin-top: 5px;">Create alternative versions to avoid spam detection</div>
-            </div>
-            
-            <div id="variationsPanel" style="display: none;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Variation A</label>
-                        {{ form.variation_a }}
-                        {% if form.variation_a.errors %}
-                            <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.variation_a.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Variation B</label>
-                        {{ form.variation_b }}
-                        {% if form.variation_b.errors %}
-                            <div style="color: red; font-size: 12px; margin-top: 5px;">{{ form.variation_b.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Use Variations Checkbox (Always checked, hidden) -->
+        <input type="hidden" name="use_variations" value="on">
 
         <!-- Form Actions -->
         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #eee;">
@@ -124,9 +174,9 @@
                 ← Back to Templates
             </a>
             <div>
-                <button type="button" onclick="previewTemplate()" 
+                <button type="button" onclick="previewAllMessages()" 
                         style="background: #17a2b8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                    👁️ Preview
+                    👁️ Preview All
                 </button>
                 <button type="submit" 
                         style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
@@ -137,166 +187,266 @@
     </form>
 </div>
 
+<!-- Replace the <script> section in your template with this updated version -->
 <script>
-    // Dynamic sample data based on available variables from server
-    const availableVariables = {{ available_variables|safe }};
+    // Default sample data for preview (fallback)
+    const defaultSampleData = {
+        'name': 'Ahmad',
+        'phone_number': '+628123456789',
+        'bonus': '50000',
+        'coupon_code': 'WELCOME50',
+        'email': 'ahmad@example.com',
+        'amount': '25000'
+    };
     
-    // Generate sample data dynamically
-    function generateSampleData() {
-        const sampleData = {};
-        
-        for (const [varName, varInfo] of Object.entries(availableVariables)) {
-            // Generate appropriate sample values based on variable type and name
-            if (varName === 'phone_number') {
-                sampleData[varName] = '+628123456789';
-            } else if (varName === 'name') {
-                sampleData[varName] = 'Ahmad';
-            } else if (varName.includes('bonus') || varName.includes('amount')) {
-                sampleData[varName] = '50000';
-            } else if (varName.includes('date')) {
-                sampleData[varName] = new Date().toLocaleDateString();
-            } else if (varName.includes('code') || varName.includes('coupon')) {
-                sampleData[varName] = 'WELCOME50';
-            } else if (varName.includes('email')) {
-                sampleData[varName] = 'ahmad@example.com';
-            } else if (varInfo.type === 'currency') {
-                sampleData[varName] = '25000';
-            } else if (varInfo.type === 'date') {
-                sampleData[varName] = new Date().toLocaleDateString();
-            } else {
-                // Default text value
-                sampleData[varName] = `Sample ${varName}`;
-            }
-        }
-        
-        return sampleData;
-    }
-    
-    const sampleData = generateSampleData();
+    // Current sample data (will be updated when audience is selected)
+    let currentSampleData = { ...defaultSampleData };
+    let currentAudienceName = null;
     
     // Get form elements
     const contentTextarea = document.querySelector('textarea[name="content"]');
-    const useVariationsCheckbox = document.querySelector('input[name="use_variations"]');
-    const variationsPanel = document.getElementById('variationsPanel');
-    const preview = document.getElementById('messagePreview');
+    const variationATextarea = document.querySelector('textarea[name="variation_a"]');
+    const variationBTextarea = document.querySelector('textarea[name="variation_b"]');
     const detectedVars = document.getElementById('detectedVariables');
     
-    // Toggle variations panel
-    useVariationsCheckbox.addEventListener('change', function() {
-        variationsPanel.style.display = this.checked ? 'block' : 'none';
+    // Wait for page to load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up textarea change listeners
+        [contentTextarea, variationATextarea, variationBTextarea].forEach(textarea => {
+            textarea.addEventListener('input', updateAllPreviews);
+        });
+        
+        // Initial preview
+        updateAllPreviews();
     });
     
-    // Variable insertion
-    function insertVariable(varName) {
-        const cursorPos = contentTextarea.selectionStart;
-        const textBefore = contentTextarea.value.substring(0, cursorPos);
-        const textAfter = contentTextarea.value.substring(cursorPos);
-        
-        contentTextarea.value = textBefore + '{{' + varName + '}}' + textAfter;
-        contentTextarea.focus();
-        contentTextarea.setSelectionRange(cursorPos + varName.length + 4, cursorPos + varName.length + 4);
-        
-        updatePreview();
-    }
-    
-    // Live preview update - only shows data for variables actually used
-    function updatePreview() {
-        const content = contentTextarea.value;
-        
-        if (!content.trim()) {
-            preview.innerHTML = '<em style="color: #999;">Type your message above to see preview...</em>';
-            detectedVars.textContent = 'None';
+    // Duplicate main message to variations
+    function duplicateFromMain(targetField) {
+        const mainContent = contentTextarea.value;
+        if (!mainContent.trim()) {
+            alert('Please enter main message first.');
             return;
         }
         
-        // Detect variables actually used in the template
-        const variables = content.match(/\{\{(\w+)\}\}/g) || [];
-        const uniqueVars = [...new Set(variables.map(v => v.replace(/[{}]/g, '')))];
-        detectedVars.textContent = uniqueVars.length > 0 ? uniqueVars.join(', ') : 'None';
-        
-        // Render preview - only substitute variables that have sample data
-        let previewContent = content;
-        const usedVariables = [];
-        const missingVariables = [];
-        
-        for (const [key, value] of Object.entries(sampleData)) {
-            const regex = new RegExp('\\{\\{' + key + '\\}\\}', 'g');
-            if (previewContent.includes('{{' + key + '}}')) {
-                previewContent = previewContent.replace(regex, value);
-                usedVariables.push(key);
-            }
+        if (targetField === 'variation_a') {
+            variationATextarea.value = mainContent;
+            variationATextarea.focus();
+        } else if (targetField === 'variation_b') {
+            variationBTextarea.value = mainContent;
+            variationBTextarea.focus();
         }
         
-        // Highlight variables that don't have sample data
+        updateAllPreviews();
+    }
+    
+    // Update all previews
+    function updateAllPreviews() {
+        updatePreview(contentTextarea.value, 'previewMain');
+        updatePreview(variationATextarea.value, 'previewVariationA');
+        updatePreview(variationBTextarea.value, 'previewVariationB');
+        updateDetectedVariables();
+    }
+    
+    // Update individual preview (now uses current sample data)
+    function updatePreview(content, previewId) {
+        const previewElement = document.getElementById(previewId);
+        
+        if (!content.trim()) {
+            const placeholderText = previewId.replace('preview', '').replace('Main', 'main message').replace('Variation', 'variation ');
+            previewElement.innerHTML = `<em style="color: #999;">Type ${placeholderText} to see preview...</em>`;
+            return;
+        }
+        
+        // Render preview with current sample data (audience data if selected, or default)
+        let previewContent = content;
+        const missingVariables = [];
+        
+        // Replace known variables with current sample data
+        for (const [key, value] of Object.entries(currentSampleData)) {
+            const regex = new RegExp('\\{\\{' + key + '\\}\\}', 'g');
+            previewContent = previewContent.replace(regex, value);
+        }
+        
+        // Mark unknown variables
         previewContent = previewContent.replace(/\{\{(\w+)\}\}/g, function(match, varName) {
             missingVariables.push(varName);
             return '[UNKNOWN: ' + varName + ']';
         });
         
-        preview.textContent = previewContent;
-        
-        // Show which variables have sample data vs unknown
-        if (missingVariables.length > 0) {
-            const warningDiv = document.getElementById('variableWarning') || createWarningDiv();
-            warningDiv.textContent = 'Unknown variables: ' + missingVariables.join(', ') + 
-                                   ' (add to tenant settings)';
-            warningDiv.style.display = 'block';
+        // Add preview data source indicator
+        let dataSource = '';
+        if (currentAudienceName) {
+            dataSource = `<div style="font-size: 10px; color: #666; margin-bottom: 5px; font-style: italic;">Preview using data from: ${currentAudienceName}</div>`;
         } else {
-            const warningDiv = document.getElementById('variableWarning');
-            if (warningDiv) warningDiv.style.display = 'none';
+            dataSource = `<div style="font-size: 10px; color: #666; margin-bottom: 5px; font-style: italic;">Preview using sample data</div>`;
         }
-    }
-    
-    function createWarningDiv() {
-        const warningDiv = document.createElement('div');
-        warningDiv.id = 'variableWarning';
-        warningDiv.style.cssText = 'background: #fff3cd; color: #856404; padding: 8px; border-radius: 3px; margin-top: 5px; font-size: 12px; display: none;';
-        preview.parentNode.appendChild(warningDiv);
-        return warningDiv;
-    }
-    
-    // Preview function
-    function previewTemplate() {
-        const content = contentTextarea.value;
-        const variationA = document.querySelector('textarea[name="variation_a"]').value;
-        const variationB = document.querySelector('textarea[name="variation_b"]').value;
         
-        if (!content.trim()) {
-            alert('Please enter message content first.');
+        previewElement.innerHTML = dataSource + '<div>' + previewContent + '</div>';
+    }
+    
+    // Update detected variables from main message
+    function updateDetectedVariables() {
+        const content = contentTextarea.value;
+        const variables = content.match(/\{\{(\w+)\}\}/g) || [];
+        const uniqueVars = [...new Set(variables.map(v => v.replace(/[{}]/g, '')))];
+        detectedVars.textContent = uniqueVars.length > 0 ? uniqueVars.join(', ') : 'None';
+    }
+    
+    // Preview all messages in popup (now uses current sample data)
+    function previewAllMessages() {
+        const mainContent = contentTextarea.value;
+        const variationA = variationATextarea.value;
+        const variationB = variationBTextarea.value;
+        
+        if (!mainContent.trim() || !variationA.trim() || !variationB.trim()) {
+            alert('Please fill in all three message fields (Main, Variation A, Variation B).');
             return;
         }
         
-        let previewText = 'Main Message:\n' + renderPreview(content);
-        
-        if (variationA) {
-            previewText += '\n\nVariation A:\n' + renderPreview(variationA);
+        let previewText = '';
+        if (currentAudienceName) {
+            previewText += `PREVIEW USING DATA FROM: ${currentAudienceName}\n`;
+            previewText += `Sample Member: ${JSON.stringify(currentSampleData, null, 2)}\n\n`;
+        } else {
+            previewText += 'PREVIEW USING SAMPLE DATA\n\n';
         }
         
-        if (variationB) {
-            previewText += '\n\nVariation B:\n' + renderPreview(variationB);
-        }
+        previewText += 'MAIN MESSAGE:\n' + renderPreview(mainContent);
+        previewText += '\n\nVARIATION A:\n' + renderPreview(variationA);
+        previewText += '\n\nVARIATION B:\n' + renderPreview(variationB);
+        previewText += '\n\n---\nDuring campaigns, the system will randomly select one of these 3 messages for each recipient.';
         
         alert(previewText);
     }
     
     function renderPreview(content) {
         let previewContent = content;
-        for (const [key, value] of Object.entries(sampleData)) {
+        for (const [key, value] of Object.entries(currentSampleData)) {
             const regex = new RegExp('\\{\\{' + key + '\\}\\}', 'g');
             previewContent = previewContent.replace(regex, value);
         }
         return previewContent;
     }
     
-    // Live preview event listener
-    contentTextarea.addEventListener('input', updatePreview);
-    
-    // Initialize
-    updatePreview();
-    
-    // Initialize variations panel state
-    if (useVariationsCheckbox.checked) {
-        variationsPanel.style.display = 'block';
+    // Load audience variables - UPDATED TO HANDLE SAMPLE DATA
+    function loadAudienceVariables() {
+        const audienceId = document.getElementById('audienceSelector').value;
+        const audienceVariablesDiv = document.getElementById('audienceVariables');
+        const audienceVariablesList = document.getElementById('audienceVariablesList');
+        
+        if (!audienceId) {
+            audienceVariablesDiv.style.display = 'none';
+            // Reset to default sample data
+            currentSampleData = { ...defaultSampleData };
+            currentAudienceName = null;
+            updateAllPreviews(); // Refresh previews with default data
+            return;
+        }
+        
+        // Make AJAX call to get audience variables
+        const tenantId = '{{ request.resolver_match.kwargs.tenant_id }}';
+        const url = `/tenant/${tenantId}/marketing/audiences/${audienceId}/variables/`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show the audience variables section
+                    audienceVariablesDiv.style.display = 'block';
+                    
+                    // Clear existing content
+                    audienceVariablesList.innerHTML = '';
+                    
+                    // NEW: Update current sample data for previews
+                    if (data.sample_data && Object.keys(data.sample_data).length > 0) {
+                        currentSampleData = { ...defaultSampleData, ...data.sample_data };
+                        currentAudienceName = data.audience_name;
+                        
+                        // Show sample data being used
+                        const sampleDataDiv = document.createElement('div');
+                        sampleDataDiv.style.cssText = 'background: #e0f2fe; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #0288d1;';
+                        sampleDataDiv.innerHTML = `
+                            <div style="font-weight: bold; color: #0277bd; margin-bottom: 5px;">Sample Data for Preview:</div>
+                            <div style="font-size: 12px; color: #01579b;">
+                                ${Object.entries(currentSampleData).map(([key, value]) => 
+                                    `<strong>${key}:</strong> ${value}`
+                                ).join(' • ')}
+                            </div>
+                            <div style="font-size: 11px; color: #666; margin-top: 5px; font-style: italic;">
+                                Live preview now uses this data from your selected audience
+                            </div>
+                        `;
+                        audienceVariablesList.appendChild(sampleDataDiv);
+                    } else {
+                        // No sample data available, use defaults
+                        currentSampleData = { ...defaultSampleData };
+                        currentAudienceName = data.audience_name;
+                        
+                        const noDataDiv = document.createElement('div');
+                        noDataDiv.style.cssText = 'background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #ffc107;';
+                        noDataDiv.innerHTML = `
+                            <div style="color: #856404;">
+                                <strong>Note:</strong> No sample data available from this audience. Preview will use default sample data.
+                            </div>
+                        `;
+                        audienceVariablesList.appendChild(noDataDiv);
+                    }
+                    
+                    // Refresh all previews with new data
+                    updateAllPreviews();
+                    
+                    if (Object.keys(data.variables).length > 0) {
+                        // Create variable display grid
+                        const gridDiv = document.createElement('div');
+                        gridDiv.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;';
+                        
+                        // Add each variable
+                        for (const [varName, varInfo] of Object.entries(data.variables)) {
+                            const varDiv = document.createElement('div');
+                            varDiv.style.cssText = 'background: white; padding: 8px 12px; border-radius: 4px; border-left: 4px solid #f59e0b;';
+                            varDiv.innerHTML = `
+                                <div style="font-family: monospace; font-weight: bold; color: #f59e0b; font-size: 14px;">
+                                    &#123;&#123;${varName}&#125;&#125;
+                                </div>
+                                <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                                    ${varInfo.description}
+                                </div>
+                            `;
+                            gridDiv.appendChild(varDiv);
+                        }
+                        
+                        audienceVariablesList.appendChild(gridDiv);
+                        
+                        // Update the header text
+                        const headerText = audienceVariablesDiv.querySelector('p');
+                        headerText.textContent = `Variables from "${data.audience_name}" (${data.total_numbers} numbers):`;
+                        
+                    } else {
+                        const noVarsDiv = document.createElement('div');
+                        noVarsDiv.style.cssText = 'padding: 10px; background: #fef3c7; border-radius: 4px; color: #92400e;';
+                        noVarsDiv.textContent = 'This audience has no additional variables beyond phone_number.';
+                        audienceVariablesList.appendChild(noVarsDiv);
+                    }
+                } else {
+                    audienceVariablesDiv.style.display = 'block';
+                    audienceVariablesList.innerHTML = '<div style="padding: 10px; background: #fee2e2; border-radius: 4px; color: #991b1b;">Error loading audience variables: ' + data.error + '</div>';
+                    
+                    // Reset to default data on error
+                    currentSampleData = { ...defaultSampleData };
+                    currentAudienceName = null;
+                    updateAllPreviews();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                audienceVariablesDiv.style.display = 'block';
+                audienceVariablesList.innerHTML = '<div style="padding: 10px; background: #fee2e2; border-radius: 4px; color: #991b1b;">Error loading audience variables</div>';
+                
+                // Reset to default data on error
+                currentSampleData = { ...defaultSampleData };
+                currentAudienceName = null;
+                updateAllPreviews();
+            });
     }
 </script>
 {% endblock %}

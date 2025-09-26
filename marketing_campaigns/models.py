@@ -513,32 +513,58 @@ class CustomAudience(models.Model):
         self._check_flagged_numbers()
         
         self.save()
-    
+
     def validate_phone_number(self, phone, country_codes):
-        """Basic phone number validation"""
-        # Simple validation - you can enhance this with phonenumbers library
+        """Basic phone number validation - accepts any valid international format"""
         
         # Remove common formatting
         clean_phone = re.sub(r'[\s\-\(\)]', '', phone)
         
-        # Must start with + and contain only digits after
+        # Must start with + and contain only digits after (8-15 digits total)
         if not re.match(r'^\+\d{8,15}$', clean_phone):
             return False, phone, None
         
-        # Country-specific basic validation
-        for country_code in country_codes:
-            if country_code == 'ID' and clean_phone.startswith('+62'):
-                return True, clean_phone, 'ID'
-            elif country_code == 'MY' and clean_phone.startswith('+60'):
-                return True, clean_phone, 'MY'
-            elif country_code == 'TH' and clean_phone.startswith('+66'):
-                return True, clean_phone, 'TH'
-            elif country_code == 'SG' and clean_phone.startswith('+65'):
-                return True, clean_phone, 'SG'
-            elif country_code == 'PH' and clean_phone.startswith('+63'):
-                return True, clean_phone, 'PH'
+        # Try to detect country for informational purposes (but don't reject if unknown)
+        detected_country = None
         
-        return False, phone, None
+        # Country detection (for information only)
+        country_mapping = {
+            'ID': '+62',  # Indonesia
+            'MY': '+60',  # Malaysia  
+            'TH': '+66',  # Thailand
+            'SG': '+65',  # Singapore
+            'PH': '+63',  # Philippines
+            'KH': '+855', # Cambodia
+            'VN': '+84',  # Vietnam
+            'LA': '+856', # Laos
+            'MM': '+95',  # Myanmar
+            'BN': '+673', # Brunei
+        }
+        
+        # Try to detect country from phone prefix
+        for country_code, prefix in country_mapping.items():
+            if clean_phone.startswith(prefix):
+                detected_country = country_code
+                break
+        
+        # If no country detected, try some common patterns
+        if not detected_country:
+            if clean_phone.startswith('+1'):
+                detected_country = 'US'
+            elif clean_phone.startswith('+44'):
+                detected_country = 'UK'
+            elif clean_phone.startswith('+86'):
+                detected_country = 'CN'
+            elif clean_phone.startswith('+91'):
+                detected_country = 'IN'
+            # Add more as needed, or leave as 'UNKNOWN'
+        
+        # ALWAYS RETURN TRUE for valid format - don't reject based on country
+        return True, clean_phone, detected_country or 'UNKNOWN'
+
+
+
+    
     
     def _check_flagged_numbers(self):
         """Check which numbers are flagged in history"""

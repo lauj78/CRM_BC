@@ -69,6 +69,22 @@
         line-height: 1;
     }
 
+    .stats-number.active-campaigns {
+        color: #28a745;
+    }
+
+    .stats-number.total-campaigns {
+        color: #007bff;
+    }
+
+    .stats-number.total-audiences {
+        color: #ffc107;
+    }
+
+    .stats-number.total-templates {
+        color: #6f42c1;
+    }
+
     .stats-label {
         font-size: 0.9rem;
         color: #718096;
@@ -155,18 +171,6 @@
         background-color: #d97706;
     }
 
-    .action-outline {
-        background-color: transparent;
-        color: #4a5568;
-        border: 2px solid #e2e8f0;
-    }
-
-    .action-outline:hover {
-        background-color: #f8fafc;
-        border-color: #cbd5e1;
-        color: #1a202c;
-    }
-
     /* Quick Info Section */
     .quick-info {
         background-color: #f8fafc;
@@ -199,6 +203,21 @@
     .quick-info li {
         margin-bottom: 5px;
     }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="dashboard-container">
@@ -207,10 +226,10 @@
         <p>Manage your message templates, audiences, and campaigns from one centralized location.</p>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards with Dynamic Values -->
     <div class="stats-grid">
         <div class="stats-card">
-            <div class="stats-number">{{ total_templates }}</div>
+            <div class="stats-number total-templates">{{ total_templates }}</div>
             <div class="stats-label">Message Templates</div>
             <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
                 Manage Templates →
@@ -218,65 +237,35 @@
         </div>
         
         <div class="stats-card">
-            <div class="stats-number">{{ total_categories }}</div>
-            <div class="stats-label">Categories</div>
-            <a href="#" class="stats-link">
-                View Categories →
-            </a>
-        </div>
-        
-        <div class="stats-card">
-            <div class="stats-number">0</div>
-            <div class="stats-label">Active Campaigns</div>
-            <a href="{% url 'marketing_campaigns:campaigns_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
-                View Campaigns →
-            </a>
-        </div>
-        
-        <div class="stats-card">
-            <div class="stats-number">0</div>
+            <div class="stats-number total-audiences">{{ total_audiences }}</div>
             <div class="stats-label">Total Audiences</div>
             <a href="{% url 'marketing_campaigns:audiences_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
                 Manage Audiences →
             </a>
         </div>
+        
+        <div class="stats-card">
+            <div class="stats-number total-campaigns">{{ active_campaigns }}/{{ total_campaigns }}</div>
+            <div class="stats-label">Active/Total Campaigns</div>
+            <a href="{% url 'marketing_campaigns:campaigns_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
+                View All Campaigns →→
+            </a>
+        </div>
     </div>
 
-    <!-- Quick Actions Section -->
+    <!-- Quick Actions Section (Simplified - removed redundant sections) -->
     <h2 class="section-header">Quick Actions</h2>
 
-    <div class="action-groups-container">
-
-        <div class="action-group">
-            <h3 class="group-header">Create & Upload</h3>
-            <div class="actions-grid">
-                <a href="{% url 'marketing_campaigns:campaign_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-primary">
-                    Create New Campaign
-                </a>
-                <a href="{% url 'marketing_campaigns:template_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-secondary">
-                    Create Template
-                </a>
-                <a href="{% url 'marketing_campaigns:audience_upload' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-tertiary">
-                    Upload Audience
-                </a>
-            </div>
-        </div>
-
-        <div class="action-group">
-            <h3 class="group-header">View</h3>
-            <div class="actions-grid">
-                <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-outline">
-                    View All Templates
-                </a>
-                <a href="{% url 'marketing_campaigns:audiences_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-outline">
-                    View All Audiences
-                </a>
-                <a href="{% url 'marketing_campaigns:campaigns_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-outline">
-                    View All Campaigns
-                </a>
-            </div>
-        </div>
-
+    <div class="actions-grid">
+        <a href="{% url 'marketing_campaigns:campaign_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-primary">
+            Create New Campaign
+        </a>
+        <a href="{% url 'marketing_campaigns:template_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-secondary">
+            Create Template
+        </a>
+        <a href="{% url 'marketing_campaigns:audience_upload' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-tertiary">
+            Upload Audience
+        </a>
     </div>
     
     <!-- Quick Info -->

@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import transaction
+from django.http import JsonResponse
 
 from .models import MessageTemplate, CampaignCategory, TenantCampaignSettings, CustomAudience, Campaign, CampaignMessage, CampaignTarget
 from .forms import MessageTemplateForm, CampaignForm   
@@ -19,20 +20,122 @@ import re
 import logging
 logger = logging.getLogger(__name__)
 
+
+
+# ================================
+# For AJAX functionality use
+# ================================
+
+@login_required
+def get_audience_variables(request, tenant_id, pk):
+    """AJAX endpoint to get variables from selected audience + sample data for preview"""
+    import logging
+    logger = logging.getLogger('marketing_campaigns')
+    
+    try:
+        logger.debug(f"Getting audience variables for audience_id={pk}, tenant_id={tenant_id}")
+        
+        # Check if audience exists
+        audience = get_object_or_404(CustomAudience, pk=pk)
+        logger.debug(f"Found audience: {audience.name}")
+        logger.debug(f"Audience members type: {type(audience.members)}")
+        logger.debug(f"Audience members length: {len(audience.members) if audience.members else 'None'}")
+        
+        # Extract variables from audience members
+        variables = {}
+        sample_data = {}  # NEW: Sample data for live preview
+        
+        if audience.members and len(audience.members) > 0:
+            logger.debug(f"First member sample: {audience.members[0] if audience.members else 'None'}")
+            
+            # Get all unique keys from member data
+            all_keys = set()
+            for member in audience.members:
+                if isinstance(member, dict):
+                    all_keys.update(member.keys())
+            
+            logger.debug(f"All keys found: {list(all_keys)}")
+            
+            # Convert to variable format, excluding phone_number (it's standard)
+            for key in all_keys:
+                if key != 'is_flagged':
+                    variables[key] = {
+                        'type': 'text',
+                        'description': f'From audience: {audience.name}'
+                    }
+            
+            # NEW: Get sample data from first member for live preview
+            first_member = audience.members[0]
+            if isinstance(first_member, dict):
+                # Copy all data from first member for preview
+                sample_data = {key: str(value) for key, value in first_member.items() 
+                              if key != 'is_flagged' and value is not None}
+                
+                # Ensure we have basic fields
+                if 'name' not in sample_data and 'phone_number' in sample_data:
+                    # Try to generate a sample name from phone number
+                    phone = sample_data.get('phone_number', '')
+                    if phone.startswith('+62'):  # Indonesia
+                        sample_data['name'] = 'Ahmad'
+                    elif phone.startswith('+60'):  # Malaysia  
+                        sample_data['name'] = 'Ali'
+                    else:
+                        sample_data['name'] = 'Member'
+                
+                logger.debug(f"Sample data for preview: {sample_data}")
+        else:
+            logger.debug("No members found in audience")
+        
+        logger.debug(f"Final variables: {variables}")
+        
+        response_data = {
+            'success': True,
+            'variables': variables,
+            'audience_name': audience.name,
+            'total_numbers': audience.total_numbers,
+            'sample_data': sample_data  # NEW: Include sample data
+        }
+        
+        logger.debug(f"Returning response: {response_data}")
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        logger.error(f"Error in get_audience_variables: {str(e)}")
+        logger.error(f"Exception type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
 # ================================
 # DASHBOARD HOME (Temporary)
 # ================================
 
 @login_required
 def dashboard_home(request, tenant_id):
-    """Temporary dashboard - just show basic info"""
+    """Dashboard with dynamic stats - no category display"""
     
-    total_templates = MessageTemplate.objects.count()
-    categories = CampaignCategory.objects.count()
+    # Get actual counts from database
+    total_templates = MessageTemplate.objects.filter(is_active=True).count()
+    
+    # Fix: Get active campaigns count
+    active_campaigns = Campaign.objects.filter(status='running').count()
+    
+    # Fix: Get total audiences count  
+    total_audiences = CustomAudience.objects.count()
+    
+    # Additional useful stats
+    total_campaigns = Campaign.objects.count()
     
     context = {
         'total_templates': total_templates,
-        'total_categories': categories,
+        'active_campaigns': active_campaigns,
+        'total_audiences': total_audiences,
+        'total_campaigns': total_campaigns,
+        # Removed total_categories since we're hiding categories from users
     }
     
     return render(request, 'marketing_campaigns/marketing_dashboard.html', context)
@@ -41,18 +144,29 @@ def dashboard_home(request, tenant_id):
 # TEMPLATE MANAGEMENT
 # ================================
 
+def ensure_default_category():
+    """Ensure there's always a default 'General' category"""
+    default_category, created = CampaignCategory.objects.get_or_create(
+        name='General',
+        defaults={
+            'description': 'Default category for all campaigns and templates',
+            'color': '#007bff',
+            'icon': 'folder',
+            'is_system_default': True,
+            'is_active': True
+        }
+    )
+    return default_category
+
+
 @login_required
 def templates_list(request, tenant_id):
-    """List all message templates"""
+    """List all message templates - no category filter needed"""
     
-    # Filters
-    category_filter = request.GET.get('category')
+    # Simplified filters (removed category filter)
     search_filter = request.GET.get('search')
     
     templates = MessageTemplate.objects.filter(is_active=True)
-    
-    if category_filter:
-        templates = templates.filter(category_id=category_filter)
     
     if search_filter:
         templates = templates.filter(
@@ -67,28 +181,24 @@ def templates_list(request, tenant_id):
     page_number = request.GET.get('page')
     templates_page = paginator.get_page(page_number)
     
-    # Get categories for filter
-    categories = CampaignCategory.objects.filter(is_active=True)
-    
     context = {
         'templates': templates_page,
-        'categories': categories,
-        'current_category': category_filter,
         'search_query': search_filter,
+        # No categories context needed
     }
     
     return render(request, 'marketing_campaigns/templates_list.html', context)
 
 @login_required
 def template_create(request, tenant_id):
-    """Create new message template"""
+    """Create new message template with auto-assigned category"""
     
     if request.method == 'POST':
         form = MessageTemplateForm(request.POST)
         if form.is_valid():
             template = form.save(commit=False)
             template.created_by = request.user.username if hasattr(request.user, 'username') else 'admin'
-            template.save()
+            template.save()  # The form's save() method handles category assignment
             
             messages.success(request, f'Template "{template.name}" created successfully!')
             return redirect('marketing_campaigns:templates_list', tenant_id=tenant_id)
@@ -105,9 +215,13 @@ def template_create(request, tenant_id):
             "name": {"type": "text", "description": "Member name"},
         }
     
+    # ADD THIS: Get all audiences for the selector
+    audiences = CustomAudience.objects.all()
+    
     context = {
         'form': form,
         'available_variables': available_variables,
+        'audiences': audiences,  # ADD THIS LINE
         'page_title': 'Create Template',
     }
     
@@ -115,14 +229,18 @@ def template_create(request, tenant_id):
 
 @login_required
 def template_edit(request, tenant_id, pk):
-    """Edit existing template"""
+    """Edit existing template - category remains unchanged"""
     
     template = get_object_or_404(MessageTemplate, pk=pk)
     
     if request.method == 'POST':
-        # We'll implement form processing after creating forms.py
-        messages.success(request, f'Template "{template.name}" edit coming soon!')
-        return redirect('marketing_campaigns:templates_list', tenant_id=tenant_id)
+        form = MessageTemplateForm(request.POST, instance=template)
+        if form.is_valid():
+            form.save()  # Category is preserved, only other fields are updated
+            messages.success(request, f'Template "{template.name}" updated successfully!')
+            return redirect('marketing_campaigns:templates_list', tenant_id=tenant_id)
+    else:
+        form = MessageTemplateForm(instance=template)
     
     # Get available variables
     try:
@@ -134,9 +252,14 @@ def template_edit(request, tenant_id, pk):
             "name": {"type": "text", "description": "Member name"},
         }
     
+    # ADD THIS: Get all audiences for the selector
+    audiences = CustomAudience.objects.all()
+    
     context = {
+        'form': form,
         'template': template,
         'available_variables': available_variables,
+        'audiences': audiences,  # ADD THIS LINE
         'page_title': 'Edit Template',
     }
     
@@ -539,7 +662,7 @@ def campaign_start(request, tenant_id, pk):
 
 @login_required
 def campaign_create(request, tenant_id):
-    """Create new campaign - SIMPLIFIED for clean tenant architecture"""
+    """Create new campaign with auto-assigned category - WORKS WITH YOUR EXISTING FORM"""
     
     if request.method == 'POST':
         form = CampaignForm(request.POST, tenant_id=request.tenant.id)
@@ -549,11 +672,13 @@ def campaign_create(request, tenant_id):
                     campaign = form.save(commit=False)
                     campaign.created_by = request.user.username if hasattr(request.user, 'username') else 'admin'
                     
-                    logger.info(f"[CAMPAIGN] Creating '{campaign.name}' for {tenant_id}")
-                    campaign.save()
+                    # The form's save() method already handles:
+                    # 1. Category assignment
+                    # 2. Start date/status logic
+                    # 3. CampaignMessage creation
+                    campaign = form.save(commit=True)
                     
-                    # Save the form to create CampaignMessage relation
-                    form.save()
+                    logger.info(f"[CAMPAIGN] Created '{campaign.name}' for {tenant_id}")
                     
                     # Generate campaign targets from audience
                     targets_created = campaign.generate_targets()
@@ -563,15 +688,12 @@ def campaign_create(request, tenant_id):
                     
                     logger.info(f"[CAMPAIGN] Created {targets_created} targets for campaign {campaign.pk}")
                     
-                    # Auto-start campaign if requested - SIMPLIFIED!
+                    # Auto-start campaign if requested
                     if form.cleaned_data.get('start_immediately'):
                         logger.info(f"[CAMPAIGN] Auto-starting campaign {campaign.pk}")
                         
                         try:
-                            # Import here to avoid circular imports
                             from marketing_campaigns.tasks import process_campaign_messages
-                            
-                            # Simple task call - no tenant_db parameter needed!
                             task_result = process_campaign_messages.delay(campaign.pk)
                             logger.info(f"[CAMPAIGN] Task scheduled: {task_result.id}")
                             
@@ -603,7 +725,7 @@ def campaign_create(request, tenant_id):
     else:
         form = CampaignForm(tenant_id=request.tenant.id)
     
-    # Get counts for dashboard info - simplified queries
+    # Get counts for dashboard info
     total_templates = MessageTemplate.objects.filter(is_active=True).count()
     total_audiences = CustomAudience.objects.count()
     total_instances = WhatsAppInstance.objects.filter(is_active=True).count()

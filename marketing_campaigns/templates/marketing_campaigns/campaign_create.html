@@ -219,7 +219,7 @@ textarea.form-input {
     cursor: pointer;
 }
 
-.form-checkbox-label input[type=&quot;checkbox&quot;] {
+.form-checkbox-label input[type="checkbox"] {
     margin-right: 8px;
 }
 
@@ -262,10 +262,10 @@ textarea.form-input {
     background-color: #5a6268;
 }
 
-input[type=&quot;text&quot;], 
-input[type=&quot;number&quot;],
+input[type="text"], 
+input[type="number"],
+input[type="datetime-local"],
 select {
-    /* Style for these elements to inherit form-input styles */
     display: block;
     width: 100%;
     padding: 10px;
@@ -277,8 +277,9 @@ select {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input[type=&quot;text&quot;]:focus, 
-input[type=&quot;number&quot;]:focus,
+input[type="text"]:focus, 
+input[type="number"]:focus,
+input[type="datetime-local"]:focus,
 select:focus {
     border-color: #4f46e5;
     outline: none;
@@ -291,7 +292,7 @@ select:focus {
 <div class="campaign-header">
 <div>
 <h1>{% if form.instance.pk %}Edit Campaign{% else %}Create New Campaign{% endif %}</h1>
-<p>Set up your marketing campaign</p>
+<p>Set up your marketing campaign with anti-ban protection</p>
 </div>
 <a href="{% url 'marketing_campaigns:campaigns_list' request.resolver_match.kwargs.tenant_id %}"
 class="btn-back">
@@ -355,26 +356,14 @@ class="btn-back">
         
         <!-- Basic Information -->
         <h4 class="form-section-header">Basic Information</h4>
-        <div class="form-grid two-col">
-            <div class="form-field">
-                <label class="form-label">
-                    Campaign Name *
-                </label>
-                {{ form.name }}
-                {% if form.name.errors %}
-                    <div class="form-error">{{ form.name.errors.0 }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-field">
-                <label class="form-label">
-                    Category *
-                </label>
-                {{ form.category }}
-                {% if form.category.errors %}
-                    <div class="form-error">{{ form.category.errors.0 }}</div>
-                {% endif %}
-            </div>
+        <div class="form-field">
+            <label class="form-label">
+                Campaign Name *
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="form-error">{{ form.name.errors.0 }}</div>
+            {% endif %}
         </div>
         
         <div class="form-field">
@@ -417,16 +406,32 @@ class="btn-back">
             </div>
         </div>
         
+        <!-- Anti-Ban Instance Strategy Section -->
+        <h4 class="form-section-header">Anti-Ban Instance Strategy</h4>
         <div class="form-field">
             <label class="form-label">
-                WhatsApp Instance *
+                Instance Selection Strategy
+            </label>
+            <select name="instance_strategy" class="form-control">
+                <option value="single_instance">Single Instance (Traditional)</option>
+                <option value="random_pool" selected>Random Pool Rotation (Anti-Ban)</option>
+                <option value="round_robin">Round Robin Rotation</option>
+            </select>
+            <small class="form-help-text">
+                Random Pool: Each message randomly selects from available instances for better anti-ban protection
+            </small>
+        </div>
+        
+        <div class="form-field">
+            <label class="form-label">
+                WhatsApp Instance Pool *
             </label>
             {{ form.whatsapp_instance }}
             {% if form.whatsapp_instance.errors %}
                 <div class="form-error">{{ form.whatsapp_instance.errors.0 }}</div>
             {% endif %}
             <small class="form-help-text">
-                Choose WhatsApp instance to send from (only connected instances shown)
+                Primary instance (will be part of rotation pool with other connected instances)
             </small>
         </div>
         
@@ -458,7 +463,7 @@ class="btn-back">
         </div>
         
         <!-- Anti-Ban Settings -->
-        <h4 class="form-section-header">Anti-Ban Settings Per WA instance</h4>
+        <h4 class="form-section-header">Anti-Ban Settings Per Instance</h4>
         <div class="form-grid three-col">
             <div class="form-field">
                 <label class="form-label">
@@ -468,6 +473,7 @@ class="btn-back">
                 {% if form.rate_limit_per_hour.errors %}
                     <div class="form-error">{{ form.rate_limit_per_hour.errors.0 }}</div>
                 {% endif %}
+                <small class="form-help-text">Lower = safer</small>
             </div>
             
             <div class="form-field">
@@ -489,6 +495,18 @@ class="btn-back">
                     <div class="form-error">{{ form.max_delay_minutes.errors.0 }}</div>
                 {% endif %}
             </div>
+        </div>
+        
+        <!-- Advanced Anti-Ban Features (Placeholder for Future) -->
+        <h4 class="form-section-header">Advanced Anti-Ban Features</h4>
+        <div class="alert alert-warning">
+            <strong>Coming Soon:</strong>
+            <ul style="margin: 8px 0 0 20px; color: #856404;">
+                <li>Inter-instance conversations</li>
+                <li>Reply handling automation</li>
+                <li>Behavioral pattern randomization</li>
+                <li>Smart cooling-off periods</li>
+            </ul>
         </div>
         
         <!-- Audience Filtering -->
@@ -550,7 +568,6 @@ class="btn-back">
 </div>
 
 <!-- JavaScript for form interactions -->
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 const startImmediatelyCheckbox = document.querySelector('#id_start_immediately');
@@ -558,9 +575,9 @@ const scheduledStartDiv = document.getElementById('scheduledStartDiv');
 
 function toggleScheduledStart() {
     if (startImmediatelyCheckbox.checked) {
-        scheduledStartDiv.style.display = &#39;none&#39;;
+        scheduledStartDiv.style.display = 'none';
     } else {
-        scheduledStartDiv.style.display = &#39;block&#39;;
+        scheduledStartDiv.style.display = 'block';
     }
 }
 
@@ -568,7 +585,7 @@ function toggleScheduledStart() {
 toggleScheduledStart();
 
 // Listen for changes
-startImmediatelyCheckbox.addEventListener(&#39;change&#39;, toggleScheduledStart);
+startImmediatelyCheckbox.addEventListener('change', toggleScheduledStart);
 
 });
 </script>

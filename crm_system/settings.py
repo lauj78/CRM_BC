@@ -23,7 +23,7 @@ AUTHENTICATED_REDIRECT_URL = 'tenant_redirect'
 
 # Security settings
 SECRET_KEY = 'django-insecure-4r)r(q=0d3zpjm+3x&+5z)0_#0z1rd3wud+w+u_^ub--i5%2*8'
-DEBUG = False    
+  
 
 # Custom error handlers
 handler404 = 'crm_system.views.custom_404'
@@ -247,37 +247,84 @@ CELERY_TASK_TIME_LIMIT = 300  # 5 minutes
 CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4 minutes
 
 # Enhanced Logging for Celery
+# Also update your logging to capture Django errors better:
+DEBUG = True  
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+        'simple': {
+            'format': '[{levelname}] {asctime} {module}: {message}',
+            'style': '{',
+        },
+        'detailed': {
+            'format': '[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} - {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'simple',
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-            'formatter': 'verbose',
+            'filename': 'app.log',
+            'formatter': 'detailed',
         },
     },
     'loggers': {
+        # Your main apps - show everything
         'marketing_campaigns': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,  # Don't pass to parent loggers
         },
+        'whatsapp_messaging': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'data_management': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'tenants': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',  # Reduced from DEBUG
+            'propagate': False,
+        },
+        
+        # Django system - only errors and critical issues
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # Only show errors, not debug info
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',  # Only failed requests
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': [],  # Disable SQL query logging
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        
+        # Celery - only important messages
         'celery': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
     },
+    # Root logger - catch anything else but keep it quiet
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',  # Only warnings and above
+    },
 }
+
 

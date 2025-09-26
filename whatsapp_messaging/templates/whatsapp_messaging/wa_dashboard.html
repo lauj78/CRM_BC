@@ -4,222 +4,495 @@
 
 {% block content %}
 <style>
-    .dashboard-container {
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    body {
+        background-color: #f0f4f8;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
-    .header {
+
+    .dashboard-container {
+        max-width: 100%;
+        margin-left: 40px;
+        padding: 20px;
+        padding-right: 40px;
+    }
+
+    .page-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 10px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
-    .header h2 {
-        color: #333;
+
+    .page-header h2 {
+        font-size: 2.5rem;
+        color: #1a202c;
         margin: 0;
+        font-weight: 700;
     }
-    .add-btn {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
+
+    .page-header p {
+        font-size: 1.1rem;
+        color: #4a5568;
+        margin: 5px 0 0 0;
     }
-    .add-btn:hover {
-        background-color: #45a049;
-    }
-    .instance-list {
-        list-style: none;
-        padding: 0;
-    }
-    .instance-item {
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 15px;
+
+    .header-actions {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    .instance-details {
-        flex-grow: 1;
-    }
-    .instance-details h3 {
-        margin: 0 0 5px 0;
-        color: #007bff;
-        display: flex;
-        align-items: center;
         gap: 10px;
     }
-    .instance-details p {
-        margin: 0;
-        color: #555;
-    }
-    .instance-actions a {
-        color: #337ab7;
+
+    .btn {
+        padding: 12px 20px;
         text-decoration: none;
-        margin-left: 15px;
-    }
-    .instance-actions a:hover {
-        text-decoration: underline;
-    }
-    .no-instances {
-        text-align: center;
-        color: #777;
-        padding: 50px;
-        border: 1px dashed #ccc;
+        border: none;
         border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
     }
-    
-    /* Status Badge Styles */
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-        text-align: center;
-        min-width: 80px;
-        display: inline-block;
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
     }
-    .status-badge.connected {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
     }
-    .status-badge.connecting {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeaa7;
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
     }
-    .status-badge.disconnected {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
     }
-    .status-badge.closed {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+        padding: 8px 12px;
+        font-size: 0.85rem;
     }
-    .instance-phone {
-        color: #28a745;
-        font-weight: bold;
+
+    .btn-success:hover {
+        background-color: #218838;
     }
-    .messages {
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
         margin-bottom: 20px;
-        padding: 0;
-        list-style: none;
+        border: 1px solid;
     }
-    .messages li {
-        padding: 10px;
-        margin-bottom: 5px;
-        border-radius: 5px;
-    }
-    .messages .success {
+
+    .alert-success {
         background-color: #d4edda;
         color: #155724;
-        border: 1px solid #c3e6cb;
+        border-color: #c3e6cb;
     }
-    .messages .error {
+
+    .alert-error {
         background-color: #f8d7da;
         color: #721c24;
-        border: 1px solid #f5c6cb;
+        border-color: #f5c6cb;
     }
-    .messages .info {
+
+    .alert-info {
         background-color: #d1ecf1;
         color: #0c5460;
-        border: 1px solid #bee5eb;
+        border-color: #bee5eb;
+    }
+
+    .summary-card {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+    }
+
+    .summary-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    .instances-table-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .instances-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .instances-table th {
+        background-color: #f8f9fa;
+        color: #1a202c;
+        font-weight: 600;
+        padding: 16px;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .instances-table td {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+    }
+
+    .instances-table tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .instances-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .instance-name {
+        font-weight: 600;
+        color: #1a202c;
+        font-size: 1.1rem;
+    }
+
+    .phone-number {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .api-key {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #4a5568;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-connecting {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-disconnected, .status-closed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .date-text {
+        font-size: 0.9rem;
+        color: #4a5568;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: #1a202c;
+        margin: 0 0 10px 0;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #4a5568;
+        margin: 0 0 30px 0;
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin-left: 10px;
+            padding-right: 10px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .header-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .summary-stats {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .instances-table-container {
+            overflow-x: auto;
+        }
+
+        .instances-table {
+            min-width: 800px;
+        }
+
+        .table-actions {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .btn {
+            font-size: 0.8rem;
+            padding: 6px 10px;
+        }
     }
 </style>
 
 <div class="dashboard-container">
-    <div class="header">
-        <h2>WhatsApp Dashboard</h2>
-        <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" class="add-btn">+ Add New Instance</a>
-        <a href="{% url 'whatsapp_messaging:sync_instances' tenant_id=tenant_id %}" class="btn btn-secondary">🔄 Sync with API</a>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h2>WhatsApp Dashboard</h2>
+            <p>Manage your WhatsApp instances and connections</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" class="btn btn-primary">
+                + Add New Instance
+            </a>
+            <a href="{% url 'whatsapp_messaging:sync_instances' tenant_id=tenant_id %}" class="btn btn-secondary">
+                Sync with API
+            </a>
+        </div>
     </div>
 
+    <!-- Messages -->
     {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
     {% endif %}
 
+    <!-- Summary Stats (moved to top) -->
     {% if instances %}
-        <ul class="instance-list">
-            {% for instance in instances %}
-                <li class="instance-item">
-                    <div class="instance-details">
-                        <h3>
-                            {{ instance.instance_name }}
-                            <!-- Status Badge -->
-                            {% if instance.status == 'connected' %}
-                                <span class="status-badge connected">🟢 Connected</span>
-                            {% elif instance.status == 'connecting' %}
-                                <span class="status-badge connecting">🟡 Connecting</span>
-                            {% elif instance.status == 'disconnected' %}
-                                <span class="status-badge disconnected">🔴 Disconnected</span>
-                            {% elif instance.status == 'closed' %}
-                                <span class="status-badge closed">🔴 Closed</span>
-                            {% else %}
-                                <span class="status-badge disconnected">⚫ {{ instance.status|title }}</span>
+        <div class="summary-card">
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <div class="stat-number" style="color: #007bff;">{{ instances|length }}</div>
+                    <div class="stat-label">Total Instances</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-number" style="color: #28a745;">
+                        {% regroup instances by status as status_groups %}
+                        {% for group in status_groups %}
+                            {% if group.grouper == 'connected' %}
+                                {{ group.list|length }}
                             {% endif %}
-                        </h3>
-                        
-                        <!-- Phone Number (if connected) -->
-                        {% if instance.phone_number and instance.status == 'connected' %}
-                            <p class="instance-phone">📱 Phone: {{ instance.phone_number }}</p>
-                        {% endif %}
-                        
-                        <p>API Key: {{ instance.api_key|truncatechars:30 }}...</p>
-                        <small>Created: {{ instance.created_at|date:"F j, Y" }}</small>
+                        {% empty %}
+                            0
+                        {% endfor %}
                     </div>
-                    <div class="instance-actions">
-                        <!-- Show different buttons based on status -->
-                        {% if instance.status == 'connected' %}
-                            <a href="{% url 'whatsapp_messaging:send_message' tenant_id=tenant_id pk=instance.pk %}" style="color: #28a745; font-weight: bold;">✉️ Send Message</a>
-                        {% else %}
-                            <a href="{% url 'whatsapp_messaging:get_qr_code' tenant_id=tenant_id pk=instance.pk %}" style="color: #17a2b8; font-weight: bold;">📱 Get QR Code</a>
-                        {% endif %}
-                        
-                        <a href="{% url 'whatsapp_messaging:delete_instance' tenant_id=tenant_id pk=instance.pk %}" style="color: #dc3545;">🗑️ Delete</a>
+                    <div class="stat-label">Connected</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-number" style="color: #ffc107;">
+                        {% for group in status_groups %}
+                            {% if group.grouper == 'connecting' %}
+                                {{ group.list|length }}
+                            {% endif %}
+                        {% empty %}
+                            0
+                        {% endfor %}
                     </div>
-                </li>
-            {% endfor %}
-        </ul>
-        
-        <!-- Summary Stats -->
-        <div style="margin-top: 30px; padding: 15px; background-color: #e9ecef; border-radius: 5px;">
-            <strong>Summary:</strong> 
-            {{ instances|length }} instance{{ instances|length|pluralize }}, 
-            Connected: 
-            <span style="color: #28a745; font-weight: bold;">
-                {% regroup instances by status as status_groups %}
-                {% for group in status_groups %}
-                    {% if group.grouper == 'connected' %}
-                        {{ group.list|length }}
-                    {% endif %}
-                {% empty %}
-                    0
-                {% endfor %}
-            </span>
+                    <div class="stat-label">Connecting</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-number" style="color: #dc3545;">
+                        {% for group in status_groups %}
+                            {% if group.grouper == 'disconnected' or group.grouper == 'closed' %}
+                                {{ group.list|length }}
+                            {% endif %}
+                        {% empty %}
+                            0
+                        {% endfor %}
+                    </div>
+                    <div class="stat-label">Disconnected</div>
+                </div>
+            </div>
         </div>
+
+        <!-- Instances Table -->
+        <div class="instances-table-container">
+            <table class="instances-table">
+                <thead>
+                    <tr>
+                        <th>Instance Name</th>
+                        <th>Status</th>
+                        <th>Phone Number</th>
+                        <th>API Key</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instance in instances %}
+                        <tr>
+                            <td>
+                                <div class="instance-name">{{ instance.instance_name }}</div>
+                            </td>
+                            <td>
+                                {% if instance.status == 'connected' %}
+                                    <span class="status-badge status-connected">Connected</span>
+                                {% elif instance.status == 'connecting' %}
+                                    <span class="status-badge status-connecting">Connecting</span>
+                                {% elif instance.status == 'disconnected' %}
+                                    <span class="status-badge status-disconnected">Disconnected</span>
+                                {% elif instance.status == 'closed' %}
+                                    <span class="status-badge status-closed">Closed</span>
+                                {% else %}
+                                    <span class="status-badge status-disconnected">{{ instance.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if instance.phone_number and instance.status == 'connected' %}
+                                    <span class="phone-number">{{ instance.phone_number }}</span>
+                                {% else %}
+                                    <span class="date-text">Not connected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="api-key">{{ instance.api_key|truncatechars:20 }}...</span>
+                            </td>
+                            <td>
+                                <span class="date-text">{{ instance.created_at|date:"M j, Y" }}</span>
+                            </td>
+                            <td>
+                                <span class="date-text">{{ instance.updated_at|date:"M j, Y g:i A" }}</span>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    {% if instance.status == 'connected' %}
+                                        <a href="{% url 'whatsapp_messaging:send_message' tenant_id=tenant_id pk=instance.pk %}" 
+                                           class="btn btn-success">
+                                            Send Message
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'whatsapp_messaging:get_qr_code' tenant_id=tenant_id pk=instance.pk %}" 
+                                           class="btn btn-info">
+                                            Get QR Code
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'whatsapp_messaging:delete_instance' tenant_id=tenant_id pk=instance.pk %}" 
+                                       class="btn btn-danger"
+                                       onclick="return confirm('Are you sure you want to delete this WhatsApp instance? This action cannot be undone.')">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
     {% else %}
-        <div class="no-instances">
-            <p>No WhatsApp instances configured yet. Click the button above to add your first one!</p>
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">📱</div>
+            <h3>No WhatsApp Instances</h3>
+            <p>Create your first WhatsApp instance to start sending messages</p>
+            <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" 
+               class="btn btn-primary">
+                Add Your First Instance
+            </a>
         </div>
     {% endif %}
 </div>
