@@ -436,6 +436,55 @@ class CustomAudience(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # WhatsApp Verification Fields
+    VERIFICATION_STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'Verifying...'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('partial', 'Partially Completed')
+    ]
+    
+    whatsapp_verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='not_started',
+        help_text="Status of WhatsApp number verification for this audience"
+    )
+    
+    whatsapp_verified_count = models.IntegerField(
+        default=0,
+        help_text="Numbers confirmed to have WhatsApp"
+    )
+    whatsapp_not_found_count = models.IntegerField(
+        default=0,
+        help_text="Numbers that don't have WhatsApp"
+    )
+    whatsapp_error_count = models.IntegerField(
+        default=0,
+        help_text="Numbers that failed verification due to errors"
+    )
+    whatsapp_pending_count = models.IntegerField(
+        default=0,
+        help_text="Numbers not yet verified"
+    )
+    
+    verification_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When WhatsApp verification was started"
+    )
+    verification_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When WhatsApp verification was completed"
+    )
+    
+    verification_cache_days = models.IntegerField(
+        default=14,
+        help_text="Days to cache WhatsApp verification results"
+    )
+    
     class Meta:
         db_table = 'marketing_custom_audiences'
         verbose_name = 'Custom Audience'
@@ -562,10 +611,7 @@ class CustomAudience(models.Model):
         # ALWAYS RETURN TRUE for valid format - don't reject based on country
         return True, clean_phone, detected_country or 'UNKNOWN'
 
-
-
-    
-    
+   
     def _check_flagged_numbers(self):
         """Check which numbers are flagged in history"""
         flagged_count = 0
@@ -593,6 +639,96 @@ class CustomAudience(models.Model):
             member for member in self.members 
             if member.get('is_flagged', False)
         ]
+
+    def update_verification_stats(self):
+        """Update verification statistics from member data"""
+        if not self.members:
+            return
+        
+        verified_count = 0
+        not_found_count = 0
+        error_count = 0
+        pending_count = 0
+        
+        for member in self.members:
+            whatsapp_status = member.get('whatsapp_status', 'unknown')
+            
+            if whatsapp_status == 'confirmed':
+                verified_count += 1
+            elif whatsapp_status == 'not_available':
+                not_found_count += 1
+            elif whatsapp_status in ['timeout', 'request_error', 'api_error_500', 'unknown']:
+                error_count += 1
+            else:
+                pending_count += 1
+        
+        # Update counts
+        self.whatsapp_verified_count = verified_count
+        self.whatsapp_not_found_count = not_found_count
+        self.whatsapp_error_count = error_count
+        self.whatsapp_pending_count = pending_count
+        
+        # Update status
+        if pending_count == 0 and error_count == 0:
+            self.whatsapp_verification_status = 'completed'
+            if not self.verification_completed_at:
+                from django.utils import timezone
+                self.verification_completed_at = timezone.now()
+        elif verified_count > 0 or not_found_count > 0:
+            self.whatsapp_verification_status = 'partial'
+        elif error_count == len(self.members):
+            self.whatsapp_verification_status = 'failed'
+        # Don't change 'in_progress' status here - only task should do that
+        
+        # FIX: Check current database context and save appropriately
+        from tenants.context import get_current_db
+        current_db = get_current_db()
+        
+        update_fields = [
+            'whatsapp_verified_count', 'whatsapp_not_found_count', 
+            'whatsapp_error_count', 'whatsapp_pending_count',
+            'whatsapp_verification_status', 'verification_completed_at'
+        ]
+        
+        if current_db:
+            # Save to current tenant database
+            self.save(using=current_db, update_fields=update_fields)
+        else:
+            # Fallback to default save (will use router)
+            self.save(update_fields=update_fields)
+            
+    
+    @property
+    def verification_progress_percentage(self):
+        """Calculate verification progress as percentage"""
+        if self.total_numbers == 0:
+            return 0
+        
+        completed = self.whatsapp_verified_count + self.whatsapp_not_found_count
+        return round((completed / self.total_numbers) * 100, 1)
+    
+    @property 
+    def has_whatsapp_data(self):
+        """Check if audience has any WhatsApp verification data"""
+        return (self.whatsapp_verified_count > 0 or 
+                self.whatsapp_not_found_count > 0 or 
+                self.whatsapp_error_count > 0)
+    
+    def get_verification_summary(self):
+        """Get human-readable verification summary"""
+        if self.whatsapp_verification_status == 'not_started':
+            return "WhatsApp verification not started"
+        elif self.whatsapp_verification_status == 'in_progress':
+            return f"Verifying... {self.verification_progress_percentage}% complete"
+        elif self.whatsapp_verification_status == 'completed':
+            return f"Verification complete: {self.whatsapp_verified_count} confirmed, {self.whatsapp_not_found_count} without WhatsApp"
+        elif self.whatsapp_verification_status == 'partial':
+            return f"Partially verified: {self.whatsapp_verified_count} confirmed, {self.whatsapp_error_count} errors"
+        elif self.whatsapp_verification_status == 'failed':
+            return f"Verification failed: {self.whatsapp_error_count} errors"
+        else:
+            return "Unknown verification status"
+
 
 # ================================
 # PRE-DEFINED TARGETING REPORTS

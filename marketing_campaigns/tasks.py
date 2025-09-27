@@ -12,7 +12,7 @@ from django.conf import settings
 from .models import Campaign, CampaignTarget, MessageTemplate
 from whatsapp_messaging.models import WhatsAppInstance
 from whatsapp_messaging.services.evolution_api import EvolutionAPIService
-from tenants.context import set_current_db
+from tenants.context import set_current_db, clear_current_db
 
 logger = logging.getLogger('marketing_campaigns')
 
@@ -284,3 +284,317 @@ def cleanup_old_campaign_data():
             continue
     
     return f"Cleanup completed - {total_cleaned} campaigns updated"
+
+
+@shared_task(bind=True, max_retries=2)
+def verify_audience_whatsapp_task(self, audience_id, tenant_id, database_alias=None):
+    """
+    Background task to verify WhatsApp numbers in an audience
+    
+    Args:
+        audience_id: ID of the CustomAudience to verify
+        tenant_id: Tenant ID for the verification service
+        database_alias: Which database to use (auto-detected if None)
+    """
+    
+    # Auto-detect database if not provided
+    if database_alias is None:
+        if tenant_id == 2:
+            database_alias = 'crm_db_pukul_com'
+        elif tenant_id == 3:
+            database_alias = 'crm_db_test_com'
+        else:
+            database_alias = 'default'
+    
+    # Set tenant context for database routing
+    set_current_db(database_alias)
+    
+    try:
+        from marketing_campaigns.models import CustomAudience
+        from whatsapp_messaging.whatsapp_verification import WhatsAppVerificationService
+        
+        logger.info(f"Starting WhatsApp verification task for audience {audience_id}, tenant {tenant_id}, database {database_alias}")
+        
+        # Get the audience
+        try:
+            audience = CustomAudience.objects.get(pk=audience_id)
+        except CustomAudience.DoesNotExist:
+            logger.error(f"Audience {audience_id} not found in database {database_alias}")
+            return {
+                'success': False,
+                'error': f'Audience {audience_id} not found',
+                'audience_id': audience_id
+            }
+        
+        # Update status to in_progress
+        audience.whatsapp_verification_status = 'in_progress'
+        audience.verification_started_at = timezone.now()
+        audience.save(using=database_alias, update_fields=[
+            'whatsapp_verification_status', 
+            'verification_started_at'
+        ])
+        
+        logger.info(f"Audience '{audience.name}' verification started with {audience.total_numbers} numbers")
+        
+        # Initialize verification service
+        verifier = WhatsAppVerificationService(tenant_id=tenant_id, database_alias=database_alias)
+        
+        # Get verification settings
+        delay_seconds = 3  # Default delay
+        retry_failed = True  # Retry failed numbers once
+        
+        # Track progress
+        total_numbers = len(audience.members) if audience.members else 0
+        if total_numbers == 0:
+            logger.warning(f"Audience {audience_id} has no members to verify")
+            audience.whatsapp_verification_status = 'completed'
+            audience.verification_completed_at = timezone.now()
+            audience.save(using=database_alias, update_fields=[
+                'whatsapp_verification_status', 
+                'verification_completed_at'
+            ])
+            return {
+                'success': True,
+                'message': 'No numbers to verify',
+                'audience_id': audience_id,
+                'total': 0
+            }
+        
+        # Verify numbers with progress tracking
+        results = {
+            'verified': 0,
+            'not_found': 0,
+            'errors': [],
+            'flagged': 0,
+            'total': total_numbers,
+            'processed': 0
+        }
+        
+        # Get available instances for rotation
+        instances = verifier.get_available_instances()
+        if not instances:
+            raise Exception(f"No active WhatsApp instances available for tenant {tenant_id}")
+        
+        current_instance_idx = 0
+        
+        logger.info(f"Using {len(instances)} WhatsApp instances: {instances}")
+        
+        # Process each member
+        for i, member in enumerate(audience.members):
+            phone_number = member.get('phone_number')
+            if not phone_number:
+                results['processed'] += 1
+                continue
+            
+            # Check for cached verification (14 days) with proper database routing
+            cached_result = check_cached_verification(phone_number, audience.verification_cache_days, database_alias)
+            if cached_result:
+                # Use cached result
+                member.update(cached_result)
+                if cached_result['whatsapp_status'] == 'confirmed':
+                    results['verified'] += 1
+                elif cached_result['whatsapp_status'] == 'not_available':
+                    results['not_found'] += 1
+                
+                logger.debug(f"Using cached result for {phone_number}: {cached_result['whatsapp_status']}")
+            else:
+                # Verify via API
+                instance_name = instances[current_instance_idx % len(instances)]
+                current_instance_idx += 1
+                
+                try:
+                    exists, status, history = verifier.verify_single_number(phone_number, instance_name)
+                    
+                    # Update member data
+                    member['whatsapp_verified'] = True
+                    member['whatsapp_status'] = status
+                    member['last_verified'] = timezone.now().isoformat()
+                    
+                    if status == "confirmed":
+                        results['verified'] += 1
+                    elif status == "not_available":
+                        results['not_found'] += 1
+                    else:
+                        results['errors'].append(f"{phone_number}: {status}")
+                    
+                    # Check if flagged
+                    if history and (history.is_flagged or history.risk_level == 'high'):
+                        member['is_flagged'] = True
+                        member['flag_reason'] = f"Risk: {history.risk_level}"
+                        results['flagged'] += 1
+                    
+                    logger.debug(f"Verified {phone_number}: {status}")
+                    
+                except Exception as verify_error:
+                    logger.error(f"Error verifying {phone_number}: {str(verify_error)}")
+                    results['errors'].append(f"{phone_number}: verification_error")
+                    member['whatsapp_status'] = 'unknown'
+                    member['whatsapp_verified'] = False
+                
+                # Rate limiting delay
+                time.sleep(delay_seconds)
+            
+            results['processed'] += 1
+            
+            # Update progress every 10 numbers
+            if (i + 1) % 10 == 0:
+                # Save intermediate progress
+                audience.save(using=database_alias, update_fields=['members'])
+                
+                # Update stats manually with explicit database
+                audience.whatsapp_verified_count = results['verified']
+                audience.whatsapp_not_found_count = results['not_found']
+                audience.whatsapp_error_count = len(results['errors'])
+                audience.whatsapp_pending_count = total_numbers - results['processed']
+                
+                audience.save(using=database_alias, update_fields=[
+                    'whatsapp_verified_count', 'whatsapp_not_found_count',
+                    'whatsapp_error_count', 'whatsapp_pending_count'
+                ])
+                
+                progress_pct = round((results['processed'] / total_numbers) * 100, 1)
+                logger.info(f"Verification progress: {results['processed']}/{total_numbers} ({progress_pct}%)")
+                
+                # Update task progress for monitoring
+                self.update_state(
+                    state='PROGRESS',
+                    meta={
+                        'processed': results['processed'],
+                        'total': total_numbers,
+                        'verified': results['verified'],
+                        'not_found': results['not_found'],
+                        'errors': len(results['errors'])
+                    }
+                )
+        
+        # Final save and stats update
+        audience.save(using=database_alias, update_fields=['members'])
+        audience.verification_completed_at = timezone.now()
+        
+        # Explicit stats update with database routing
+        audience.whatsapp_verified_count = results['verified']
+        audience.whatsapp_not_found_count = results['not_found']  
+        audience.whatsapp_error_count = len(results['errors'])
+        audience.whatsapp_pending_count = total_numbers - results['processed']
+        audience.whatsapp_verification_status = 'completed'
+        
+        audience.save(using=database_alias, update_fields=[
+            'whatsapp_verified_count', 'whatsapp_not_found_count',
+            'whatsapp_error_count', 'whatsapp_pending_count', 
+            'whatsapp_verification_status', 'verification_completed_at'
+        ])
+        
+        # Log final results
+        logger.info(f"WhatsApp verification completed for audience '{audience.name}': "
+                   f"{results['verified']} confirmed, {results['not_found']} not found, "
+                   f"{results['flagged']} flagged, {len(results['errors'])} errors")
+        
+        return {
+            'success': True,
+            'audience_id': audience_id,
+            'audience_name': audience.name,
+            'results': results,
+            'completed_at': timezone.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"WhatsApp verification task failed for audience {audience_id}: {str(e)}")
+        
+        # Update audience status to failed
+        try:
+            from marketing_campaigns.models import CustomAudience
+            audience = CustomAudience.objects.get(pk=audience_id)
+            audience.whatsapp_verification_status = 'failed'
+            audience.save(using=database_alias, update_fields=['whatsapp_verification_status'])
+        except Exception as update_error:
+            logger.error(f"Failed to update audience status: {str(update_error)}")
+        
+        # Retry logic
+        if self.request.retries < self.max_retries:
+            logger.info(f"Retrying verification task in 60 seconds (attempt {self.request.retries + 1})")
+            raise self.retry(countdown=60, exc=e)
+        
+        return {
+            'success': False,
+            'error': str(e),
+            'audience_id': audience_id
+        }
+    
+    finally:
+        # Always clear tenant context
+        clear_current_db()
+
+
+def check_cached_verification(phone_number, cache_days=14, database_alias=None):
+    """
+    Check if we have recent verification data for a phone number
+    
+    Returns cached data if found and still valid, None otherwise
+    """
+    try:
+        from marketing_campaigns.models import PhoneNumberHistory
+        from django.utils import timezone
+        
+        logger.debug(f"Checking cache for {phone_number} in database {database_alias}")
+        
+        # FIXED: Use explicit database query
+        if database_alias:
+            history = PhoneNumberHistory.objects.using(database_alias).get(phone_number=phone_number)
+        else:
+            history = PhoneNumberHistory.objects.get(phone_number=phone_number)
+        
+        logger.debug(f"Found history for {phone_number}: status={history.whatsapp_status}, updated={history.updated_at}")
+        
+        # Check if verification is recent enough
+        if history.updated_at:
+            days_ago = (timezone.now() - history.updated_at).days
+            hours_ago = (timezone.now() - history.updated_at).total_seconds() / 3600
+            
+            cache_valid = (days_ago <= cache_days and 
+                          history.whatsapp_status in ['confirmed', 'not_available'])
+            
+            logger.debug(f"Cache check for {phone_number}: days_ago={days_ago}, hours_ago={hours_ago:.1f}, cache_days={cache_days}, status={history.whatsapp_status}, valid={cache_valid}")
+            
+            if cache_valid:
+                logger.info(f"Using cached verification for {phone_number}: {history.whatsapp_status} (age: {hours_ago:.1f} hours)")
+                return {
+                    'whatsapp_verified': True,
+                    'whatsapp_status': history.whatsapp_status,
+                    'last_verified': history.updated_at.isoformat(),
+                    'is_flagged': history.is_flagged or history.risk_level == 'high',
+                    'flag_reason': f"Risk: {history.risk_level}, Success: {history.success_rate}%" if history.is_flagged else None
+                }
+            else:
+                logger.debug(f"Cache expired/invalid for {phone_number}: age {days_ago} days, status {history.whatsapp_status}")
+        else:
+            logger.debug(f"No updated_at timestamp for {phone_number}")
+        
+        return None
+        
+    except PhoneNumberHistory.DoesNotExist:
+        logger.debug(f"No phone history found for {phone_number} in database {database_alias}")
+        return None
+    except Exception as e:
+        logger.error(f"Error checking cache for {phone_number}: {str(e)}")
+        return None
+
+
+@shared_task
+def cleanup_old_verification_data():
+    """
+    Periodic task to clean up old phone number verification data
+    Run this daily to keep database size manageable
+    """
+    from marketing_campaigns.models import PhoneNumberHistory
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Delete verification data older than 90 days
+    cutoff_date = timezone.now() - timedelta(days=90)
+    deleted_count = PhoneNumberHistory.objects.filter(
+        updated_at__lt=cutoff_date,
+        is_flagged=False  # Keep flagged numbers longer
+    ).delete()[0]
+    
+    logger.info(f"Cleaned up {deleted_count} old phone verification records")
+    return {'deleted_count': deleted_count}

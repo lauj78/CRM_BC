@@ -324,44 +324,216 @@ def audiences_list(request, tenant_id):
     
     return render(request, 'marketing_campaigns/audiences_list_simple.html', context)
 
+# Replace the entire audience_upload view in marketing_campaigns/views.py
+
 @login_required
 def audience_upload(request, tenant_id):
-    """Upload audience via textbox"""
+    """Upload audience via textbox with optional WhatsApp verification - SaaS-ready"""
+    
+    # Use existing tenant infrastructure - no hardcoding!
+    if not hasattr(request, 'tenant') or not request.tenant:
+        messages.error(request, 'Tenant context not available. Please contact support.')
+        return redirect('marketing_campaigns:audiences_list', tenant_id=tenant_id)
+    
+    # Get tenant info from your existing tenant system
+    tenant = request.tenant
+    database_alias = tenant.db_alias
+    tenant_numeric_id = getattr(tenant, 'id', None) or getattr(tenant, 'pk', None)
+    
+    logger.info(f"Audience upload for tenant: {tenant.tenant_id}, database: {database_alias}, numeric_id: {tenant_numeric_id}")
     
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        description = request.POST.get('description', '').strip()
-        textbox_data = request.POST.get('textbox_data', '').strip()
+        return _handle_audience_upload_post(request, tenant_id, tenant, database_alias, tenant_numeric_id)
+    else:
+        return _handle_audience_upload_get(request, tenant_id, tenant, database_alias, tenant_numeric_id)
+
+
+def _handle_audience_upload_post(request, tenant_id, tenant, database_alias, tenant_numeric_id):
+    """Handle POST request for audience upload"""
+    
+    name = request.POST.get('name', '').strip()
+    description = request.POST.get('description', '').strip()
+    textbox_data = request.POST.get('textbox_data', '').strip()
+    verify_whatsapp = request.POST.get('verify_whatsapp') == '1'
+    verification_speed = request.POST.get('verification_speed', 'slow')
+    
+    # Validate input
+    if not name:
+        messages.error(request, 'Audience name is required')
+        return redirect('marketing_campaigns:audience_upload', tenant_id=tenant_id)
+    
+    if not textbox_data:
+        messages.error(request, 'CSV data is required')
+        return redirect('marketing_campaigns:audience_upload', tenant_id=tenant_id)
+    
+    try:
+        # Create audience - let the database router handle routing based on current tenant context
+        audience = CustomAudience.objects.create(
+            name=name,
+            description=description,
+            upload_method='textbox',
+            raw_data=textbox_data,
+            created_by=request.user.username if hasattr(request.user, 'username') else 'admin'
+        )
         
-        if not name:
-            messages.error(request, 'Audience name is required')
-        elif not textbox_data:
-            messages.error(request, 'CSV data is required')
+        logger.info(f"Created audience {audience.pk} for tenant {tenant.tenant_id}")
+        
+        # Process CSV data
+        audience.process_csv_data(textbox_data)
+        logger.info(f"Processed CSV data for audience {audience.pk}: {audience.total_numbers} numbers")
+        
+        # Show processing results
+        if audience.processing_errors:
+            messages.warning(request, 
+                f'Audience created with {len(audience.processing_errors)} CSV processing errors. '
+                f'Check the audience details for more information.'
+            )
         else:
-            # Create audience
-            audience = CustomAudience.objects.create(
-                name=name,
-                description=description,
-                upload_method='textbox',
-                raw_data=textbox_data,
-                created_by=request.user.username if hasattr(request.user, 'username') else 'admin'
+            messages.success(request, 
+                f'Audience "{audience.name}" created successfully with {audience.total_numbers} numbers!'
+            )
+        
+        # Handle WhatsApp verification if requested
+        if verify_whatsapp and audience.total_numbers > 0:
+            verification_result = _start_whatsapp_verification(
+                audience, tenant_numeric_id, database_alias, verification_speed, tenant
             )
             
-            # Process CSV data
-            audience.process_csv_data(textbox_data)
-            
-            if audience.processing_errors:
-                messages.warning(request, f'Audience created with {len(audience.processing_errors)} errors. Check details below.')
+            if verification_result['success']:
+                messages.success(request, verification_result['message'])
             else:
-                messages.success(request, f'Audience "{audience.name}" created successfully!')
-            
-            return redirect('marketing_campaigns:audience_view', tenant_id=tenant_id, pk=audience.pk)
+                messages.error(request, verification_result['message'])
+        
+        return redirect('marketing_campaigns:audience_view', tenant_id=tenant_id, pk=audience.pk)
+        
+    except Exception as e:
+        logger.error(f"Error creating audience for tenant {tenant.tenant_id}: {str(e)}")
+        messages.error(request, f'Error creating audience: {str(e)}')
+        return redirect('marketing_campaigns:audience_upload', tenant_id=tenant_id)
+
+
+def _handle_audience_upload_get(request, tenant_id, tenant, database_alias, tenant_numeric_id):
+    """Handle GET request for audience upload form"""
+    
+    # Check WhatsApp instances availability
+    whatsapp_status = _check_whatsapp_availability(tenant_numeric_id, database_alias, tenant)
     
     context = {
         'page_title': 'Upload Audience',
+        'whatsapp_instances_available': whatsapp_status['available'],
+        'whatsapp_instances_count': whatsapp_status['count'],
+        'tenant_info': {
+            'tenant_id': tenant.tenant_id,
+            'database': database_alias,
+            'numeric_id': tenant_numeric_id
+        }
     }
     
     return render(request, 'marketing_campaigns/audience_upload_simple.html', context)
+
+
+def _start_whatsapp_verification(audience, tenant_numeric_id, database_alias, verification_speed, tenant):
+    """Start WhatsApp verification for an audience"""
+    
+    try:
+        from marketing_campaigns.tasks import verify_audience_whatsapp_task
+        from whatsapp_messaging.whatsapp_verification import WhatsAppVerificationService
+        from django.utils import timezone
+        
+        # Validate tenant numeric ID
+        if not tenant_numeric_id:
+            logger.error(f"No numeric tenant ID found for tenant {tenant.tenant_id}")
+            return {
+                'success': False,
+                'message': 'Tenant configuration error. Please contact support.'
+            }
+        
+        # Initialize verification service to check availability
+        verifier = WhatsAppVerificationService(tenant_id=tenant_numeric_id, database_alias=database_alias)
+        available_instances = verifier.get_available_instances()
+        
+        if not available_instances:
+            return {
+                'success': False,
+                'message': f'WhatsApp verification requested but no active instances available for tenant {tenant.tenant_id}.'
+            }
+        
+        # Set verification speed delay
+        delay_map = {'fast': 1, 'medium': 3, 'slow': 5}
+        delay = delay_map.get(verification_speed, 3)
+        
+        # FIXED: Update audience status with explicit database routing
+        audience.whatsapp_verification_status = 'in_progress'
+        audience.verification_started_at = timezone.now()
+        audience.save(using=database_alias, update_fields=[
+            'whatsapp_verification_status', 
+            'verification_started_at'
+        ])
+        
+        logger.info(f"Updated audience {audience.pk} status to in_progress for tenant {tenant.tenant_id}")
+        
+        # Start background verification task
+        task_result = verify_audience_whatsapp_task.delay(
+            audience_id=audience.pk,
+            tenant_id=tenant_numeric_id,
+            database_alias=database_alias
+        )
+        
+        logger.info(f"Started WhatsApp verification task {task_result.id} for audience {audience.pk}, tenant {tenant.tenant_id}")
+        
+        estimated_time_seconds = audience.total_numbers * delay
+        estimated_time_minutes = round(estimated_time_seconds / 60, 1)
+        
+        return {
+            'success': True,
+            'message': (
+                f'WhatsApp verification started in background using {len(available_instances)} instances. '
+                f'Estimated completion time: {estimated_time_minutes} minutes. '
+                f'Check the audience view page for real-time progress updates.'
+            )
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to start WhatsApp verification for audience {audience.pk}, tenant {tenant.tenant_id}: {str(e)}")
+        return {
+            'success': False,
+            'message': f'Failed to start WhatsApp verification: {str(e)}'
+        }
+
+
+def _check_whatsapp_availability(tenant_numeric_id, database_alias, tenant):
+    """Check WhatsApp instances availability for tenant"""
+    
+    try:
+        # Validate tenant numeric ID
+        if not tenant_numeric_id:
+            logger.warning(f"No numeric tenant ID found for tenant {tenant.tenant_id}")
+            return {
+                'available': False,
+                'count': 0,
+                'instances': []
+            }
+        
+        from whatsapp_messaging.whatsapp_verification import WhatsAppVerificationService
+        
+        verifier = WhatsAppVerificationService(tenant_id=tenant_numeric_id, database_alias=database_alias)
+        available_instances = verifier.get_available_instances()
+        
+        logger.debug(f"WhatsApp instances for tenant {tenant.tenant_id}: {available_instances}")
+        
+        return {
+            'available': len(available_instances) > 0,
+            'count': len(available_instances),
+            'instances': available_instances
+        }
+        
+    except Exception as e:
+        logger.warning(f"Could not check WhatsApp instances for tenant {tenant.tenant_id}: {str(e)}")
+        return {
+            'available': False,
+            'count': 0,
+            'instances': []
+        }
 
 @login_required
 def audience_view(request, tenant_id, pk):

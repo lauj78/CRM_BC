@@ -62,18 +62,77 @@
                 First row should be headers. Required: phone_number. Optional: name, and any custom fields.
             </small>
         </div>
-        
-        <!-- Submit -->
-        <div style="display: flex; gap: 10px;">
+
+        <!-- WhatsApp Verification Section -->
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #333; margin-bottom: 10px;">WhatsApp Verification (Optional)</h4>
+            {% if whatsapp_instances_available %}
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center;">
+                            <input type="checkbox" name="verify_whatsapp" value="1" 
+                                   style="margin-right: 8px;" id="verifyWhatsAppCheckbox">
+                            <span style="font-weight: 500; color: #333;">
+                                Verify WhatsApp numbers in background after upload
+                            </span>
+                        </label>
+                        <div style="color: #666; font-size: 12px; margin-top: 5px; margin-left: 24px;">
+                            Check which numbers actually have WhatsApp accounts ({{ whatsapp_instances_count }} instances available)
+                        </div>
+                    </div>
+                    
+                    <div id="verificationOptions" style="display: none; padding-left: 24px; border-left: 2px solid #28a745; margin-left: 8px;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 14px;">
+                                Verification Speed:
+                            </label>
+                            <select name="verification_speed" style="padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                <option value="slow">Slow & Safe (5 sec/number) - Recommended</option>
+                                <option value="medium">Medium (3 sec/number)</option>
+                                <option value="fast">Fast (1 sec/number) - May get rate limited</option>
+                            </select>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 3px; border-left: 3px solid #ffc107;">
+                            <div style="font-size: 12px; color: #856404;">
+                                <strong>What happens:</strong> Verification runs in background after upload
+                                <br><strong>Time estimate:</strong> For 10 numbers = 30-50 seconds, for 100 numbers = 5-8 minutes
+                                <br><strong>Benefits:</strong> Skip dead numbers in campaigns, improve delivery rates
+                                <br><strong>Progress:</strong> Check audience view page for real-time status
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div style="background: #f8d7da; padding: 15px; border-radius: 5px; border-left: 4px solid #dc3545;">
+                    <div style="color: #721c24;">
+                        <strong>WhatsApp verification unavailable</strong><br>
+                        No active WhatsApp instances found for your tenant. Configure WhatsApp instances first to enable verification.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Submit Buttons (updated with better styling) -->
+        <div style="display: flex; gap: 10px; align-items: center;">
             <button type="submit" 
                     style="background: #28a745; color: white; padding: 12px 25px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px;">
-                Upload & Process Audience
+                <span id="submitButtonText">Upload & Process Audience</span>
             </button>
             <a href="{% url 'marketing_campaigns:audiences_list' request.resolver_match.kwargs.tenant_id %}" 
                style="background: #6c757d; color: white; padding: 12px 20px; text-decoration: none; border-radius: 3px; font-size: 14px;">
                 Cancel
             </a>
+            
+            <!-- Loading indicator -->
+            <div id="uploadProgress" style="display: none; margin-left: 10px;">
+                <span style="color: #666; font-size: 14px;">
+                    <span style="animation: spin 1s linear infinite; display: inline-block;">⏳</span>
+                    Processing...
+                </span>
+            </div>
         </div>
+
     </form>
 </div>
 
@@ -114,4 +173,63 @@ phone_number,name,bonus,city<br>
         </ul>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const verifyCheckbox = document.getElementById('verifyWhatsAppCheckbox');
+    const verificationOptions = document.getElementById('verificationOptions');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const submitButtonText = document.getElementById('submitButtonText');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const form = document.querySelector('form');
+    
+    // This is the function that updates the UI
+    const updateVerificationUI = () => {
+        if (verifyCheckbox.checked) {
+            verificationOptions.style.display = 'block';
+            submitButtonText.textContent = 'Upload & Start Verification';
+        } else {
+            verificationOptions.style.display = 'none';
+            submitButtonText.textContent = 'Upload Audience';
+        }
+    };
+
+    // Show/hide verification options
+    if (verifyCheckbox) {
+        // Step 1: Set the checkbox to be checked by default
+        verifyCheckbox.checked = true;
+        
+        // Step 2: Run the UI update function immediately on page load
+        updateVerificationUI();
+
+        // Step 3: Add the listener for any future user clicks
+        verifyCheckbox.addEventListener('change', updateVerificationUI);
+    }
+    
+    // Form submission handling (this part remains the same)
+    if (form && submitButton) {
+        form.addEventListener('submit', function(e) {
+            submitButton.disabled = true;
+            uploadProgress.style.display = 'inline-block';
+            
+            if (verifyCheckbox && verifyCheckbox.checked) {
+                submitButtonText.textContent = 'Starting verification...';
+            } else {
+                submitButtonText.textContent = 'Uploading...';
+            }
+        });
+    }
+});
+
+// Simple CSS animation for loading spinner (this part remains the same)
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}

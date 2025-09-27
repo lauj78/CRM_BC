@@ -29,6 +29,247 @@
     </div>
 </div>
 
+
+<p>------------------here ------------------------------------------------start</p>
+
+<!-- Audience Statistics -->
+<div style="background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h4 style="margin: 0; color: #333;">Audience Statistics</h4>
+        <button onclick="refreshPage()" style="background: #6c757d; color: white; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">
+            🔄 Refresh
+        </button>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 5px;">
+        <div style="text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #007bff;">{{ audience.total_numbers }}</div>
+            <div style="font-size: 11px; color: #666;">Total</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #28a745;">{{ audience.valid_numbers }}</div>
+            <div style="font-size: 11px; color: #666;">Valid</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #ffc107;">{{ audience.flagged_numbers }}</div>
+            <div style="font-size: 11px; color: #666;">Flagged</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #dc3545;">{{ audience.invalid_numbers }}</div>
+            <div style="font-size: 11px; color: #666;">Invalid</div>
+        </div>
+    </div>
+</div>
+
+<!-- WhatsApp Verification Status -->
+<div style="background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;">
+    <h4 style="margin: 0 0 15px 0; color: #333;">WhatsApp Verification Status</h4>
+    
+    <!-- Verification Progress -->
+    <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-weight: 500; color: #333;">{{ audience.get_verification_summary }}</span>
+            {% if audience.whatsapp_verification_status == 'in_progress' %}
+                <span style="color: #007bff; font-size: 12px;">{{ audience.verification_progress_percentage }}% complete</span>
+            {% endif %}
+        </div>
+        
+        {% if audience.whatsapp_verification_status == 'in_progress' %}
+            <div style="background: #e9ecef; border-radius: 10px; height: 8px; overflow: hidden;">
+                <div style="background: #007bff; height: 100%; width: {{ audience.verification_progress_percentage }}%; transition: width 0.3s;"></div>
+            </div>
+        {% elif audience.whatsapp_verification_status == 'completed' %}
+            <div style="background: #d4edda; border-radius: 10px; height: 8px;">
+                <div style="background: #28a745; height: 100%; width: 100%;"></div>
+            </div>
+        {% elif audience.whatsapp_verification_status == 'failed' %}
+            <div style="background: #f8d7da; border-radius: 10px; height: 8px;">
+                <div style="background: #dc3545; height: 100%; width: 100%;"></div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- WhatsApp Statistics -->
+    {% if audience.has_whatsapp_data %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px;">
+            <div style="text-align: center; background: #d4edda; padding: 10px; border-radius: 3px;">
+                <div style="font-size: 18px; font-weight: 600; color: #28a745;">{{ audience.whatsapp_verified_count }}</div>
+                <div style="font-size: 11px; color: #155724;">Has WhatsApp</div>
+            </div>
+            <div style="text-align: center; background: #f8d7da; padding: 10px; border-radius: 3px;">
+                <div style="font-size: 18px; font-weight: 600; color: #dc3545;">{{ audience.whatsapp_not_found_count }}</div>
+                <div style="font-size: 11px; color: #721c24;">No WhatsApp</div>
+            </div>
+            <div style="text-align: center; background: #fff3cd; padding: 10px; border-radius: 3px;">
+                <div style="font-size: 18px; font-weight: 600; color: #856404;">{{ audience.whatsapp_error_count }}</div>
+                <div style="font-size: 11px; color: #856404;">Errors</div>
+            </div>
+            <div style="text-align: center; background: #e2e3e5; padding: 10px; border-radius: 3px;">
+                <div style="font-size: 18px; font-weight: 600; color: #6c757d;">{{ audience.whatsapp_pending_count }}</div>
+                <div style="font-size: 11px; color: #6c757d;">Pending</div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Verification Actions -->
+    <div style="display: flex; gap: 10px; align-items: center;">
+        {% if audience.whatsapp_verification_status == 'not_started' %}
+            <button onclick="startVerification()" style="background: #17a2b8; color: white; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer;">
+                🔍 Start WhatsApp Verification
+            </button>
+        {% elif audience.whatsapp_verification_status == 'in_progress' %}
+            <span style="color: #007bff; font-size: 14px;">
+                <span style="animation: spin 1s linear infinite; display: inline-block;">⏳</span>
+                Verification in progress...
+            </span>
+        {% elif audience.whatsapp_verification_status == 'failed' %}
+            <button onclick="retryVerification()" style="background: #dc3545; color: white; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer;">
+                🔄 Retry Verification
+            </button>
+        {% endif %}
+        
+        {% if audience.verification_started_at %}
+            <span style="color: #666; font-size: 12px;">
+                Last verified: {{ audience.verification_started_at|timesince }} ago
+            </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Member Details with WhatsApp Status -->
+<div style="background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h4 style="margin: 0; color: #333;">Member Details</h4>
+        <div style="font-size: 12px; color: #666;">
+            Showing {{ members.start_index }}-{{ members.end_index }} of {{ audience.total_numbers }} members
+        </div>
+    </div>
+    
+    <!-- Members Table -->
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                    <th style="padding: 8px; text-align: left; color: #333;">Phone Number</th>
+                    <th style="padding: 8px; text-align: left; color: #333;">Name</th>
+                    <th style="padding: 8px; text-align: center; color: #333;">WhatsApp</th>
+                    <th style="padding: 8px; text-align: left; color: #333;">Additional Data</th>
+                    <th style="padding: 8px; text-align: center; color: #333;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <!-- Phone Number -->
+                        <td style="padding: 8px; font-family: monospace;">
+                            {{ member.phone_number }}
+                            {% if member.country_code %}
+                                <span style="font-size: 11px; color: #666; background: #f8f9fa; padding: 1px 4px; border-radius: 2px;">
+                                    {{ member.country_code }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Name -->
+                        <td style="padding: 8px;">
+                            {{ member.name|default:"—" }}
+                        </td>
+                        
+                        <!-- WhatsApp Status -->
+                        <td style="padding: 8px; text-align: center;">
+                            {% if member.whatsapp_verified %}
+                                {% if member.whatsapp_status == 'confirmed' %}
+                                    <span style="color: #28a745; font-weight: bold; background: #d4edda; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+                                        ✓ ACTIVE
+                                    </span>
+                                {% elif member.whatsapp_status == 'not_available' %}
+                                    <span style="color: #dc3545; font-weight: bold; background: #f8d7da; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+                                        ✗ NO WHATSAPP
+                                    </span>
+                                {% else %}
+                                    <span style="color: #6c757d; background: #e2e3e5; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+                                        ? ERROR
+                                    </span>
+                                {% endif %}
+                                {% if member.last_verified %}
+                                    <div style="font-size: 9px; color: #666; margin-top: 2px;">
+                                        {{ member.last_verified|slice:":10" }}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #6c757d; background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+                                    PENDING
+                                </span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Additional Data -->
+                        <td style="padding: 8px;">
+                            {% for key, value in member.items %}
+                                {% if key != 'phone_number' and key != 'name' and key != 'country_code' and key != 'is_flagged' and key != 'whatsapp_verified' and key != 'whatsapp_status' and key != 'last_verified' and key != 'flag_reason' %}
+                                    <div style="font-size: 11px; color: #666;">
+                                        <strong>{{ key }}:</strong> {{ value }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        
+                        <!-- Status Flags -->
+                        <td style="padding: 8px; text-align: center;">
+                            {% if member.is_flagged %}
+                                <div style="background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-bottom: 2px;">
+                                    ⚠️ FLAGGED
+                                </div>
+                                {% if member.flag_reason %}
+                                    <div style="font-size: 9px; color: #666;">
+                                        {{ member.flag_reason|truncatechars:30 }}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #28a745; font-size: 11px;">✓ OK</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" style="padding: 20px; text-align: center; color: #666;">
+                            No members found in this audience.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if members.has_other_pages %}
+        <div style="margin-top: 15px; text-align: center;">
+            <div style="display: inline-block;">
+                {% if members.has_previous %}
+                    <a href="?page={{ members.previous_page_number }}" 
+                       style="padding: 5px 10px; margin: 0 2px; background: #6c757d; color: white; text-decoration: none; border-radius: 3px;">
+                        ← Previous
+                    </a>
+                {% endif %}
+                
+                <span style="padding: 5px 10px; margin: 0 5px; color: #333;">
+                    Page {{ members.number }} of {{ members.paginator.num_pages }}
+                </span>
+                
+                {% if members.has_next %}
+                    <a href="?page={{ members.next_page_number }}" 
+                       style="padding: 5px 10px; margin: 0 2px; background: #6c757d; color: white; text-decoration: none; border-radius: 3px;">
+                        Next →
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+
+<p> ------------------here------------------------------------------------- end </p>
+
 <!-- Statistics -->
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
     <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #4caf50;">
@@ -110,4 +351,39 @@
         </div>
     {% endif %}
 </div>
+
+
+<script>
+// Auto-refresh page if verification is in progress
+{% if audience.whatsapp_verification_status == 'in_progress' %}
+    setTimeout(function() {
+        window.location.reload();
+    }, 10000); // Refresh every 10 seconds
+{% endif %}
+
+function refreshPage() {
+    window.location.reload();
+}
+
+function startVerification() {
+    // TODO: Implement start verification via AJAX
+    alert('Verification starting feature coming soon. Use upload form for now.');
+}
+
+function retryVerification() {
+    // TODO: Implement retry verification via AJAX  
+    alert('Retry verification feature coming soon. Use upload form for now.');
+}
+
+// CSS for spinning animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}
