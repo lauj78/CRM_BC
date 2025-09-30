@@ -65,126 +65,131 @@ def _set_tenant_context_for_target(target_id):
     logger.warning(f"[CELERY] Target {target_id} not found in any tenant database")
     return None
 
+
 @shared_task(bind=True, max_retries=3)
 def process_campaign_messages(self, campaign_id):
     """
-    Main task to process campaign messages - SIMPLIFIED for clean tenant architecture
+    Kick off continuous campaign message processing
+    This just starts the first message - chaining handles the rest
     """
-    logger.info(f"[CELERY] Starting message processing for campaign {campaign_id}")
+    logger.info(f"[CELERY] Starting continuous processing for campaign {campaign_id}")
     
     try:
-        # Auto-detect and set tenant context for clean architecture
-        _set_tenant_context_for_campaign(campaign_id)
+        # Auto-detect and set tenant context
+        db_alias = _set_tenant_context_for_campaign(campaign_id)
+        if not db_alias:
+            return f"Campaign {campaign_id} not found"
         
-        # Simple lookup - router now has correct context
         campaign = Campaign.objects.get(pk=campaign_id)
         
         if campaign.status != 'running':
             logger.warning(f"[CELERY] Campaign {campaign_id} is not running (status: {campaign.status})")
             return f"Campaign not running: {campaign.status}"
         
-        # Get pending targets - simple query, router handles database
-        max_messages_this_hour = campaign.rate_limit_per_hour
-        targets = campaign.targets.filter(status='queued')[:max_messages_this_hour]
+        # Get first queued target
+        first_target = campaign.targets.filter(status='queued').first()
         
-        logger.info(f"[CELERY] Processing {targets.count()} targets for campaign {campaign_id}")
-        
-        if not targets.exists():
+        if not first_target:
             logger.info(f"[CELERY] No pending targets for campaign {campaign_id}")
-            # Check if campaign is complete - simple query
-            if campaign.targets.filter(status__in=['queued', 'scheduled']).count() == 0:
+            
+            # Check if campaign is complete
+            remaining = campaign.targets.filter(status__in=['queued', 'scheduled', 'sending']).count()
+            if remaining == 0:
                 campaign.status = 'completed'
                 campaign.save()
                 logger.info(f"[CELERY] Campaign {campaign_id} marked as completed")
+            
             return "No pending targets"
         
-        # Process each target with delays
-        processed_count = 0
-        for target in targets:
-            try:
-                # Send message - no complex parameters needed
-                result = send_single_message.delay(target.pk)
-                processed_count += 1
-                
-                # Anti-ban delay between messages
-                delay_minutes = random.randint(
-                    campaign.min_delay_minutes, 
-                    campaign.max_delay_minutes
-                )
-                logger.info(f"[CELERY] Processed target {target.pk}, next delay: {delay_minutes} minutes")
-                
-                # Schedule next message with delay
-                if processed_count < targets.count():
-                    next_target = list(targets)[processed_count]
-                    send_single_message.apply_async(
-                        args=[next_target.pk],
-                        countdown=delay_minutes * 60
-                    )
-                
-            except Exception as e:
-                logger.error(f"[CELERY] Error processing target {target.pk}: {str(e)}")
-                continue
+        # Start the chain by sending first message
+        logger.info(f"[CELERY] Starting continuous chain with target {first_target.pk}")
+        send_single_message.delay(first_target.pk, campaign_id)
         
-        # Schedule next batch if more targets exist - simple query
-        remaining_targets = campaign.targets.filter(status='queued').count()
-        if remaining_targets > 0 and campaign.status == 'running':
-            # Schedule next batch in 1 hour (rate limiting)
-            process_campaign_messages.apply_async(
-                args=[campaign_id],
-                countdown=3600  # 1 hour
-            )
-            logger.info(f"[CELERY] Scheduled next batch for campaign {campaign_id} in 1 hour")
-        
-        return f"Processed {processed_count} messages"
+        return f"Started continuous processing for campaign {campaign_id}"
         
     except Campaign.DoesNotExist:
         logger.error(f"[CELERY] Campaign {campaign_id} not found")
         return f"Campaign {campaign_id} not found"
     except Exception as e:
-        logger.error(f"[CELERY] Unexpected error processing campaign {campaign_id}: {str(e)}")
-        raise self.retry(countdown=300, exc=e)  # Retry in 5 minutes
+        logger.error(f"[CELERY] Error starting campaign {campaign_id}: {str(e)}")
+        raise self.retry(countdown=300, exc=e)
+
 
 @shared_task(bind=True, max_retries=3)
-def send_single_message(self, target_id):
+def send_single_message(self, target_id, campaign_id=None):
     """
-    Send a single message to a target - SIMPLIFIED for clean tenant architecture
+    Send a single message and chain to the next one
     """
     logger.info(f"[CELERY] Sending message to target {target_id}")
     
     try:
-        # Auto-detect and set tenant context for clean architecture
-        _set_tenant_context_for_target(target_id)
+        # Auto-detect and set tenant context
+        db_alias = _set_tenant_context_for_target(target_id)
+        if not db_alias:
+            return f"Target {target_id} not found in any database"
         
         with transaction.atomic():
-            # Simple lookups - router now has correct context (remove select_for_update)
+            # Get target and campaign
             target = CampaignTarget.objects.get(pk=target_id)
             campaign = Campaign.objects.get(pk=target.campaign_id)
             
+            # Store campaign_id for chaining if not provided
+            if campaign_id is None:
+                campaign_id = campaign.pk
+            
             if target.status != 'queued':
                 logger.warning(f"[CELERY] Target {target_id} status is {target.status}, skipping")
+                # Still chain to next even if this one skipped
+                _chain_to_next_target(campaign_id, campaign)
                 return f"Target not queued: {target.status}"
             
             # Update target status
             target.status = 'sending'
             target.save()
             
-            # Get campaign template - simple relationship lookup
+            # Get campaign template
             campaign_message = campaign.campaign_messages.first()
             if not campaign_message:
                 raise Exception("No template found for campaign")
             
-            # Get template - simple lookup, router handles database
             template = MessageTemplate.objects.get(pk=campaign_message.template_id)
             rendered_message = template.render_message(target.member_data)
             
-            # Get WhatsApp instance - simple lookup, router handles database
-            whatsapp_instance = WhatsAppInstance.objects.filter(
-                is_active=True,
-                status='connected'
-            ).first()
+            # Use anti-ban service for instance selection
+            from marketing_campaigns.services import AntiBanService
+            
+            tenant_id = getattr(campaign, 'tenant_id', None) or 2
+            anti_ban_service = AntiBanService(tenant_id=tenant_id)
+            
+            # Select best instance using anti-ban strategy
+            whatsapp_instance = anti_ban_service.select_instance_for_campaign(campaign)
             
             if not whatsapp_instance:
-                raise Exception("No active WhatsApp instance found")
+                logger.warning(f"[CELERY] No available instance, will retry target {target_id} in 10 minutes")
+                # Requeue target
+                target.status = 'queued'
+                target.save()
+                
+                # Retry this same target after 10 minutes
+                send_single_message.apply_async(
+                    args=[target_id, campaign_id],
+                    countdown=600  # 10 minutes
+                )
+                return "No instance available, scheduled retry"
+            
+            # Check if instance can send now
+            can_send, reason = anti_ban_service.can_send_now(whatsapp_instance)
+            if not can_send:
+                logger.warning(f"[CELERY] Instance cannot send: {reason}")
+                target.status = 'queued'
+                target.save()
+                
+                # Retry after delay
+                send_single_message.apply_async(
+                    args=[target_id, campaign_id],
+                    countdown=300  # 5 minutes
+                )
+                return f"Instance unavailable: {reason}"
             
             # Send message via Evolution API
             service = EvolutionAPIService()
@@ -194,18 +199,20 @@ def send_single_message(self, target_id):
                 message=rendered_message
             )
             
-            # Update target based on result
+            # Record result with anti-ban service
             if result['success']:
                 target.status = 'sent'
                 target.sent_at = timezone.now()
                 target.final_message = rendered_message
+                target.whatsapp_instance = whatsapp_instance.instance_name
                 target.evolution_api_response = result
                 
-                # Update campaign stats
                 campaign.total_sent += 1
                 campaign.save()
                 
-                logger.info(f"[CELERY] Successfully sent message to {target.phone_number}")
+                anti_ban_service.record_message_sent(whatsapp_instance, success=True)
+                
+                logger.info(f"[CELERY] Successfully sent message to {target.phone_number} via {whatsapp_instance.instance_name}")
                 
             else:
                 target.status = 'failed'
@@ -213,9 +220,14 @@ def send_single_message(self, target_id):
                 target.retry_count += 1
                 target.evolution_api_response = result
                 
-                # Update campaign stats
                 campaign.total_failed += 1
                 campaign.save()
+                
+                anti_ban_service.record_message_sent(
+                    whatsapp_instance, 
+                    success=False, 
+                    error_message=target.error_message
+                )
                 
                 logger.error(f"[CELERY] Failed to send message to {target.phone_number}: {target.error_message}")
                 
@@ -225,7 +237,10 @@ def send_single_message(self, target_id):
                     logger.info(f"[CELERY] Queued target {target_id} for retry ({target.retry_count}/{campaign.max_retry_per_number})")
             
             target.save()
-            
+        
+        # CHAIN TO NEXT TARGET
+        _chain_to_next_target(campaign_id, campaign, anti_ban_service)
+        
         return f"Message sent to {target.phone_number}: {result['success']}"
         
     except CampaignTarget.DoesNotExist:
@@ -243,8 +258,60 @@ def send_single_message(self, target_id):
             target.save()
         except:
             pass
+        
+        # Don't retry via Celery retry - let chaining handle it
+        if campaign_id:
+            _chain_to_next_target(campaign_id, None)
+        
+        return f"Error: {str(e)}"
+
+
+def _chain_to_next_target(campaign_id, campaign=None, anti_ban_service=None):
+    """
+    Chain to the next queued target with appropriate delay
+    """
+    try:
+        if campaign is None:
+            campaign = Campaign.objects.get(pk=campaign_id)
+        
+        # Check if campaign is still running
+        if campaign.status != 'running':
+            logger.info(f"[CELERY] Campaign {campaign_id} is no longer running, stopping chain")
+            return
+        
+        # Get next queued target
+        next_target = campaign.targets.filter(status='queued').first()
+        
+        if not next_target:
+            logger.info(f"[CELERY] No more queued targets for campaign {campaign_id}")
             
-        raise self.retry(countdown=60, exc=e)  # Retry in 1 minute
+            # Check if campaign is complete
+            remaining = campaign.targets.filter(status__in=['queued', 'scheduled', 'sending']).count()
+            if remaining == 0:
+                campaign.status = 'completed'
+                campaign.save()
+                logger.info(f"[CELERY] Campaign {campaign_id} completed")
+            
+            return
+        
+        # Calculate delay using anti-ban service
+        if anti_ban_service is None:
+            from marketing_campaigns.services import AntiBanService
+            tenant_id = getattr(campaign, 'tenant_id', None) or 2
+            anti_ban_service = AntiBanService(tenant_id=tenant_id)
+        
+        delay_seconds = anti_ban_service.calculate_next_delay(campaign)
+        
+        logger.info(f"[CELERY] Chaining to next target {next_target.pk} with {delay_seconds}s delay")
+        
+        # Schedule next message
+        send_single_message.apply_async(
+            args=[next_target.pk, campaign_id],
+            countdown=delay_seconds
+        )
+        
+    except Exception as e:
+        logger.error(f"[CELERY] Error chaining to next target: {str(e)}")
 
 @shared_task
 def cleanup_old_campaign_data():

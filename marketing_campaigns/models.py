@@ -1,21 +1,35 @@
 # marketing_campaigns/models.py
+import logging
+import time
+import random
+import csv
+import re
+import json
+from io import StringIO
+from datetime import datetime, timedelta
+from decimal import Decimal
+
+
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from datetime import datetime, timedelta
-from decimal import Decimal
-import json
-import re
-import random
+
+from .models_usage import WhatsAppInstanceUsage
+
+logger = logging.getLogger(__name__)
 
 # ================================
 # TENANT SETTINGS & CONFIGURATION
 # ================================
 
+# marketing_campaigns/models.py
+
 class TenantCampaignSettings(models.Model):
     """Tenant-specific campaign configuration and anti-ban settings"""
     
-    # Anti-ban settings (tenant configurable)
+    # ============================================
+    # EXISTING: BASIC ANTI-BAN SETTINGS
+    # ============================================
     default_rate_limit_per_hour = models.IntegerField(
         default=20, 
         help_text="Messages per hour per instance"
@@ -66,6 +80,73 @@ class TenantCampaignSettings(models.Model):
         help_text="Auto-exclude flagged numbers by default"
     )
     
+    # ============================================
+    # NEW: ANTI-BAN STRATEGY CONFIGURATION
+    # ============================================
+    
+    # Instance Selection Strategy (tenant-wide default)
+    instance_selection_strategy = models.CharField(
+        max_length=20,
+        choices=[
+            ('round_robin', 'Round Robin - Rotate evenly'),
+            ('random', 'Random Selection'),
+            ('least_used', 'Least Used First'),
+        ],
+        default='round_robin',
+        help_text="How to select WhatsApp instances for campaigns"
+    )
+    
+    # Rate Limiting (messages per hour)
+    max_messages_per_hour_global = models.IntegerField(
+        default=20,
+        help_text="Maximum messages per hour across all instances"
+    )
+    max_messages_per_instance_hour = models.IntegerField(
+        default=10,
+        help_text="Maximum messages per hour per single instance"
+    )
+    max_messages_per_instance_day = models.IntegerField(
+        default=200,
+        help_text="Maximum messages per day per single instance"
+    )
+    
+    # Delay Settings (in seconds)
+    min_delay_seconds = models.IntegerField(
+        default=60,
+        help_text="Minimum seconds between messages"
+    )
+    max_delay_seconds = models.IntegerField(
+        default=180,
+        help_text="Maximum seconds between messages"
+    )
+    use_random_delays = models.BooleanField(
+        default=True,
+        help_text="Randomize delays for more human-like behavior"
+    )
+    
+    # Instance Rotation Settings
+    rotate_after_messages = models.IntegerField(
+        default=50,
+        help_text="Switch instance after X messages"
+    )
+    instance_cooldown_minutes = models.IntegerField(
+        default=15,
+        help_text="Minutes to wait before reusing an instance"
+    )
+    
+    # Health & Safety
+    auto_disable_failed_instances = models.BooleanField(
+        default=True,
+        help_text="Automatically disable instances with repeated failures"
+    )
+    failure_threshold = models.IntegerField(
+        default=5,
+        help_text="Consecutive failures before disabling instance"
+    )
+    
+    # ============================================
+    # METADATA
+    # ============================================
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
@@ -90,15 +171,36 @@ class TenantCampaignSettings(models.Model):
         settings, created = cls.objects.get_or_create(
             id=1,
             defaults={
+                # Existing defaults
                 'primary_country_code': 'ID',
                 'supported_countries': ['ID', 'MY', 'TH', 'SG', 'PH'],
                 'custom_variables': {
                     'bonus': {'type': 'currency', 'description': 'Bonus amount'},
                     'coupon_code': {'type': 'text', 'description': 'Promotional code'}
-                }
+                },
+                'default_rate_limit_per_hour': 20,
+                'default_min_delay_minutes': 1,
+                'default_max_delay_minutes': 5,
+                'default_messages_per_instance': 50,
+                'max_retry_attempts': 3,
+                'auto_exclude_failed_numbers': False,
+                # NEW: Anti-ban strategy defaults
+                'instance_selection_strategy': 'round_robin',
+                'max_messages_per_hour_global': 20,
+                'max_messages_per_instance_hour': 10,
+                'max_messages_per_instance_day': 200,
+                'min_delay_seconds': 60,
+                'max_delay_seconds': 180,
+                'use_random_delays': True,
+                'rotate_after_messages': 50,
+                'instance_cooldown_minutes': 15,
+                'auto_disable_failed_instances': True,
+                'failure_threshold': 5,
             }
         )
         return settings
+    
+    
 
 # ================================
 # PHONE NUMBER MANAGEMENT
@@ -113,6 +215,9 @@ class PhoneNumberHistory(models.Model):
         ('not_available', 'No WhatsApp'),
         ('blocked', 'Blocked/Banned'),
         ('invalid', 'Invalid Number'),
+        ('timeout', 'Verification Timeout'),
+        ('request_error', 'Verification Error'),
+        ('api_error_500', 'API Error'),
     ]
     
     RISK_LEVEL_CHOICES = [
@@ -496,9 +601,6 @@ class CustomAudience(models.Model):
     
     def process_csv_data(self, csv_data, country_codes=None):
         """Process CSV data and validate phone numbers"""
-        import csv
-        from io import StringIO
-        
         if country_codes is None:
             settings = TenantCampaignSettings.get_instance()
             country_codes = settings.supported_countries or ['ID']
@@ -611,24 +713,36 @@ class CustomAudience(models.Model):
         # ALWAYS RETURN TRUE for valid format - don't reject based on country
         return True, clean_phone, detected_country or 'UNKNOWN'
 
-   
     def _check_flagged_numbers(self):
         """Check which numbers are flagged in history"""
-        flagged_count = 0
+        if not self.members:
+            self.flagged_numbers = 0
+            return
+            
+        phone_numbers = [member['phone_number'] for member in self.members]
         
+        # Get actual objects, not values (so we can use the success_rate property)
+        histories = PhoneNumberHistory.objects.filter(
+            phone_number__in=phone_numbers
+        )
+        
+        # Create lookup dictionary
+        histories_map = {}
+        for history in histories:
+            histories_map[history.phone_number] = history
+        
+        flagged_count = 0
         for member in self.members:
             phone = member['phone_number']
-            try:
-                history = PhoneNumberHistory.objects.get(phone_number=phone)
-                if history.is_flagged or history.risk_level == 'high':
-                    member['is_flagged'] = True
-                    member['risk_level'] = history.risk_level
-                    member['whatsapp_status'] = history.whatsapp_status
-                    member['success_rate'] = history.success_rate
-                    flagged_count += 1
-                else:
-                    member['is_flagged'] = False
-            except PhoneNumberHistory.DoesNotExist:
+            history = histories_map.get(phone)
+            
+            if history and (history.is_flagged or history.risk_level == 'high'):
+                member['is_flagged'] = True
+                member['risk_level'] = history.risk_level
+                member['whatsapp_status'] = history.whatsapp_status
+                member['success_rate'] = history.success_rate  # Now this calls the @property
+                flagged_count += 1
+            else:
                 member['is_flagged'] = False
         
         self.flagged_numbers = flagged_count
@@ -672,15 +786,13 @@ class CustomAudience(models.Model):
         if pending_count == 0 and error_count == 0:
             self.whatsapp_verification_status = 'completed'
             if not self.verification_completed_at:
-                from django.utils import timezone
                 self.verification_completed_at = timezone.now()
         elif verified_count > 0 or not_found_count > 0:
             self.whatsapp_verification_status = 'partial'
         elif error_count == len(self.members):
             self.whatsapp_verification_status = 'failed'
-        # Don't change 'in_progress' status here - only task should do that
         
-        # FIX: Check current database context and save appropriately
+        # Check current database context and save appropriately
         from tenants.context import get_current_db
         current_db = get_current_db()
         
@@ -691,12 +803,9 @@ class CustomAudience(models.Model):
         ]
         
         if current_db:
-            # Save to current tenant database
             self.save(using=current_db, update_fields=update_fields)
         else:
-            # Fallback to default save (will use router)
             self.save(update_fields=update_fields)
-            
     
     @property
     def verification_progress_percentage(self):
@@ -728,7 +837,6 @@ class CustomAudience(models.Model):
             return f"Verification failed: {self.whatsapp_error_count} errors"
         else:
             return "Unknown verification status"
-
 
 # ================================
 # PRE-DEFINED TARGETING REPORTS
@@ -803,10 +911,21 @@ class Campaign(models.Model):
         default=False, 
         help_text="Include numbers flagged as risky"
     )
+    
+    # WhatsApp Targeting
+    include_whatsapp_verified = models.BooleanField(
+        default=True,
+        help_text="Include numbers confirmed to have WhatsApp"
+    )
+    include_non_whatsapp = models.BooleanField(
+        default=False,
+        help_text="Include numbers without WhatsApp"  
+    )
     include_unverified_numbers = models.BooleanField(
-        default=True, 
+        default=False,
         help_text="Include numbers with unknown WhatsApp status"
     )
+    
     max_retry_per_number = models.IntegerField(
         default=3, 
         help_text="Max retries for failed numbers"
@@ -844,6 +963,19 @@ class Campaign(models.Model):
     created_by = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    instance_strategy = models.CharField(
+        max_length=20,
+        choices=[
+            ('random_pool', 'Random Pool Rotation'),
+            ('round_robin', 'Round Robin'),
+            ('single_instance', 'Single Instance')
+        ],
+        default='random_pool',
+        blank=True,  # Allow empty in forms
+        help_text="How to distribute messages across WhatsApp instances"
+    )    
+    
     
     class Meta:
         db_table = 'marketing_campaigns'
@@ -891,25 +1023,38 @@ class Campaign(models.Model):
         
         if self.min_delay_minutes >= self.max_delay_minutes:
             raise ValidationError("Min delay must be less than max delay")
-        
+    
     def generate_targets(self):
-        """Generate campaign targets from audience"""
+        """Generate campaign targets from audience with WhatsApp filtering"""
         from .models import CampaignTarget
         
         targets_created = 0
+        excluded_counts = {
+            'flagged': 0,
+            'no_whatsapp': 0,
+            'unverified': 0
+        }
+        
         audience = self.target_audience
         
         for member in audience.members:
             phone_number = member['phone_number']
+            whatsapp_status = member.get('whatsapp_status', 'unknown')
             
-            # Check if we should include this number
-            if not self.include_flagged_numbers:
-                try:
-                    history = PhoneNumberHistory.objects.get(phone_number=phone_number)
-                    if history.is_flagged or history.risk_level == 'high':
-                        continue  # Skip flagged numbers
-                except PhoneNumberHistory.DoesNotExist:
-                    pass
+            # Check flagged numbers
+            if not self.include_flagged_numbers and member.get('is_flagged', False):
+                excluded_counts['flagged'] += 1
+                continue
+                
+            # Check WhatsApp status
+            if whatsapp_status == 'confirmed' and not self.include_whatsapp_verified:
+                continue
+            elif whatsapp_status == 'not_available' and not self.include_non_whatsapp:
+                excluded_counts['no_whatsapp'] += 1
+                continue
+            elif whatsapp_status in ['unknown', None] and not self.include_unverified_numbers:
+                excluded_counts['unverified'] += 1
+                continue
             
             # Create target
             target, created = CampaignTarget.objects.get_or_create(
@@ -917,14 +1062,19 @@ class Campaign(models.Model):
                 phone_number=phone_number,
                 defaults={
                     'member_data': member,
-                    'status': 'queued'
+                    'status': 'queued',
+                    'whatsapp_status': whatsapp_status
                 }
             )
             
             if created:
                 targets_created += 1
         
-        # Update campaign statistics
+        # Simplified logging
+        if excluded_counts['flagged'] or excluded_counts['no_whatsapp'] or excluded_counts['unverified']:
+            logger.info(f"Campaign {self.name}: Created {targets_created} targets, "
+                       f"excluded {sum(excluded_counts.values())} numbers")
+        
         self.total_targeted = targets_created
         self.save()
         
@@ -994,6 +1144,19 @@ class CampaignTarget(models.Model):
         help_text="Final processed message"
     )
     whatsapp_instance = models.CharField(max_length=100, blank=True)
+    
+    # Track WhatsApp status for analytics
+    whatsapp_status = models.CharField(
+        max_length=20,
+        blank=True,
+        default='unknown',  # Added default
+        choices=[
+            ('confirmed', 'Has WhatsApp'),
+            ('not_available', 'No WhatsApp'),
+            ('unknown', 'Not Verified')
+        ],
+        help_text="WhatsApp verification status at time of campaign"
+    )
     
     # Status and timing
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='queued')

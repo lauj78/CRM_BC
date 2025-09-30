@@ -227,15 +227,9 @@
     </div>
 
     <!-- Statistics Cards with Dynamic Values -->
+
+
     <div class="stats-grid">
-        <div class="stats-card">
-            <div class="stats-number total-templates">{{ total_templates }}</div>
-            <div class="stats-label">Message Templates</div>
-            <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
-                Manage Templates →
-            </a>
-        </div>
-        
         <div class="stats-card">
             <div class="stats-number total-audiences">{{ total_audiences }}</div>
             <div class="stats-label">Total Audiences</div>
@@ -243,7 +237,15 @@
                 Manage Audiences →
             </a>
         </div>
-        
+
+        <div class="stats-card">
+            <div class="stats-number total-templates">{{ total_templates }}</div>
+            <div class="stats-label">Message Templates</div>
+            <a href="{% url 'marketing_campaigns:templates_list' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="stats-link">
+                Manage Templates →
+            </a>
+        </div>
+               
         <div class="stats-card">
             <div class="stats-number total-campaigns">{{ active_campaigns }}/{{ total_campaigns }}</div>
             <div class="stats-label">Active/Total Campaigns</div>
@@ -257,14 +259,14 @@
     <h2 class="section-header">Quick Actions</h2>
 
     <div class="actions-grid">
-        <a href="{% url 'marketing_campaigns:campaign_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-primary">
-            Create New Campaign
+        <a href="{% url 'marketing_campaigns:audience_upload' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-tertiary">
+            Upload Audience
         </a>
         <a href="{% url 'marketing_campaigns:template_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-secondary">
             Create Template
         </a>
-        <a href="{% url 'marketing_campaigns:audience_upload' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-tertiary">
-            Upload Audience
+        <a href="{% url 'marketing_campaigns:campaign_create' tenant_id=request.resolver_match.kwargs.tenant_id %}" class="action-button action-primary">
+            Create New Campaign
         </a>
     </div>
     

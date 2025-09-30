@@ -7,7 +7,7 @@ from .models import Campaign, MessageTemplate, CustomAudience, CampaignCategory,
 from whatsapp_messaging.models import WhatsAppInstance
 
 class CampaignForm(forms.ModelForm):
-    """Form for creating and editing campaigns - no category selection"""
+    """Form for creating and editing campaigns - SIMPLIFIED (anti-ban handled by service)"""
     
     # Template selection
     template = forms.ModelChoiceField(
@@ -29,20 +29,10 @@ class CampaignForm(forms.ModelForm):
         help_text="Select the audience to send messages to"
     )
     
-    # WhatsApp instance selection
-    whatsapp_instance = forms.ModelChoiceField(
-        queryset=None,  # Will be set in __init__
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'required': True
-        }),
-        help_text="Choose WhatsApp instance to send from"
-    )
-    
     # Scheduling
     start_immediately = forms.BooleanField(
         required=False,
-        initial=False,
+        initial=True,
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input'
         }),
@@ -58,37 +48,6 @@ class CampaignForm(forms.ModelForm):
         help_text="When to start sending messages"
     )
     
-    # Anti-ban settings
-    rate_limit_per_hour = forms.IntegerField(
-        initial=20,
-        min_value=1,
-        max_value=100,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control'
-        }),
-        help_text="Messages per hour (lower = safer)"
-    )
-    
-    min_delay_minutes = forms.IntegerField(
-        initial=1,
-        min_value=0,
-        max_value=30,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control'
-        }),
-        help_text="Minimum delay between messages (minutes)"
-    )
-    
-    max_delay_minutes = forms.IntegerField(
-        initial=5,
-        min_value=1,
-        max_value=60,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control'
-        }),
-        help_text="Maximum delay between messages (minutes)"
-    )
-    
     # Audience filtering options
     include_flagged_numbers = forms.BooleanField(
         required=False,
@@ -99,24 +58,46 @@ class CampaignForm(forms.ModelForm):
         help_text="Include phone numbers flagged as risky"
     )
     
-    include_unverified_numbers = forms.BooleanField(
+    include_whatsapp_verified = forms.BooleanField(
         required=False,
         initial=True,
         widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
+            'class': 'form-check-input whatsapp-filter',
+            'data-status': 'confirmed'
         }),
-        help_text="Include numbers with unknown WhatsApp status"
+        help_text="Include numbers confirmed to have WhatsApp"
+    )
+    
+    include_non_whatsapp = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input whatsapp-filter',
+            'data-status': 'not_available'
+        }),
+        help_text="Include numbers without WhatsApp"
+    )
+    
+    include_unverified_numbers = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input whatsapp-filter',
+            'data-status': 'unknown'
+        }),
+        help_text="Include numbers not yet verified"
     )
     
     class Meta:
         model = Campaign
         fields = [
-            'name', 'description',  # REMOVED 'category' from here
-            'template', 'target_audience', 'whatsapp_instance',
+            'name', 'description',
+            'template', 'target_audience',
             'start_immediately', 'start_date',
-            'rate_limit_per_hour', 'min_delay_minutes', 'max_delay_minutes',
+            'include_whatsapp_verified', 'include_non_whatsapp',
             'include_flagged_numbers', 'include_unverified_numbers'
         ]
+        
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -127,23 +108,11 @@ class CampaignForm(forms.ModelForm):
                 'rows': 3,
                 'placeholder': 'Brief description of this campaign...'
             })
-            # REMOVED category widget
         }
     
     def __init__(self, *args, **kwargs):
-        # Get tenant_id from kwargs to filter WhatsApp instances
         tenant_id = kwargs.pop('tenant_id', None)
         super().__init__(*args, **kwargs)
-        
-        # Filter WhatsApp instances by tenant and only show connected ones
-        if tenant_id:
-            self.fields['whatsapp_instance'].queryset = WhatsAppInstance.objects.filter(
-                tenant_id=tenant_id,
-                is_active=True,
-                status='connected'
-            )
-        else:
-            self.fields['whatsapp_instance'].queryset = WhatsAppInstance.objects.none()
         
         # Set default start date to 5 minutes from now
         self.fields['start_date'].initial = timezone.now() + timedelta(minutes=5)
@@ -152,8 +121,6 @@ class CampaignForm(forms.ModelForm):
         cleaned_data = super().clean()
         start_immediately = cleaned_data.get('start_immediately')
         start_date = cleaned_data.get('start_date')
-        min_delay = cleaned_data.get('min_delay_minutes', 0)
-        max_delay = cleaned_data.get('max_delay_minutes', 0)
         
         # Validate scheduling
         if not start_immediately and not start_date:
@@ -162,16 +129,12 @@ class CampaignForm(forms.ModelForm):
         if start_date and start_date <= timezone.now():
             raise forms.ValidationError("Start date must be in the future")
         
-        # Validate delay settings
-        if min_delay >= max_delay:
-            raise forms.ValidationError("Minimum delay must be less than maximum delay")
-        
         return cleaned_data
     
     def save(self, commit=True):
         campaign = super().save(commit=False)
         
-        # AUTO-ASSIGN DEFAULT CATEGORY (Option 3 implementation)
+        # AUTO-ASSIGN DEFAULT CATEGORY
         if not campaign.category_id:
             default_category, created = CampaignCategory.objects.get_or_create(
                 name='General',
@@ -185,13 +148,16 @@ class CampaignForm(forms.ModelForm):
             )
             campaign.category = default_category
         
-        # Set start date based on start_immediately checkbox
+        # Set scheduling
         if self.cleaned_data.get('start_immediately'):
             campaign.start_date = timezone.now()
             campaign.status = 'running'
         else:
             campaign.start_date = self.cleaned_data.get('start_date')
             campaign.status = 'scheduled'
+        
+        # Anti-ban settings will use tenant defaults (no longer set on campaign)
+        # Remove these fields from Campaign or leave them NULL
         
         if commit:
             campaign.save()
@@ -205,7 +171,8 @@ class CampaignForm(forms.ModelForm):
                     defaults={'weight': 100}
                 )
         
-        return campaign
+        return campaign    
+        
 
 class MessageTemplateForm(forms.ModelForm):
     """Form for creating/editing message templates - no category selection"""
