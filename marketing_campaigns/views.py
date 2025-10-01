@@ -452,32 +452,22 @@ def campaign_view(request, tenant_id, pk):
     """View campaign details"""
     campaign = get_object_or_404(Campaign, pk=pk)
     
-    targets = campaign.targets.all()
+    # Use model methods
+    status_breakdown = campaign.get_status_breakdown()
+    instance_distribution = campaign.get_instance_distribution()
+    failure_breakdown = campaign.get_failure_breakdown()
     
-    # Get status breakdown
-    status_breakdown = {}
-    for status_choice in CampaignTarget.STATUS_CHOICES:
-        status_key = status_choice[0]
-        count = targets.filter(status=status_key).count()
-        status_breakdown[status_key] = {
-            'count': count,
-            'label': status_choice[1]
-        }
-    
-    # Get recent targets
-    recent_targets = targets.order_by('-created_at')[:20]
-    
-    # Calculate progress
-    total_targets = campaign.total_targeted
-    sent_targets = campaign.total_sent
-    progress_percentage = (sent_targets / total_targets * 100) if total_targets > 0 else 0
+    # Get recent sent and upcoming queue
+    recent_sent = campaign.targets.filter(status__in=['sent', 'delivered']).order_by('-sent_at')[:10]
+    upcoming_queue = campaign.targets.filter(status='queued').order_by('id')[:10]
     
     context = {
         'campaign': campaign,
-        'targets': recent_targets,
         'status_breakdown': status_breakdown,
-        'campaign_messages': campaign.campaign_messages.all(),
-        'progress_percentage': round(progress_percentage, 1),
+        'instance_distribution': instance_distribution,
+        'failure_breakdown': failure_breakdown,
+        'recent_sent': recent_sent,
+        'upcoming_queue': upcoming_queue,
     }
     
     return render(request, 'marketing_campaigns/campaign_view.html', context)

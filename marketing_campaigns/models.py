@@ -976,6 +976,75 @@ class Campaign(models.Model):
         help_text="How to distribute messages across WhatsApp instances"
     )    
     
+    def get_status_breakdown(self):
+        """Get count of targets by status"""
+        from django.db.models import Count
+        
+        breakdown = {}
+        status_counts = self.targets.values('status').annotate(count=Count('status'))
+        
+        for item in status_counts:
+            breakdown[item['status']] = item['count']
+        
+        # Ensure all statuses are present even if count is 0
+        for status_code, status_label in CampaignTarget.STATUS_CHOICES:
+            if status_code not in breakdown:
+                breakdown[status_code] = 0
+        
+        return breakdown
+
+    def get_instance_distribution(self):
+        """Get count of messages sent per instance"""
+        from django.db.models import Count
+        
+        distribution = self.targets.filter(
+            status__in=['sent', 'delivered']
+        ).values('whatsapp_instance').annotate(
+            count=Count('whatsapp_instance')
+        ).order_by('-count')
+        
+        return list(distribution)
+
+    def get_failure_breakdown(self):
+        """Get count of failures by reason"""
+        from django.db.models import Count
+        
+        failures = self.targets.filter(
+            status='failed'
+        ).values('failure_reason').annotate(
+            count=Count('failure_reason')
+        ).order_by('-count')
+        
+        return list(failures)
+
+    @property
+    def progress_percentage(self):
+        """Calculate campaign progress"""
+        if self.total_targeted == 0:
+            return 0
+        return round((self.total_sent / self.total_targeted) * 100, 1)
+
+    @property
+    def estimated_completion_time(self):
+        """Estimate when campaign will complete"""
+        if self.status != 'running':
+            return None
+        
+        remaining = self.targets.filter(status='queued').count()
+        if remaining == 0:
+            return None
+        
+        # Get average delay from settings
+        from .models import TenantCampaignSettings
+        settings = TenantCampaignSettings.get_instance()
+        avg_delay = (settings.min_delay_seconds + settings.max_delay_seconds) / 2
+        
+        estimated_seconds = remaining * avg_delay
+        return timezone.now() + timedelta(seconds=estimated_seconds)
+
+
+    
+    
     
     class Meta:
         db_table = 'marketing_campaigns'
