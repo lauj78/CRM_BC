@@ -1,3 +1,5 @@
+# whatsapp_messaging/views.py
+
 import json
 import logging
 import secrets # Import the secrets module for secure token generation
@@ -8,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponseBadRequest, HttpRequest
+from django.utils import timezone
 from .models import WhatsAppInstance, WebhookEvent
 from .forms import WhatsappInstanceForm
 from .services.evolution_api import EvolutionAPIService
@@ -17,75 +20,192 @@ from .services.evolution_api import EvolutionAPIService
 logger = logging.getLogger(__name__)
 
 # This view is for API-to-API communication.
+
 @csrf_exempt
 def webhook_handler(request: HttpRequest) -> JsonResponse:
     """
     Handles incoming webhook events from the WhatsApp API.
-    Uses the unique instance API key for validation.
+    Authenticates using instanceId from payload only.
     """
     if request.method != 'POST':
         return JsonResponse({"error": "Only POST requests are accepted"}, status=405)
 
     try:
         payload = json.loads(request.body)
-        logger.info(f"Received webhook payload: {payload}")
-
     except json.JSONDecodeError:
         logger.error("Invalid JSON payload received.")
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-    # This is the secret API key generated for each instance
-    api_key_header = request.headers.get('x-api-key')
-    instance_id_from_payload = payload.get('instanceId')
+    # TEMPORARY DEBUG - Log the entire payload
+    logger.info(f"========== WEBHOOK PAYLOAD DEBUG ==========")
+    logger.info(f"Full payload: {json.dumps(payload, indent=2)}")
+    logger.info(f"Payload keys: {payload.keys()}")
+    logger.info(f"===========================================")
 
-    if not api_key_header or not instance_id_from_payload:
-        logger.warning("Missing API key or instance ID in webhook request.")
-        return JsonResponse({"error": "API Key or Instance ID missing"}, status=401)
+    # Get instance ID from payload - check multiple locations
+    instance_id_from_payload = payload.get('data', {}).get('instanceId') or payload.get('instanceId')
+    instance_name_from_payload = payload.get('instance')
+    
+    if not instance_id_from_payload and not instance_name_from_payload:
+        logger.error("No instanceId or instance name in payload")
+        return JsonResponse({"error": "Instance ID missing"}, status=401)
 
-    try:
-        # We need a model named `WhatsappInstance` to perform this lookup.
-        # The secret key is used here to validate the webhook and link it to a specific tenant.
-        instance = WhatsAppInstance.objects.get(
-            external_id=instance_id_from_payload,
-            api_key=api_key_header
-        )
-        logger.info(f"Webhook request validated for instance: {instance.instance_name}")
+    # Find instance in tenant databases
+    instance = None
+    tenant_obj = None
+    db_name = None
+    
+    from tenants.models import Tenant
+    
+    for tenant in Tenant.objects.all():
+        db_name = f"crm_db_{tenant.tenant_id.replace('.', '_')}"
+        try:
+            # Try matching by external_id (UUID) first
+            if instance_id_from_payload:
+                try:
+                    instance = WhatsAppInstance.objects.using(db_name).get(
+                        external_id=instance_id_from_payload
+                    )
+                    tenant_obj = tenant
+                    logger.info(f"Instance found by UUID: {instance.instance_name} in {db_name}")
+                    break
+                except WhatsAppInstance.DoesNotExist:
+                    pass
+            
+            # Fallback: try matching by instance name
+            if instance_name_from_payload and not instance:
+                try:
+                    instance = WhatsAppInstance.objects.using(db_name).get(
+                        instance_name=instance_name_from_payload
+                    )
+                    tenant_obj = tenant
+                    logger.info(f"Instance found by name: {instance.instance_name} in {db_name}")
+                    break
+                except WhatsAppInstance.DoesNotExist:
+                    pass
+                    
+        except Exception as e:
+            logger.error(f"Error querying tenant {tenant.tenant_id}: {e}")
+            continue
 
-    except WhatsAppInstance.DoesNotExist:
-        logger.error(f"Invalid API key or instance ID for instance: {instance_id_from_payload}")
-        return JsonResponse({"error": "Invalid API Key or Instance ID"}, status=401)
+    if not instance:
+        logger.error(f"Instance not found - UUID: {instance_id_from_payload}, Name: {instance_name_from_payload}")
+        return JsonResponse({"error": "Invalid Instance ID"}, status=401)
 
     event_type = payload.get('event')
     
-    # Save the webhook event to a database table if needed.
+    # Save webhook event in tenant database
     try:
-        WebhookEvent.objects.create(
+        webhook_event = WebhookEvent.objects.using(db_name).create(
             whatsapp_instance=instance,
             event_type=event_type,
             payload=payload
         )
     except Exception as e:
         logger.error(f"Failed to save webhook event: {e}")
-        pass
+        webhook_event = None
 
-    if event_type == 'qrcode.update':
-        qr_code = payload.get('data', {}).get('qrcode')
+    # Process different event types
+    if event_type == 'qrcode.update' or event_type == 'QRCODE_UPDATED':
+        qr_code = payload.get('data', {}).get('qrcode') or payload.get('qrcode')
         if qr_code:
             instance.qr_code = qr_code
-            instance.save(update_fields=['qr_code'])
+            instance.save(using=db_name, update_fields=['qr_code'])
             logger.info(f"QR code updated for instance: {instance.instance_name}")
     
-    elif event_type == 'connection.update':
-        connection_status = payload.get('data', {}).get('status')
+    elif event_type == 'connection.update' or event_type == 'CONNECTION_UPDATE':
+        data = payload.get('data', {})
+        connection_status = data.get('status') or data.get('state')
         if connection_status:
-            if connection_status == 'connected':
+            if connection_status in ['connected', 'open']:
                 instance.status = 'connected'
-            elif connection_status == 'disconnected':
+            elif connection_status in ['disconnected', 'close']:
                 instance.status = 'disconnected'
-            instance.save(update_fields=['status'])
-            logger.info(f"Connection status updated to '{connection_status}' for instance: {instance.instance_name}")
+            instance.save(using=db_name, update_fields=['status'])
+            logger.info(f"Connection status updated to '{connection_status}'")
     
-    # We will need to add more event handlers here for incoming messages, etc.
+    elif event_type in ['messages.upsert', 'MESSAGES_UPSERT']:
+        # Handle incoming messages
+        try:
+            data = payload.get('data', {})
+            
+            # Handle both formats
+            if isinstance(data, list):
+                messages_data = data
+            else:
+                messages_data = [data]
+            
+            for msg_data in messages_data:
+                message_data = msg_data.get('message', {})
+                key_data = msg_data.get('key', {})
+                
+                # Extract message details
+                from_jid = key_data.get('remoteJid', '')
+                from_number = from_jid.replace('@s.whatsapp.net', '').replace('@g.us', '')
+                message_id = key_data.get('id', '')
+                is_from_me = key_data.get('fromMe', False)
+                
+                # Extract message content
+                message_text = ''
+                message_type = 'text'
+                media_url = None
+                
+                if 'conversation' in message_data:
+                    message_text = message_data['conversation']
+                elif 'extendedTextMessage' in message_data:
+                    message_text = message_data['extendedTextMessage'].get('text', '')
+                elif 'imageMessage' in message_data:
+                    message_type = 'image'
+                    message_text = message_data['imageMessage'].get('caption', 'Image received')
+                elif 'documentMessage' in message_data:
+                    message_type = 'document'
+                    message_text = message_data['documentMessage'].get('fileName', 'Document received')
+                elif 'audioMessage' in message_data:
+                    message_type = 'audio'
+                    message_text = 'Audio message received'
+                elif 'videoMessage' in message_data:
+                    message_type = 'video'
+                    message_text = message_data['videoMessage'].get('caption', 'Video received')
+                
+                # Process only customer messages (not our own)
+                if not is_from_me and from_number and message_text:
+                    from marketing_campaigns.services.inbox_service import InboxService
+                    
+                    # Set database context for InboxService
+                    from tenants.context import set_current_db
+                    set_current_db(db_name)
+                    
+                    try:
+                        conversation, message = InboxService.process_inbound_message(
+                            tenant_id=tenant_obj.id,  # Use numeric tenant ID
+                            whatsapp_instance_id=instance.id,
+                            from_phone=from_number,
+                            message_text=message_text,
+                            message_type=message_type,
+                            media_url=media_url,
+                            evolution_message_id=message_id,
+                            whatsapp_message_id=message_id
+                        )
+                        
+                        if webhook_event:
+                            webhook_event.processed = True
+                            webhook_event.processed_at = timezone.now()
+                            webhook_event.save(using=db_name)
+                        
+                        logger.info(f"Message processed - Conversation: {conversation.id}")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to process message: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        if webhook_event:
+                            webhook_event.processing_error = str(e)
+                            webhook_event.save(using=db_name)
+                
+        except Exception as e:
+            logger.error(f"Error processing message event: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
     
     return JsonResponse({"ok": True})
 
@@ -398,3 +518,45 @@ def send_test_message(request, tenant_id, pk):
         'tenant_id': request.tenant.tenant_id
     }
     return render(request, 'whatsapp_messaging/send_message.html', context)
+
+@login_required
+def anti_ban_settings(request, tenant_id):
+    """View and edit anti-ban settings for tenant"""
+    if not request.tenant:
+        messages.error(request, "Tenant not found.")
+        return redirect('account_locked')
+    
+    from marketing_campaigns.models import TenantCampaignSettings
+    
+    # FIXED: Pass tenant ID to get_instance()
+    settings = TenantCampaignSettings.get_instance(request.tenant.id)
+    
+    if request.method == 'POST':
+        try:
+            # Update settings from form
+            settings.instance_selection_strategy = request.POST.get('instance_selection_strategy', 'round_robin')
+            settings.max_messages_per_hour_global = int(request.POST.get('max_messages_per_hour_global', 20))
+            settings.max_messages_per_instance_hour = int(request.POST.get('max_messages_per_instance_hour', 10))
+            settings.max_messages_per_instance_day = int(request.POST.get('max_messages_per_instance_day', 200))
+            settings.min_delay_seconds = int(request.POST.get('min_delay_seconds', 60))
+            settings.max_delay_seconds = int(request.POST.get('max_delay_seconds', 180))
+            settings.use_random_delays = request.POST.get('use_random_delays') == 'on'
+            settings.rotate_after_messages = int(request.POST.get('rotate_after_messages', 50))
+            settings.instance_cooldown_minutes = int(request.POST.get('instance_cooldown_minutes', 15))
+            settings.auto_disable_failed_instances = request.POST.get('auto_disable_failed_instances') == 'on'
+            settings.failure_threshold = int(request.POST.get('failure_threshold', 5))
+            
+            settings.save()
+            messages.success(request, "Anti-ban settings updated successfully!")
+            return redirect('whatsapp_messaging:anti_ban_settings', tenant_id=request.tenant.tenant_id)
+            
+        except Exception as e:
+            logger.error(f"Error saving anti-ban settings: {e}")
+            messages.error(request, f"Error saving settings: {str(e)}")
+    
+    context = {
+        'settings': settings,
+        'tenant_id': request.tenant.tenant_id,
+    }
+    
+    return render(request, 'whatsapp_messaging/anti_ban_settings.html', context)

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp Inbox{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>WhatsApp Inbox</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_app:dashboard' tenant_id=tenant_id %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Inbox</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-md-3 mb-3">
+        <div class="content-card">
+            <h5 class="mb-3">Filters</h5>
+            
+            <!-- Search -->
+            <form method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search by name or phone..." value="{{ search_query }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Status Filters -->
+            <div class="list-group">
+                <a href="?status=" class="list-group-item list-group-item-action {% if not status_filter %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>All Conversations</span>
+                        <span class="badge bg-secondary">{{ status_counts.all }}</span>
+                    </div>
+                </a>
+                <a href="?status=unread" class="list-group-item list-group-item-action {% if status_filter == 'unread' %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Unread</span>
+                        <span class="badge bg-danger">{{ status_counts.unread }}</span>
+                    </div>
+                </a>
+                <a href="?status=open" class="list-group-item list-group-item-action {% if status_filter == 'open' %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Open</span>
+                        <span class="badge bg-info">{{ status_counts.open }}</span>
+                    </div>
+                </a>
+                <a href="?status=replied" class="list-group-item list-group-item-action {% if status_filter == 'replied' %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Replied</span>
+                        <span class="badge bg-warning">{{ status_counts.replied }}</span>
+                    </div>
+                </a>
+                <a href="?status=closed" class="list-group-item list-group-item-action {% if status_filter == 'closed' %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Closed</span>
+                        <span class="badge bg-secondary">{{ status_counts.closed }}</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conversations List -->
+    <div class="col-md-9">
+        <div class="content-card">
+            {% if conversations %}
+                <div class="list-group">
+                    {% for conversation in conversations %}
+                    <div class="list-group-item list-group-item-action {% if conversation.status == 'unread' %}list-group-item-info{% endif %} p-0">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <!-- Clickable conversation area -->
+                            <a href="{% url 'marketing_campaigns:conversation_detail' tenant_id=tenant_id conversation_id=conversation.id %}" 
+                               class="text-decoration-none text-dark flex-grow-1 p-3">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if conversation.customer_name %}
+                                            {{ conversation.customer_name }}
+                                        {% else %}
+                                            {{ conversation.customer_phone }}
+                                        {% endif %}
+                                        {% if conversation.status == 'unread' %}
+                                            <span class="badge bg-primary ms-2">{{ conversation.get_status_display }}</span>
+                                        {% elif conversation.status == 'open' %}
+                                            <span class="badge bg-success ms-2">{{ conversation.get_status_display }}</span>
+                                        {% elif conversation.status == 'replied' %}
+                                            <span class="badge bg-warning ms-2">{{ conversation.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-2">{{ conversation.get_status_display }}</span>
+                                        {% endif %}
+                                        {% if conversation.unread_count > 0 %}
+                                            <span class="badge bg-danger ms-1">{{ conversation.unread_count }} new</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1 text-muted small">
+                                        <i class="fas fa-phone"></i> {{ conversation.customer_phone }}
+                                        {% if conversation.originated_from_campaign %}
+                                            | <i class="fas fa-bullhorn"></i> Campaign: {{ conversation.originated_from_campaign.name }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </a>
+                            
+                            <!-- Action buttons area -->
+                            <div class="text-end p-3" style="min-width: 180px;">
+                                <div class="text-muted small">{{ conversation.last_message_at|date:"M d, H:i" }}</div>
+                                <div class="mt-1 text-muted small">
+                                    <i class="fab fa-whatsapp"></i> {{ conversation.whatsapp_instance_name }}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" 
+                                        onclick="confirmDeleteConversation({{ conversation.id }}, '{{ conversation.customer_phone }}'); event.preventDefault(); event.stopPropagation();">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No conversations found</h5>
+                    <p class="text-muted">New customer messages will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete form -->
+<form id="delete-conversation-form" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script>
+function confirmDeleteConversation(conversationId, phoneNumber) {
+    if (confirm(`Are you sure you want to delete the conversation with ${phoneNumber}?\n\nThis action cannot be undone.`)) {
+        const form = document.getElementById('delete-conversation-form');
+        form.action = `/tenant/{{ tenant_id }}/marketing/inbox/${conversationId}/delete/`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

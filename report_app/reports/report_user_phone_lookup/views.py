@@ -22,17 +22,24 @@ def report_user_phone_lookup_view(request):
             if len(usernames) > 2000:
                 error_message = "Error: Input exceeds 2000 usernames. Please limit to 2000 per request."
             else:
-                members = Member.objects.filter(username__in=usernames).values("username", "name", "handphone")
+                # ADD join_date to the query
+                members = Member.objects.filter(username__in=usernames).values("username", "name", "handphone", "join_date")
                 member_dict = {m["username"]: m for m in members}
                 for username in usernames:
-                    member = member_dict.get(username, {"username": username, "name": "Not Found", "handphone": "Not Found"})
+                    member = member_dict.get(username, {
+                        "username": username, 
+                        "name": "Not Found", 
+                        "handphone": "Not Found",
+                        "join_date": None  # ADD this
+                    })
                     handphone = member["handphone"]
                     if handphone and not handphone.startswith("+"):
                         handphone = f"+65{handphone}" if handphone.isdigit() and len(handphone) == 8 else handphone
                     results.append({
                         "username": username,
                         "name": member["name"],
-                        "handphone": handphone
+                        "handphone": handphone,
+                        "join_date": member["join_date"]  # ADD this
                     })
         else:
             error_message = "Please enter usernames to look up."
@@ -45,26 +52,34 @@ def report_user_phone_lookup_view(request):
             if len(usernames) > 2000:
                 error_message = "Error: Input exceeds 2000 usernames. Please limit to 2000 per request."
             else:
-                members = Member.objects.filter(username__in=usernames).values("username", "name", "handphone")
+                # ADD join_date to the query
+                members = Member.objects.filter(username__in=usernames).values("username", "name", "handphone", "join_date")
                 member_dict = {m["username"]: m for m in members}
                 for username in usernames:
-                    member = member_dict.get(username, {"username": username, "name": "Not Found", "handphone": "Not Found"})
+                    member = member_dict.get(username, {
+                        "username": username, 
+                        "name": "Not Found", 
+                        "handphone": "Not Found",
+                        "join_date": None  # ADD this
+                    })
                     handphone = member["handphone"]
                     if handphone and not handphone.startswith("+"):
                         handphone = f"+65{handphone}" if handphone.isdigit() and len(handphone) == 8 else handphone
                     results.append({
                         "username": username,
                         "name": member["name"],
-                        "handphone": handphone
+                        "handphone": handphone,
+                        "join_date": member["join_date"]  # ADD this
                     })
         else:
             error_message = "Please enter usernames to look up."
 
         csv_content = io.StringIO()
         writer = csv.writer(csv_content)
-        writer.writerow(['Username', 'Name', 'Handphone'])  # Header row
+        writer.writerow(['Username', 'Name', 'Handphone', 'Join Date'])  # ADD Join Date header
         for result in results:
-            writer.writerow([result['username'], result['name'], result['handphone']])
+            join_date_str = result['join_date'].strftime('%Y-%m-%d %H:%M:%S') if result['join_date'] else 'Not Found'
+            writer.writerow([result['username'], result['name'], result['handphone'], join_date_str])
         csv_data = csv_content.getvalue()
         csv_content.close()
         context = {

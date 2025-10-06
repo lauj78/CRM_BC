@@ -1,0 +1,2 @@
+Row,Error,Row Data
+3051,Missing time in PROCESS DATE,"{'No': nan, 'CREATE DATE': '13-09-2025 23:59:28', 'USERNAME': 'tommy8', 'EVENT': 'Deposit', 'PROCESS DATE': '14-09-2025 00:00:00', 'PROCESS BY': 'dendi@xpukul69', 'AMOUNT': '25.00'}"

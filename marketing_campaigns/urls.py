@@ -1,6 +1,7 @@
 # marketing_campaigns/urls.py
 from django.urls import path
 from . import views
+from . import views_inbox
 
 app_name = 'marketing_campaigns'
 
@@ -32,4 +33,11 @@ urlpatterns = [
     path('campaigns/<int:pk>/start/', views.campaign_start, name='campaign_start'),
     path('campaigns/<int:pk>/pause/', views.campaign_pause, name='campaign_pause'),
     path('campaigns/<int:pk>/delete/', views.campaign_delete, name='campaign_delete'),
+
+    #Inbox URLs
+    path('inbox/', views_inbox.inbox_list, name='inbox_list'),
+    path('inbox/<int:conversation_id>/', views_inbox.conversation_detail, name='conversation_detail'),
+    path('inbox/<int:conversation_id>/reply/', views_inbox.send_reply_ajax, name='send_reply_ajax'),
+    path('inbox/<int:conversation_id>/status/', views_inbox.update_conversation_status, name='update_conversation_status'),    
+    path('inbox/<int:conversation_id>/delete/', views_inbox.delete_conversation, name='delete_conversation'),
 ]

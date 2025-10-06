@@ -146,7 +146,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jakarta'
 USE_I18N = True
 USE_TZ = True
 
@@ -198,7 +198,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_AGE = 3600  # 1 hour
 
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.23.5.133', '100.122.81.22', '100.121.155.33']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.23.5.133', '100.122.81.22', '100.121.155.33', '172.19.0.1',]
 
 PUBLIC_APPS = ['admin', 'auth', 'contenttypes', 'sessions', 'tenants']
 TENANT_APPS = ['data_management','dashboard_app', 'report_app','marketing_campaigns', 'whatsapp_messaging']

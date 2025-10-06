@@ -227,6 +227,7 @@
                             <th style="text-align: left;">Username</th>
                             <th>Name</th>
                             <th>Handphone</th>
+                            <th>Join Date</th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -235,6 +236,7 @@
                             <td class="username-col">{{ result.username }}</td>
                             <td>{{ result.name }}</td>
                             <td>{{ result.handphone }}</td>
+                            <td>{{ result.join_date|date:"Y-m-d H:i"|default:"Not Found" }}</td> 
                         </tr>
                         {% endfor %}
                     </tbody>

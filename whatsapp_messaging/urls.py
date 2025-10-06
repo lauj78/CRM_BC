@@ -14,6 +14,8 @@ urlpatterns = [
     path('<int:pk>/qr-code/', views.get_qr_code, name='get_qr_code'),  # Add this
     path('<int:pk>/send-message/', views.send_test_message, name='send_message'),  # Add this
 
+    path('anti-ban-settings/', views.anti_ban_settings, name='anti_ban_settings'),
+
     # Webhook endpoint for incoming messages from Evolution API
     path('webhooks/evolution/', views.webhook_handler, name='evolution_webhook'),
 ]

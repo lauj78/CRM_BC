@@ -327,6 +327,17 @@
             font-size: 0.8rem;
             padding: 6px 10px;
         }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+            transform: translateY(-1px);
+        }
+
     }
 </style>
 
@@ -338,6 +349,9 @@
             <p>Manage your WhatsApp instances and connections</p>
         </div>
         <div class="header-actions">
+            <a href="{% url 'whatsapp_messaging:anti_ban_settings' tenant_id=tenant_id %}" class="btn btn-info">
+                <i class="fas fa-shield-alt"></i> Anti-Ban Settings
+            </a>
             <a href="{% url 'whatsapp_messaging:add_instance' tenant_id=tenant_id %}" class="btn btn-primary">
                 + Add New Instance
             </a>

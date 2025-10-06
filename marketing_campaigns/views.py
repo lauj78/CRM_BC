@@ -225,7 +225,7 @@ def template_create(request, tenant_id):
         form = MessageTemplateForm()
     
     # Use get_instance() method
-    settings = TenantCampaignSettings.get_instance()
+    settings = TenantCampaignSettings.get_instance(request.tenant.id)
     available_variables = settings.get_default_variables()
     
     context = {
@@ -251,7 +251,7 @@ def template_edit(request, tenant_id, pk):
     else:
         form = MessageTemplateForm(instance=template)
     
-    settings = TenantCampaignSettings.get_instance()
+    settings = TenantCampaignSettings.get_instance(request.tenant.id)
     available_variables = settings.get_default_variables()
     
     context = {

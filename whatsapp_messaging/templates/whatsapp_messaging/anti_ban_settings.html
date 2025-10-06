@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Anti-Ban Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Anti-Ban Settings</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_app:dashboard' tenant_id=tenant_id %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}">WhatsApp</a></li>
+            <li class="breadcrumb-item active">Anti-Ban Settings</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="content-card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> 
+            Configure anti-ban protection to prevent WhatsApp from blocking your instances. 
+            These settings apply to all campaigns.
+        </div>
+        
+        <!-- Instance Selection Strategy -->
+        <h5 class="mb-3">Instance Selection</h5>
+        <div class="mb-4">
+            <label for="instance_selection_strategy" class="form-label">Selection Strategy</label>
+            <select name="instance_selection_strategy" id="instance_selection_strategy" class="form-select">
+                <option value="round_robin" {% if settings.instance_selection_strategy == 'round_robin' %}selected{% endif %}>
+                    Round Robin - Rotate evenly across all instances
+                </option>
+                <option value="random" {% if settings.instance_selection_strategy == 'random' %}selected{% endif %}>
+                    Random - Pick random instance each time
+                </option>
+                <option value="least_used" {% if settings.instance_selection_strategy == 'least_used' %}selected{% endif %}>
+                    Least Used - Use instance with lowest message count today
+                </option>
+            </select>
+            <small class="text-muted">How to select which WhatsApp instance to use for sending</small>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Rate Limiting -->
+        <h5 class="mb-3">Rate Limiting</h5>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="max_messages_per_instance_hour" class="form-label">Max Messages Per Hour (Per Instance)</label>
+                <input type="number" name="max_messages_per_instance_hour" id="max_messages_per_instance_hour" 
+                       class="form-control" value="{{ settings.max_messages_per_instance_hour }}" min="1" max="100">
+                <small class="text-muted">Recommended: 10-20</small>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="max_messages_per_instance_day" class="form-label">Max Messages Per Day (Per Instance)</label>
+                <input type="number" name="max_messages_per_instance_day" id="max_messages_per_instance_day" 
+                       class="form-control" value="{{ settings.max_messages_per_instance_day }}" min="1" max="1000">
+                <small class="text-muted">Recommended: 150-300</small>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="max_messages_per_hour_global" class="form-label">Max Messages Per Hour (All Instances)</label>
+                <input type="number" name="max_messages_per_hour_global" id="max_messages_per_hour_global" 
+                       class="form-control" value="{{ settings.max_messages_per_hour_global }}" min="1" max="500">
+                <small class="text-muted">Total across all instances</small>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Message Delays -->
+        <h5 class="mb-3">Message Delays</h5>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="min_delay_seconds" class="form-label">Minimum Delay (seconds)</label>
+                <input type="number" name="min_delay_seconds" id="min_delay_seconds" 
+                       class="form-control" value="{{ settings.min_delay_seconds }}" min="30" max="300">
+                <small class="text-muted">Wait at least this long between messages</small>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="max_delay_seconds" class="form-label">Maximum Delay (seconds)</label>
+                <input type="number" name="max_delay_seconds" id="max_delay_seconds" 
+                       class="form-control" value="{{ settings.max_delay_seconds }}" min="60" max="600">
+                <small class="text-muted">Random delay up to this amount</small>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="use_random_delays" id="use_random_delays" 
+                           class="form-check-input" {% if settings.use_random_delays %}checked{% endif %}>
+                    <label class="form-check-label" for="use_random_delays">
+                        Use Random Delays
+                    </label>
+                </div>
+                <small class="text-muted d-block">Makes behavior more human-like</small>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Instance Rotation -->
+        <h5 class="mb-3">Instance Rotation</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="rotate_after_messages" class="form-label">Rotate After X Messages</label>
+                <input type="number" name="rotate_after_messages" id="rotate_after_messages" 
+                       class="form-control" value="{{ settings.rotate_after_messages }}" min="10" max="500">
+                <small class="text-muted">Switch instance after this many messages</small>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="instance_cooldown_minutes" class="form-label">Cooldown Period (minutes)</label>
+                <input type="number" name="instance_cooldown_minutes" id="instance_cooldown_minutes" 
+                       class="form-control" value="{{ settings.instance_cooldown_minutes }}" min="5" max="120">
+                <small class="text-muted">Rest time before reusing an instance</small>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Health & Safety -->
+        <h5 class="mb-3">Health & Safety</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="form-check">
+                    <input type="checkbox" name="auto_disable_failed_instances" id="auto_disable_failed_instances" 
+                           class="form-check-input" {% if settings.auto_disable_failed_instances %}checked{% endif %}>
+                    <label class="form-check-label" for="auto_disable_failed_instances">
+                        Auto-Disable Failed Instances
+                    </label>
+                </div>
+                <small class="text-muted d-block">Automatically stop using instances with repeated failures</small>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label for="failure_threshold" class="form-label">Failure Threshold</label>
+                <input type="number" name="failure_threshold" id="failure_threshold" 
+                       class="form-control" value="{{ settings.failure_threshold }}" min="3" max="20">
+                <small class="text-muted">Consecutive failures before disabling</small>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=tenant_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

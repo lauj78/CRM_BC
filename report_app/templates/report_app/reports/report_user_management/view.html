@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}User Management Report{% endblock %}
+
+{% block content %}
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .search-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+
+    .search-section textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 14px;
+    }
+
+    .search-section textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .user-header h3 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 1.3rem;
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-edit {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #2563eb;
+    }
+
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+
+    .btn-save {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: #059669;
+    }
+
+    .btn-cancel {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: #4b5563;
+    }
+
+    .user-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #1e293b;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 6px;
+    }
+
+    .edit-form input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .edit-form input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #64748b;
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>User Management Report</h1>
+        <p>Search, edit, and manage user accounts</p>
+    </div>
+
+    {% if success_message %}
+    <div class="alert alert-success">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    {% if error_message %}
+    <div class="alert alert-error">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <div class="search-section">
+        <p style="color: #64748b; margin-bottom: 15px;">Enter usernames to search (one per line, max 100):</p>
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="search">
+            <textarea name="usernames" placeholder="Enter usernames, one per line...">{{ request.POST.usernames|default:'' }}</textarea>
+            <button type="submit" class="search-btn">Search Users</button>
+        </form>
+    </div>
+
+    {% if results %}
+        {% for user in results %}
+        <div class="user-card" id="user-{{ user.username }}">
+            <div class="user-header">
+                <h3>{{ user.username }}</h3>
+                <div class="user-actions">
+                    <button class="btn btn-edit" onclick="toggleEdit('{{ user.username }}')">Edit</button>
+                    <form method="post" action="" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete user {{ user.username }}? This cannot be undone.')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="username" value="{{ user.username }}">
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="user-info view-mode-{{ user.username }}">
+                <div class="info-item">
+                    <div class="info-label">Name</div>
+                    <div class="info-value">{{ user.name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Phone</div>
+                    <div class="info-value">{{ user.handphone }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email|default:"Not set" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Referral</div>
+                    <div class="info-value">{{ user.referral|default:"None" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Join Date</div>
+                    <div class="info-value">{{ user.join_date|date:"Y-m-d H:i" }}</div>
+                </div>
+            </div>
+
+            <form method="post" action="" class="edit-form edit-mode-{{ user.username }}" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="username" value="{{ user.username }}">
+                
+                <div class="user-info">
+                    <div class="info-item">
+                        <div class="info-label">Name</div>
+                        <input type="text" name="name" value="{{ user.name }}" required>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone</div>
+                        <input type="text" name="handphone" value="{{ user.handphone }}" required>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <input type="email" name="email" value="{{ user.email }}">
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Referral</div>
+                        <input type="text" name="referral" value="{{ user.referral }}">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-save">Save Changes</button>
+                    <button type="button" class="btn btn-cancel" onclick="toggleEdit('{{ user.username }}')">Cancel</button>
+                </div>
+            </form>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>Enter usernames above to search for users</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleEdit(username) {
+    const viewMode = document.querySelector('.view-mode-' + username);
+    const editMode = document.querySelector('.edit-mode-' + username);
+    
+    if (viewMode.style.display === 'none') {
+        viewMode.style.display = 'grid';
+        editMode.style.display = 'none';
+    } else {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

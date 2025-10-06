@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from .models_usage import WhatsAppInstanceUsage
+from .models_inbox import Conversation, ConversationMessage
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,15 @@ logger = logging.getLogger(__name__)
 class TenantCampaignSettings(models.Model):
     """Tenant-specific campaign configuration and anti-ban settings"""
     
+    # Tenant identifier
+    tenant_id = models.IntegerField(
+        unique=True,
+        db_index=True,
+        help_text="Numeric tenant ID - each tenant has their own settings"
+    )
+    
     # ============================================
-    # EXISTING: BASIC ANTI-BAN SETTINGS
+    # BASIC ANTI-BAN SETTINGS (LEGACY)
     # ============================================
     default_rate_limit_per_hour = models.IntegerField(
         default=20, 
@@ -81,7 +89,7 @@ class TenantCampaignSettings(models.Model):
     )
     
     # ============================================
-    # NEW: ANTI-BAN STRATEGY CONFIGURATION
+    # ANTI-BAN STRATEGY CONFIGURATION
     # ============================================
     
     # Instance Selection Strategy (tenant-wide default)
@@ -147,6 +155,7 @@ class TenantCampaignSettings(models.Model):
     # ============================================
     # METADATA
     # ============================================
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
@@ -155,7 +164,7 @@ class TenantCampaignSettings(models.Model):
         verbose_name_plural = 'Tenant Campaign Settings'
     
     def __str__(self):
-        return f"Campaign Settings ({self.primary_country_code})"
+        return f"Campaign Settings for Tenant {self.tenant_id} ({self.primary_country_code})"
     
     def get_default_variables(self):
         """Get standard + custom variables available"""
@@ -166,10 +175,21 @@ class TenantCampaignSettings(models.Model):
         return {**standard, **self.custom_variables}
     
     @classmethod
-    def get_instance(cls):
-        """Get or create the singleton settings instance"""
+    def get_instance(cls, tenant_id):
+        """
+        Get or create settings for specific tenant
+        
+        Args:
+            tenant_id: Numeric tenant ID (e.g., 1, 2, 3)
+            
+        Returns:
+            TenantCampaignSettings instance for this tenant
+        """
+        if not tenant_id:
+            raise ValueError("tenant_id is required")
+        
         settings, created = cls.objects.get_or_create(
-            id=1,
+            tenant_id=tenant_id,
             defaults={
                 # Existing defaults
                 'primary_country_code': 'ID',
@@ -184,7 +204,7 @@ class TenantCampaignSettings(models.Model):
                 'default_messages_per_instance': 50,
                 'max_retry_attempts': 3,
                 'auto_exclude_failed_numbers': False,
-                # NEW: Anti-ban strategy defaults
+                # Anti-ban strategy defaults
                 'instance_selection_strategy': 'round_robin',
                 'max_messages_per_hour_global': 20,
                 'max_messages_per_instance_hour': 10,
@@ -198,8 +218,11 @@ class TenantCampaignSettings(models.Model):
                 'failure_threshold': 5,
             }
         )
-        return settings
-    
+        
+        if created:
+            logger.info(f"Created default anti-ban settings for tenant {tenant_id}")
+        
+        return settings    
     
 
 # ================================

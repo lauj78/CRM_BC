@@ -1,185 +1,402 @@
 <!-- crm_system/templates/base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CRM System {% block title %}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM System{% endblock %} | {{ request.tenant.name|default:"Master" }}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            box-sizing: border-box;
         }
-        .container {
-            width: 90%; /* Use 80% of the viewport width */
-            min-width: 600px; /* Minimum width for readability on small screens */
-            margin: 0 auto; /* Center the container */
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+        }
+        
+        /* Header */
+        .top-header {
+            background: var(--primary-color);
+            height: var(--header-height);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .top-header .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: auto;
+        }
+        
+        .top-header .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: var(--secondary-color);
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1020;
+        }
+        
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .sidebar-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .sidebar-nav .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding-left: 25px;
+        }
+        
+        .sidebar-nav .nav-link.active {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .sidebar-nav .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: white;
+        }
+        
+        .sidebar-nav .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 12px 10px;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 20px;
+            min-height: calc(100vh - var(--header-height));
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 60px;
+        }
+        
+        /* Page Header */
+        .page-header {
             background: white;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .navbar {
-            background-color: #333;
-            overflow: hidden;
             margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .navbar a {
-            float: left;
-            display: block;
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .breadcrumb {
+            margin-bottom: 0;
+            background: transparent;
+            padding: 0;
+        }
+        
+        /* Content Card */
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Badge for notifications */
+        .notification-badge {
+            background: var(--danger-color);
             color: white;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
         }
-        .navbar a:hover {
-            background-color: #ddd;
-            color: black;
-        }
-        .navbar .active {
-            background-color: #4CAF50; /* Green for active tab */
-            color: white;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .content {
-            padding: 15px;
-        }
-        .error {
-            color: red;
-            margin-bottom: 10px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            min-width: 800px;
-            overflow-x: auto;
-            display: block;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 5px;
-            text-align: left;
-            white-space: nowrap;
-            min-width: 60px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        /* Responsive adjustment for small screens */
-        @media (max-width: 600px) {
-            th, td {
-                min-width: 80px;
-                font-size: 12px;
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
             }
-            table {
-                min-width: 600px;
+            
+            .sidebar.mobile-show {
+                transform: translateX(0);
             }
-            .container {
-                width: 90%; /* Adjust container width on very small screens */
-                min-width: 300px;
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: block !important;
             }
         }
-        /* New style to position logout on the far right */
-        .navbar form[action="{% url 'logout' %}"] {
-            float: right;
-            margin: 0; /* Remove any default margin */
-        }
-        /* Ensure the button inside the form inherits the same padding and styling */
-        .navbar form[action="{% url 'logout' %}"] button {
+        
+        .mobile-menu-toggle {
+            display: none;
             background: none;
             border: none;
             color: white;
-            padding: 14px 16px;
-            text-decoration: none;
+            font-size: 1.5rem;
             cursor: pointer;
         }
-        /* Keep hover effect consistent */
-        .navbar form[action="{% url 'logout' %}"] button:hover {
-            background-color: #ddd;
-            color: black;
-        }
+        
+        /* Utility Classes */
+        .text-muted { color: #6c757d; }
+        .mb-0 { margin-bottom: 0; }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .gap-2 { gap: 0.5rem; }
+        
     </style>
+    
+    <!-- Block for additional CSS -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>CRM System</h1>
-        </div>
-       
-        {% load tenant_tags %}
-        <div class="navbar">
-            {% if request.user.is_authenticated %}
-                <!-- Add tenant check to JavaScript redirect -->
-                {% if not request.user.email|endswith:"@master.com" and request.tenant %}
-                    <script>
-                        if (window.location.pathname.startsWith('/master/')) {
-                            window.location.href = "{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}";
-                        }
-                    </script>
-                {% endif %}
-
-                <!-- Master User Links -->
-                {% if request.user.email|endswith:"@master.com" %}
-                    <a href="{% url 'master_dashboard:dashboard' %}" 
-                    {% if request.path == '/master/dashboard/' %}class="active"{% endif %}>
-                    Master Dashboard
-                    </a>
-                    <a href="{% url 'tenant_management:tenant_list' %}" 
-                    {% if request.path == '/master/tenants/' %}class="active"{% endif %}>
-                    Tenant Management
-                    </a>
-                    <a href="{% url 'master_whatsapp:dashboard' %}" 
-                    {% if request.path == '/master/whatsapp/' %}class="active"{% endif %}>
-                    WhatsApp
-                    </a>
-                
-                <!-- Regular User Links (only show if tenant exists) -->
-                {% elif request.tenant %}
-                    <a href="{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}" 
-                    {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/dashboard/' %}class="active"{% endif %}>
-                    Dashboard
-                    </a>
-                    <a href="{% url 'data_management:upload_file' tenant_id=request.tenant.tenant_id %}" 
-                    {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/data/upload/' %}class="active"{% endif %}>
-                    Data Import
-                    </a>
-                    <a href="{% url 'report_app:report_hub' tenant_id=request.tenant.tenant_id %}" 
-                    {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/report/reports/' %}class="active"{% endif %}>
-                    Reporting
-                    </a>
-                    <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=request.tenant.tenant_id %}" 
-                    {% if request.path == '/tenant/'|add:request.tenant.tenant_id|add:'/whatsapp/' %}class="active"{% endif %}>
-                    WhatsApp
-                    </a>
-                    <a href="{% url 'marketing_campaigns:dashboard_home' tenant_id=request.tenant.tenant_id %}" 
-                    {% if '/campaigns/' in request.path %}class="active"{% endif %}>
-                    Campaigns
-                    </a>
-                {% endif %}
-            {% endif %}
+    {% load tenant_tags %}
     
+    <!-- Top Header -->
+    <header class="top-header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+            <i class="fas fa-chart-line"></i> CRM System
+        </div>
+        <div class="user-menu">
             {% if request.user.is_authenticated %}
+                <span>
+                    <i class="fas fa-building"></i>
+                    {% if request.tenant %}
+                        {{ request.tenant.name }}
+                    {% else %}
+                        Master Admin
+                    {% endif %}
+                </span>
+                <span>
+                    <i class="fas fa-user"></i> {{ request.user.username }}
+                </span>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" style="background:none; border:none; color:white; padding:14px 16px; text-decoration:none; cursor:pointer;">
-                        Logout
+                    <button type="submit" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </form>
-            {% else %}
-                <a href="{% url 'login' %}" {% if request.path == '/accounts/login/' %}class="active"{% endif %}>Login</a>
             {% endif %}
         </div>
-        <div class="content">
-            {% if messages %}
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-nav">
+            {% if request.user.is_authenticated %}
+                {% if request.user.email|endswith:"@master.com" %}
+                    <!-- Master Admin Menu -->
+                    <div class="nav-item">
+                        <a href="{% url 'master_dashboard:dashboard' %}" 
+                           class="nav-link {% if '/master/dashboard/' in request.path %}active{% endif %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Master Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'tenant_management:tenant_list' %}" 
+                           class="nav-link {% if '/master/tenants/' in request.path %}active{% endif %}">
+                            <i class="fas fa-building"></i>
+                            <span>Tenants</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'master_whatsapp:dashboard' %}" 
+                           class="nav-link {% if '/master/whatsapp/' in request.path %}active{% endif %}">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                    </div>
+                    
+                {% elif request.tenant %}
+                    <!-- Tenant User Menu -->
+                    <div class="nav-item">
+                        <a href="{% url 'dashboard_app:dashboard' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'data_management:upload_file' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/data/' in request.path %}active{% endif %}">
+                            <i class="fas fa-upload"></i>
+                            <span>Data Import</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'report_app:report_hub' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/report/' in request.path %}active{% endif %}">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'whatsapp_messaging:dashboard' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/whatsapp/' in request.path and '/inbox/' not in request.path %}active{% endif %}">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'marketing_campaigns:dashboard_home' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/campaigns/' in request.path %}active{% endif %}">
+                            <i class="fas fa-bullhorn"></i>
+                            <span>Campaigns</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{% url 'marketing_campaigns:inbox_list' tenant_id=request.tenant.tenant_id %}" 
+                           class="nav-link {% if '/inbox/' in request.path %}active{% endif %}" style="position: relative;">
+                            <i class="fas fa-inbox"></i>
+                            <span>Inbox</span>
+                            {% if unread_count > 0 %}
+                                <span class="notification-badge">{{ unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content">
+        <!-- Messages/Alerts -->
+        {% if messages %}
+            <div class="container-fluid mb-3">
                 {% for message in messages %}
-                    <p class="error">{{ message }}</p>
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 {% endfor %}
-            {% endif %}
-            {% block content %}{% endblock %}
-        </div>
-    </div>
+            </div>
+        {% endif %}
+        
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            // For mobile
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('mobile-show');
+            } else {
+                // For desktop - collapse sidebar
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+        
+        // Auto-hide sidebar on mobile when clicking outside
+        document.addEventListener('click', function(event) {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('mobile-show');
+                }
+            }
+        });
+    </script>
+    
+    <!-- Block for additional JavaScript -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

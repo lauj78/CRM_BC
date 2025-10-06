@@ -12,10 +12,24 @@ from .context import set_current_db, get_current_db, clear_current_db
 logger = logging.getLogger(__name__)
 
 class TenantBypassMiddleware:
+    # Only bypass webhook/API endpoints that need to work without tenant context
+    BYPASS_PATHS = [
+        '/api/whatsapp/webhooks/',  # WhatsApp webhook endpoints
+        # Add other webhook endpoints here if needed in future
+    ]
+    
     def __init__(self, get_response):
         self.get_response = get_response
         
     def __call__(self, request):
+        # Check if this is a webhook URL that should bypass tenant processing
+        for bypass_path in self.BYPASS_PATHS:
+            if request.path.startswith(bypass_path):
+                request._skip_tenant_processing = True
+                logger.debug(f"Bypassing tenant for webhook: {request.path}")
+                return self.get_response(request)
+        
+        # Keep existing decorator check logic
         try:
             from django.urls import resolve
             resolved = resolve(request.path_info)

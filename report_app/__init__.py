@@ -67,8 +67,7 @@ REPORTS = [
         #'access': ['admin', 'op'],
         'params': [],
         'description': 'Search for a user phone number by their usernames.'
-    },
-    
+    }, 
     {
         'name': 'Duplicate Phone Numbers',
         'category': 'Member Management',
@@ -79,4 +78,15 @@ REPORTS = [
         'params': ['phone_number', 'start_date', 'end_date'],
         'description': 'Identify user accounts with duplicate phone numbers.'
     },
+    {
+        'name': 'User Management',
+        'category': 'Member Management',
+        'view': 'report_app.reports.report_user_management.views',
+        'function_name': 'report_user_management_view',
+        'template': 'report_app/reports/report_user_management/view.html',
+        'params': [],
+        'description': 'Search, edit, and delete user accounts.'
+    },
+    
+    
 ]
