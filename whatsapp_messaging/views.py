@@ -19,10 +19,36 @@ from .services.evolution_api import EvolutionAPIService
 # Set up logging for the views
 logger = logging.getLogger(__name__)
 
+
+def _build_webhook_url(request, tenant_id):
+    """
+    Build the correct webhook URL for a tenant.
+    Handles Docker, development, and production environments automatically.
+    """
+    # Check if SITE_URL is configured (production)
+    if hasattr(settings, 'SITE_URL') and settings.SITE_URL:
+        base_url = settings.SITE_URL
+    else:
+        # Auto-detect from request
+        base_url = request.build_absolute_uri('/')
+        # Remove trailing slash
+        base_url = base_url.rstrip('/')
+        
+        # Docker environment detection: if using localhost/127.0.0.1, switch to Docker host IP
+        if 'localhost:8000' in base_url or '127.0.0.1:8000' in base_url:
+            # Evolution API in Docker needs to reach Django on host
+            base_url = 'http://172.19.0.1:8000'
+            logger.info(f"Detected Docker environment, using host IP: {base_url}")
+    
+    webhook_url = f"{base_url}/tenant/{tenant_id}/whatsapp/webhooks/evolution/"
+    return webhook_url
+
+
+
 # This view is for API-to-API communication.
 
 @csrf_exempt
-def webhook_handler(request: HttpRequest) -> JsonResponse:
+def webhook_handler(request: HttpRequest, tenant_id=None) -> JsonResponse:
     """
     Handles incoming webhook events from the WhatsApp API.
     Authenticates using instanceId from payload only.
@@ -250,22 +276,26 @@ def add_instance(request, tenant_id):
             instance.api_key = secrets.token_urlsafe(32)
             
             try:
+                # Build tenant-aware webhook URL
+                webhook_url = _build_webhook_url(request, request.tenant.tenant_id)
+                
                 api_url = f"{settings.EVOLUTION_API_CONFIG['BASE_URL']}/instance/create"
                 headers = {
                     "apikey": settings.EVOLUTION_API_CONFIG['API_KEY'],
                     "Content-Type": "application/json"
                 }
                 payload = {
-                    "instanceName": instance.instance_name,  # This now includes prefix
+                    "instanceName": instance.instance_name,
                     "integration": "WHATSAPP-BAILEYS",
                     "webhook": {
-                        "url": f"{settings.EVOLUTION_API_CONFIG['WEBHOOK_URL']}?apiKey={instance.api_key}",
-                        "events": ["MESSAGES_UPSERT", "MESSAGE_UPDATE", "CONNECTION_UPDATE"]
+                        "url": webhook_url,
+                        "events": ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"]
                     }
                 }
 
+                logger.info(f"Creating instance: {instance.instance_name}")
+                logger.info(f"Webhook URL: {webhook_url}")
                 logger.info(f"API URL: {api_url}")
-                logger.info(f"Headers: {headers}")
                 logger.info(f"Payload: {payload}")
                 
                 response = requests.post(api_url, headers=headers, data=json.dumps(payload))
@@ -278,7 +308,7 @@ def add_instance(request, tenant_id):
                 if evolution_response.get('instance', {}).get('instanceId'):
                     instance.external_id = evolution_response.get('instance', {}).get('instanceId')
                     instance.save()
-                    messages.success(request, f"WhatsApp instance '{instance.instance_name}' created successfully!")
+                    messages.success(request, f"WhatsApp instance '{instance.instance_name}' created successfully with webhook configured!")
                     return redirect('whatsapp_messaging:dashboard', tenant_id=request.tenant.tenant_id)
                 else:
                     messages.error(request, f"Failed to create instance. API responded with: {evolution_response}")
@@ -299,7 +329,7 @@ def add_instance(request, tenant_id):
     return render(request, 'whatsapp_messaging/add_instance.html', {
         'form': form,
         'tenant_id': request.tenant.tenant_id,
-        'tenant_prefix': request.tenant.tenant_id  # Pass to template for display
+        'tenant_prefix': request.tenant.tenant_id
     })
     
     

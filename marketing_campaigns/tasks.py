@@ -159,7 +159,7 @@ def send_single_message(self, target_id, campaign_id=None):
             from marketing_campaigns.services import AntiBanService
             
             tenant_id = getattr(campaign, 'tenant_id', None) or 2
-            anti_ban_service = AntiBanService(tenant_id=tenant_id)
+            anti_ban_service = AntiBanService(tenant_id=tenant_id, database_alias=db_alias)
             
             # Select best instance using anti-ban strategy
             whatsapp_instance = anti_ban_service.select_instance_for_campaign(campaign)
@@ -298,7 +298,7 @@ def _chain_to_next_target(campaign_id, campaign=None, anti_ban_service=None):
         if anti_ban_service is None:
             from marketing_campaigns.services import AntiBanService
             tenant_id = getattr(campaign, 'tenant_id', None) or 2
-            anti_ban_service = AntiBanService(tenant_id=tenant_id)
+            anti_ban_service = AntiBanService(tenant_id=tenant_id, database_alias=db_alias)
         
         delay_seconds = anti_ban_service.calculate_next_delay(campaign)
         
@@ -353,7 +353,7 @@ def cleanup_old_campaign_data():
     return f"Cleanup completed - {total_cleaned} campaigns updated"
 
 
-@shared_task(bind=True, max_retries=2)
+@shared_task(bind=True, max_retries=2, soft_time_limit=3600, time_limit=3900)
 def verify_audience_whatsapp_task(self, audience_id, tenant_id, database_alias=None):
     """
     Background task to verify WhatsApp numbers in an audience

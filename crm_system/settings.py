@@ -146,9 +146,10 @@ AUTHENTICATION_BACKENDS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Jakarta'
+#TIME_ZONE = 'Asia/Jakarta'
+TIME_ZONE = 'UTC'
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False
 
 # Static files
 STATIC_URL = 'static/'
@@ -205,11 +206,15 @@ TENANT_APPS = ['data_management','dashboard_app', 'report_app','marketing_campai
 
 AUTH_USER_MODEL = "auth.User" # Just to make sure it's here
 
+
+#for the use to fix webhook.
+SITE_URL = os.environ.get('SITE_URL', None) # Set in production: export SITE_URL="https://yourdomain.com"
+
 # WhatsApp Evolution API Configuration
 EVOLUTION_API_CONFIG = {
     'BASE_URL': 'http://localhost:8081',
     'API_KEY': '429683C4C977415CAAFCCE10F7D57E11',  # Your actual API key
-    'WEBHOOK_URL': 'http://localhost:8000/api/whatsapp/webhooks/evolution/',
+   # 'WEBHOOK_URL': 'http://localhost:8000/api/whatsapp/webhooks/evolution/',
     'DEFAULT_TIMEOUT': 30,
     'MAX_INSTANCES': 20,
     'DEFAULT_MESSAGE_LIMIT': 200,  # Per instance per day

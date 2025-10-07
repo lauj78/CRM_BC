@@ -19,16 +19,49 @@ class AntiBanService:
     Handles instance selection, rate limiting, and usage tracking
     """
     
-    def __init__(self, tenant_id=None):
+    def __init__(self, tenant_id=None, database_alias=None):
         """
         Initialize service with tenant context
         
         Args:
             tenant_id: Tenant ID for filtering WhatsApp instances
+            database_alias: Which database to query (e.g., 'crm_db_pukul_com')
         """
         self.tenant_id = tenant_id
-        self.settings = TenantCampaignSettings.get_instance()
-        logger.debug(f"AntiBanService initialized for tenant {tenant_id}")
+        
+        # Auto-detect database if not provided
+        if database_alias is None:
+            database_alias = self._get_database_for_tenant(tenant_id)
+        
+        self.database_alias = database_alias
+        
+        # Query settings from correct database
+        self.settings = TenantCampaignSettings.objects.using(self.database_alias).get_or_create(
+            tenant_id=tenant_id,
+            defaults={
+                'instance_selection_strategy': 'round_robin',
+                'max_messages_per_instance_hour': 10,
+                'max_messages_per_instance_day': 200,
+                'min_delay_seconds': 60,
+                'max_delay_seconds': 180,
+                'use_random_delays': True,
+                'rotate_after_messages': 50,
+                'instance_cooldown_minutes': 15,
+                'auto_disable_failed_instances': True,
+                'failure_threshold': 5,
+            }
+        )[0]
+        
+        logger.debug(f"AntiBanService initialized for tenant {tenant_id}, database {database_alias}")
+    
+    def _get_database_for_tenant(self, tenant_id):
+        """Map tenant_id to database alias"""
+        if tenant_id == 2:
+            return 'crm_db_pukul_com'
+        elif tenant_id == 3:
+            return 'crm_db_test_com'
+        else:
+            return 'default'
     
     def get_available_instances(self):
         """
@@ -45,9 +78,10 @@ class AntiBanService:
         if self.tenant_id:
             filters['tenant_id'] = self.tenant_id
         
-        instances = WhatsAppInstance.objects.filter(**filters)
+        # FIXED: Use correct database
+        instances = WhatsAppInstance.objects.using(self.database_alias).filter(**filters)
         
-        logger.debug(f"Found {instances.count()} available instances for tenant {self.tenant_id}")
+        logger.debug(f"Found {instances.count()} available instances for tenant {self.tenant_id} in {self.database_alias}")
         return instances
     
     def get_or_create_usage(self, instance_name):
@@ -60,7 +94,8 @@ class AntiBanService:
         Returns:
             WhatsAppInstanceUsage object
         """
-        usage, created = WhatsAppInstanceUsage.objects.get_or_create(
+        # FIXED: Use correct database
+        usage, created = WhatsAppInstanceUsage.objects.using(self.database_alias).get_or_create(
             instance_name=instance_name,
             defaults={
                 'messages_sent_today': 0,
@@ -104,23 +139,135 @@ class AntiBanService:
     def _select_round_robin(self):
         """
         Select instance using round-robin rotation
-        Will be implemented in Step 4
+        Ensures even distribution across all instances
+        
+        Returns:
+            WhatsAppInstance object or None
         """
-        pass
+        instances = self.get_available_instances()
+        
+        if not instances.exists():
+            logger.error("No available WhatsApp instances found")
+            return None
+        
+        # Get all instances with their usage data
+        instance_usages = []
+        for instance in instances:
+            usage = self.get_or_create_usage(instance.instance_name)
+            
+            # Check if this instance can send
+            can_send, reason = self.can_send_now(instance)
+            
+            instance_usages.append({
+                'instance': instance,
+                'usage': usage,
+                'can_send': can_send,
+                'reason': reason,
+                'position': usage.last_used_position
+            })
+        
+        # Filter to only instances that can send
+        available = [iu for iu in instance_usages if iu['can_send']]
+        
+        if not available:
+            logger.warning("No instances currently available to send (all in cooldown or at limits)")
+            for iu in instance_usages:
+                if not iu['can_send']:
+                    logger.debug(f"  {iu['instance'].instance_name}: {iu['reason']}")
+            return None
+        
+        # Sort by position to find next in rotation
+        available.sort(key=lambda x: x['position'])
+        
+        # Select the one with lowest position
+        selected = available[0]
+        selected_instance = selected['instance']
+        selected_usage = selected['usage']
+        
+        # Update position AFTER selection
+        selected_usage.last_used_position += 1
+        selected_usage.save(using=self.database_alias, update_fields=['last_used_position'])
+        
+        # Only reset when ALL instances have been used at least once
+        all_positions = [iu['usage'].last_used_position for iu in instance_usages]
+        min_position = min(all_positions)
+        
+        # If the minimum position is > 0, it means all instances were used - start new round
+        if min_position > 0:
+            logger.info("Round-robin cycle completed, resetting all positions")
+            for iu in instance_usages:
+                iu['usage'].last_used_position = 0
+                iu['usage'].save(using=self.database_alias, update_fields=['last_used_position'])
+        
+        logger.info(f"Round-robin selected: {selected_instance.instance_name} "
+                    f"(today: {selected_usage.messages_sent_today}, "
+                    f"hour: {selected_usage.messages_sent_this_hour}, "
+                    f"position: {selected_usage.last_used_position})")
+        
+        return selected_instance
     
     def _select_random(self):
         """
         Select a random available instance
-        Will be implemented later
         """
-        pass
+        instances = self.get_available_instances()
+        
+        if not instances.exists():
+            logger.error("No available WhatsApp instances found")
+            return None
+        
+        # Get all instances that can send
+        available = []
+        for instance in instances:
+            can_send, reason = self.can_send_now(instance)
+            if can_send:
+                available.append(instance)
+            else:
+                logger.debug(f"{instance.instance_name}: {reason}")
+        
+        if not available:
+            logger.warning("No instances currently available to send")
+            return None
+        
+        # Select random
+        selected = random.choice(available)
+        logger.info(f"Random selected: {selected.instance_name}")
+        return selected
     
     def _select_least_used(self):
         """
         Select the least used instance today
-        Will be implemented later
         """
-        pass
+        instances = self.get_available_instances()
+        
+        if not instances.exists():
+            logger.error("No available WhatsApp instances found")
+            return None
+        
+        # Get all instances with usage
+        instance_usages = []
+        for instance in instances:
+            usage = self.get_or_create_usage(instance.instance_name)
+            can_send, reason = self.can_send_now(instance)
+            
+            if can_send:
+                instance_usages.append({
+                    'instance': instance,
+                    'usage': usage,
+                    'messages_today': usage.messages_sent_today
+                })
+        
+        if not instance_usages:
+            logger.warning("No instances currently available to send")
+            return None
+        
+        # Sort by messages sent today (ascending)
+        instance_usages.sort(key=lambda x: x['messages_today'])
+        
+        selected = instance_usages[0]['instance']
+        logger.info(f"Least-used selected: {selected.instance_name} "
+                    f"(today: {instance_usages[0]['messages_today']})")
+        return selected
     
     def can_send_now(self, instance):
         """
@@ -174,7 +321,7 @@ class AntiBanService:
                 
                 logger.error(f"Disabling instance {instance.instance_name} due to {usage.consecutive_failures} consecutive failures")
                 instance.is_active = False
-                instance.save(update_fields=['is_active'])
+                instance.save(using=self.database_alias, update_fields=['is_active'])
                 
                 # Put in long cooldown
                 usage.enter_cooldown(minutes=60)
@@ -239,73 +386,3 @@ class AntiBanService:
         """
         instances = self.get_available_instances()
         return [self.get_instance_health_status(inst) for inst in instances]
-    
-    def _select_round_robin(self):
-        """
-        Select instance using round-robin rotation
-        Ensures even distribution across all instances
-        
-        Returns:
-            WhatsAppInstance object or None
-        """
-        instances = self.get_available_instances()
-        
-        if not instances.exists():
-            logger.error("No available WhatsApp instances found")
-            return None
-        
-        # Get all instances with their usage data
-        instance_usages = []
-        for instance in instances:
-            usage = self.get_or_create_usage(instance.instance_name)
-            
-            # Check if this instance can send
-            can_send, reason = self.can_send_now(instance)
-            
-            instance_usages.append({
-                'instance': instance,
-                'usage': usage,
-                'can_send': can_send,
-                'reason': reason,
-                'position': usage.last_used_position
-            })
-        
-        # Filter to only instances that can send
-        available = [iu for iu in instance_usages if iu['can_send']]
-        
-        if not available:
-            logger.warning("No instances currently available to send (all in cooldown or at limits)")
-            for iu in instance_usages:
-                if not iu['can_send']:
-                    logger.debug(f"  {iu['instance'].instance_name}: {iu['reason']}")
-            return None
-        
-        # Sort by position to find next in rotation
-        available.sort(key=lambda x: x['position'])
-        
-        # Select the one with lowest position
-        selected = available[0]
-        selected_instance = selected['instance']
-        selected_usage = selected['usage']
-        
-        # FIXED: Update position AFTER selection
-        selected_usage.last_used_position += 1
-        selected_usage.save(update_fields=['last_used_position'])
-        
-        # FIXED: Only reset when ALL instances have been used at least once
-        all_positions = [iu['usage'].last_used_position for iu in instance_usages]
-        min_position = min(all_positions)
-        
-        # If the minimum position is > 0, it means all instances were used - start new round
-        if min_position > 0:
-            logger.info("Round-robin cycle completed, resetting all positions")
-            for iu in instance_usages:
-                iu['usage'].last_used_position = 0
-                iu['usage'].save(update_fields=['last_used_position'])
-        
-        logger.info(f"Round-robin selected: {selected_instance.instance_name} "
-                    f"(today: {selected_usage.messages_sent_today}, "
-                    f"hour: {selected_usage.messages_sent_this_hour}, "
-                    f"position: {selected_usage.last_used_position})")
-        
-        return selected_instance

@@ -622,11 +622,14 @@ class CustomAudience(models.Model):
     def __str__(self):
         return f"{self.name} ({self.total_numbers} numbers)"
     
-    def process_csv_data(self, csv_data, country_codes=None):
+    def process_csv_data(self, csv_data, country_codes=None, tenant_id=None):
         """Process CSV data and validate phone numbers"""
         if country_codes is None:
-            settings = TenantCampaignSettings.get_instance()
-            country_codes = settings.supported_countries or ['ID']
+            if tenant_id:
+                settings = TenantCampaignSettings.get_instance(tenant_id)
+                country_codes = settings.supported_countries or ['ID']
+            else:
+                country_codes = ['ID']  # Fallback default
         
         self.raw_data = csv_data
         self.processing_errors = []
@@ -1057,12 +1060,11 @@ class Campaign(models.Model):
         if remaining == 0:
             return None
         
-        # Get average delay from settings
-        from .models import TenantCampaignSettings
-        settings = TenantCampaignSettings.get_instance()
-        avg_delay = (settings.min_delay_seconds + settings.max_delay_seconds) / 2
+        # Use campaign's own delay settings (in minutes)
+        avg_delay_minutes = (self.min_delay_minutes + self.max_delay_minutes) / 2
+        avg_delay_seconds = avg_delay_minutes * 60
         
-        estimated_seconds = remaining * avg_delay
+        estimated_seconds = remaining * avg_delay_seconds
         return timezone.now() + timedelta(seconds=estimated_seconds)
 
 

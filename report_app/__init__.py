@@ -29,6 +29,24 @@ REPORTS = [
         'params': ['start_date', 'end_date'],
         'description': 'Analyze user activity over a specific time period, and show each user total deposit and withdrawal within that period'
     },
+        {
+        'name': 'Inactive Withdrawers',
+        'category': 'Retention Management',
+        'view': 'report_app.reports.report_inactive_withdrawers.views',
+        'function_name': 'report_inactive_withdrawers_view',
+        'template': 'report_app/reports/report_inactive_withdrawers/view.html',
+        'params': ['wd_start_date', 'wd_end_date', 'inactive_days'],
+        'description': 'Find members who made withdrawals but haven\'t been active recently - for reactivation campaigns.'
+    },
+    {
+        'name': 'Inactive Depositors',
+        'category': 'Retention Management',
+        'view': 'report_app.reports.report_inactive_depositors.views',
+        'function_name': 'report_inactive_depositors_view',
+        'template': 'report_app/reports/report_inactive_depositors/view.html',
+        'params': ['dep_start_date', 'dep_end_date', 'inactive_days'],
+        'description': "Find members who made deposits but haven't been active recently - for re-engagement campaigns."
+    },          
     {
         'name': 'Top Deposit Users',
         'category': 'Revenue Management',
