@@ -80,7 +80,7 @@ def conversation_detail(request, tenant_id, conversation_id):
     InboxService.mark_messages_read(conversation_id, user=request.user)
     
     # Get messages
-    messages = conversation.messages.all().order_by('sent_at')
+    conversation_messages = conversation.messages.all().order_by('sent_at')
     
     # Handle reply submission
     if request.method == 'POST':
@@ -105,7 +105,7 @@ def conversation_detail(request, tenant_id, conversation_id):
     
     context = {
         'conversation': conversation,
-        'messages': messages,
+        'conversation_messages': conversation_messages,
         'tenant_id': request.tenant.tenant_id,
     }
     

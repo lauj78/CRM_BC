@@ -287,14 +287,9 @@
                             <span>Tenants</span>
                         </a>
                     </div>
-                    <div class="nav-item">
-                        <a href="{% url 'master_whatsapp:dashboard' %}" 
-                           class="nav-link {% if '/master/whatsapp/' in request.path %}active{% endif %}">
-                            <i class="fab fa-whatsapp"></i>
-                            <span>WhatsApp</span>
-                        </a>
-                    </div>
-                    
+
+
+
                 {% elif request.tenant %}
                     <!-- Tenant User Menu -->
                     <div class="nav-item">
