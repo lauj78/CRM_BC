@@ -8,6 +8,7 @@ from django.contrib import messages as django_messages
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 from .models_inbox import Conversation, ConversationMessage
 from .services.inbox_service import InboxService
@@ -17,7 +18,11 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def inbox_list(request, tenant_id):
-    """Display list of all conversations"""
+    """
+    Display list of all conversations with TWO SECTIONS:
+    1. Campaign Conversations (from marketing campaigns)
+    2. Regular Chats (direct messages)
+    """
     if not request.tenant:
         django_messages.error(request, "Tenant not found.")
         return redirect('account_locked')
@@ -26,23 +31,74 @@ def inbox_list(request, tenant_id):
     status_filter = request.GET.get('status', '')
     search_query = request.GET.get('search', '')
     
-    # Get conversations
-    conversations = Conversation.objects.filter(tenant_id=request.tenant.id)
+    # Base query
+    all_conversations = Conversation.objects.filter(tenant_id=request.tenant.id)
     
-    # Apply filters
-    if status_filter:
-        conversations = conversations.filter(status=status_filter)
-    
+    # Apply search filter
     if search_query:
-        conversations = conversations.filter(
+        all_conversations = all_conversations.filter(
             Q(customer_phone__icontains=search_query) |
             Q(customer_name__icontains=search_query)
         )
     
-    # Order by last message
-    conversations = conversations.order_by('-last_message_at')
+    # Apply status filter
+    if status_filter:
+        all_conversations = all_conversations.filter(status=status_filter)
     
-    # Get status counts for sidebar
+    # ====== SEPARATE INTO TWO SECTIONS ======
+    
+    # Section 1: Campaign Conversations (has originated_from_campaign)
+    campaign_conversations = all_conversations.filter(
+        originated_from_campaign__isnull=False
+    ).select_related(
+        'originated_from_campaign',
+        'assigned_to'
+    ).order_by('-last_message_at')
+    
+    # Section 2: Regular Chats (no campaign origin)
+    regular_conversations = all_conversations.filter(
+        originated_from_campaign__isnull=True
+    ).select_related(
+        'assigned_to'
+    ).order_by('-last_message_at')
+    
+    # ====== PAGINATION FOR CAMPAIGN SECTION ======
+    campaign_page = request.GET.get('campaign_page', 1)
+    campaign_paginator = Paginator(campaign_conversations, 10)  # 10 per page
+    campaign_page_obj = campaign_paginator.get_page(campaign_page)
+    
+    # Add unread count and last message preview for campaign conversations
+    for conversation in campaign_page_obj:
+        conversation.unread_count = ConversationMessage.objects.filter(
+            conversation=conversation,
+            direction='inbound',
+            is_read=False
+        ).count()
+        
+        last_message = ConversationMessage.objects.filter(
+            conversation=conversation
+        ).order_by('-sent_at').first()
+        conversation.last_message_preview = last_message.message_text[:50] if last_message else ""
+    
+    # ====== PAGINATION FOR REGULAR SECTION ======
+    regular_page = request.GET.get('regular_page', 1)
+    regular_paginator = Paginator(regular_conversations, 10)  # 10 per page
+    regular_page_obj = regular_paginator.get_page(regular_page)
+    
+    # Add unread count and last message preview for regular conversations
+    for conversation in regular_page_obj:
+        conversation.unread_count = ConversationMessage.objects.filter(
+            conversation=conversation,
+            direction='inbound',
+            is_read=False
+        ).count()
+        
+        last_message = ConversationMessage.objects.filter(
+            conversation=conversation
+        ).order_by('-sent_at').first()
+        conversation.last_message_preview = last_message.message_text[:50] if last_message else ""
+    
+    # ====== STATUS COUNTS (for filter sidebar) ======
     status_counts = {
         'all': Conversation.objects.filter(tenant_id=request.tenant.id).count(),
         'unread': Conversation.objects.filter(tenant_id=request.tenant.id, status='unread').count(),
@@ -51,8 +107,18 @@ def inbox_list(request, tenant_id):
         'closed': Conversation.objects.filter(tenant_id=request.tenant.id, status='closed').count(),
     }
     
+    # Count totals for each section
+    campaign_total = campaign_conversations.count()
+    regular_total = regular_conversations.count()
+    
     context = {
-        'conversations': conversations,
+        # Two sections with pagination
+        'campaign_conversations': campaign_page_obj,
+        'regular_conversations': regular_page_obj,
+        'campaign_total': campaign_total,
+        'regular_total': regular_total,
+        
+        # Existing features
         'status_filter': status_filter,
         'search_query': search_query,
         'status_counts': status_counts,

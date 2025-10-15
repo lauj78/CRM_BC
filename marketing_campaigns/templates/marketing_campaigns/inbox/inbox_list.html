@@ -15,6 +15,75 @@
         border: 1px solid #ddd;
         font-size: 0.85rem;
     }
+    
+    .inbox-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .section-count {
+        background: #007bff;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 15px;
+    }
+    
+    .pagination a, .pagination span {
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .pagination .current {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    
+    .pagination a:hover {
+        background: #e9ecef;
+    }
+    
+    .empty-section {
+        text-align: center;
+        padding: 30px;
+        color: #6c757d;
+    }
+    
+    .empty-section i {
+        font-size: 36px;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
 </style>
 {% endblock %}
 
@@ -99,12 +168,21 @@
         </div>
     </div>
     
-    <!-- Conversations List -->
+    <!-- Two Sections: Campaign Conversations & Regular Chats -->
     <div class="col-md-9">
-        <div class="content-card">
-            {% if conversations %}
+        
+        <!-- SECTION 1: CAMPAIGN CONVERSATIONS -->
+        <div class="inbox-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-bullhorn"></i> Campaign Conversations
+                </div>
+                <span class="section-count">{{ campaign_total }} total</span>
+            </div>
+            
+            {% if campaign_conversations %}
                 <div class="list-group">
-                    {% for conversation in conversations %}
+                    {% for conversation in campaign_conversations %}
                     <div class="list-group-item list-group-item-action {% if conversation.status == 'unread' %}list-group-item-info{% endif %} p-0">
                         <div class="d-flex w-100 justify-content-between align-items-start">
                             <!-- Clickable conversation area -->
@@ -133,9 +211,12 @@
                                     <p class="mb-1 text-muted small">
                                         <i class="fas fa-phone"></i> {{ conversation.customer_phone }}
                                         {% if conversation.originated_from_campaign %}
-                                            | <i class="fas fa-bullhorn"></i> Campaign: {{ conversation.originated_from_campaign.name }}
+                                            | <i class="fas fa-bullhorn"></i> <span class="badge bg-success">{{ conversation.originated_from_campaign.name }}</span>
                                         {% endif %}
                                     </p>
+                                    {% if conversation.last_message_preview %}
+                                        <p class="mb-0 text-muted small">{{ conversation.last_message_preview }}...</p>
+                                    {% endif %}
                                 </div>
                             </a>
                             
@@ -156,14 +237,141 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                <!-- Pagination for Campaign Section -->
+                {% if campaign_conversations.has_other_pages %}
+                <div class="pagination">
+                    {% if campaign_conversations.has_previous %}
+                        <a href="?campaign_page=1{% if request.GET.regular_page %}&regular_page={{ request.GET.regular_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            &laquo; First
+                        </a>
+                        <a href="?campaign_page={{ campaign_conversations.previous_page_number }}{% if request.GET.regular_page %}&regular_page={{ request.GET.regular_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    <span class="current">
+                        Page {{ campaign_conversations.number }} of {{ campaign_conversations.paginator.num_pages }}
+                    </span>
+                    
+                    {% if campaign_conversations.has_next %}
+                        <a href="?campaign_page={{ campaign_conversations.next_page_number }}{% if request.GET.regular_page %}&regular_page={{ request.GET.regular_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Next
+                        </a>
+                        <a href="?campaign_page={{ campaign_conversations.paginator.num_pages }}{% if request.GET.regular_page %}&regular_page={{ request.GET.regular_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Last &raquo;
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                    <h5 class="text-muted">No conversations found</h5>
-                    <p class="text-muted">New customer messages will appear here</p>
+                <div class="empty-section">
+                    <i class="fas fa-bullhorn"></i>
+                    <p>No campaign conversations yet</p>
                 </div>
             {% endif %}
         </div>
+        
+        <!-- SECTION 2: REGULAR CHATS -->
+        <div class="inbox-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-comments"></i> Regular Chats
+                </div>
+                <span class="section-count">{{ regular_total }} total</span>
+            </div>
+            
+            {% if regular_conversations %}
+                <div class="list-group">
+                    {% for conversation in regular_conversations %}
+                    <div class="list-group-item list-group-item-action {% if conversation.status == 'unread' %}list-group-item-info{% endif %} p-0">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <!-- Clickable conversation area -->
+                            <a href="{% url 'marketing_campaigns:conversation_detail' tenant_id=tenant_id conversation_id=conversation.id %}" 
+                               class="text-decoration-none text-dark flex-grow-1 p-3">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if conversation.customer_name %}
+                                            {{ conversation.customer_name }}
+                                        {% else %}
+                                            {{ conversation.customer_phone }}
+                                        {% endif %}
+                                        {% if conversation.status == 'unread' %}
+                                            <span class="badge bg-primary ms-2">{{ conversation.get_status_display }}</span>
+                                        {% elif conversation.status == 'open' %}
+                                            <span class="badge bg-success ms-2">{{ conversation.get_status_display }}</span>
+                                        {% elif conversation.status == 'replied' %}
+                                            <span class="badge bg-warning ms-2">{{ conversation.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-2">{{ conversation.get_status_display }}</span>
+                                        {% endif %}
+                                        {% if conversation.unread_count > 0 %}
+                                            <span class="badge bg-danger ms-1">{{ conversation.unread_count }} new</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1 text-muted small">
+                                        <i class="fas fa-phone"></i> {{ conversation.customer_phone }}
+                                    </p>
+                                    {% if conversation.last_message_preview %}
+                                        <p class="mb-0 text-muted small">{{ conversation.last_message_preview }}...</p>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            
+                            <!-- Action buttons area -->
+                            <div class="text-end p-3" style="min-width: 180px;">
+                                <div class="text-muted small conversation-time">
+                                    <span class="formatted-time">{{ conversation.last_message_at|date:"M d, H:i" }}</span>
+                                </div>
+                                <div class="mt-1 text-muted small">
+                                    <i class="fab fa-whatsapp"></i> {{ conversation.whatsapp_instance_name }}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" 
+                                        onclick="confirmDeleteConversation({{ conversation.id }}, '{{ conversation.customer_phone }}'); event.preventDefault(); event.stopPropagation();">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination for Regular Chat Section -->
+                {% if regular_conversations.has_other_pages %}
+                <div class="pagination">
+                    {% if regular_conversations.has_previous %}
+                        <a href="?regular_page=1{% if request.GET.campaign_page %}&campaign_page={{ request.GET.campaign_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            &laquo; First
+                        </a>
+                        <a href="?regular_page={{ regular_conversations.previous_page_number }}{% if request.GET.campaign_page %}&campaign_page={{ request.GET.campaign_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    <span class="current">
+                        Page {{ regular_conversations.number }} of {{ regular_conversations.paginator.num_pages }}
+                    </span>
+                    
+                    {% if regular_conversations.has_next %}
+                        <a href="?regular_page={{ regular_conversations.next_page_number }}{% if request.GET.campaign_page %}&campaign_page={{ request.GET.campaign_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Next
+                        </a>
+                        <a href="?regular_page={{ regular_conversations.paginator.num_pages }}{% if request.GET.campaign_page %}&campaign_page={{ request.GET.campaign_page }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Last &raquo;
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+            {% else %}
+                <div class="empty-section">
+                    <i class="fas fa-comments"></i>
+                    <p>No regular chats yet</p>
+                </div>
+            {% endif %}
+        </div>
+        
     </div>
 </div>
 

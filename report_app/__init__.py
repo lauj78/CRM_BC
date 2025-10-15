@@ -87,6 +87,16 @@ REPORTS = [
         'description': 'Search for a user phone number by their usernames.'
     }, 
     {
+        'name': 'Phone number to user Lookup',
+        'category': 'Member Management',
+        'view': 'report_app.reports.report_phone_user_lookup.views',
+        'function_name': 'report_phone_user_lookup_view',
+        'template': 'report_app/reports/report_phone_user_lookup/view.html',
+        #'access': ['admin', 'op'],
+        'params': [],
+        'description': 'Search for a User detal  by their pphone usernames.'
+    }, 
+    {
         'name': 'Duplicate Phone Numbers',
         'category': 'Member Management',
         'view': 'report_app.reports.report_duplicated_phone_number.views',

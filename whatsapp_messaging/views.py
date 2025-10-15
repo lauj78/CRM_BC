@@ -384,7 +384,7 @@ def delete_instance(request, tenant_id, pk):
         'tenant_id': request.tenant.tenant_id
     })
     
-@login_required
+
 @login_required
 def sync_instances(request, tenant_id):
     """
