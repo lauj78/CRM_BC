@@ -114,4 +114,4 @@ docker-compose.override.yml
 *.pem
 *.key
 *.cert
-secrets.json
+secrets.jsonlogs/
