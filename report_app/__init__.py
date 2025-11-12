@@ -39,6 +39,15 @@ REPORTS = [
         'description': 'Track deposit behavior of newly registered members across different time periods.'
     },
     {
+        'name': 'New Member Deposit Tracking (by Days)',
+        'category': 'Retention Management',
+        'view': 'report_app.reports.report_new_member_deposit_tracking_days.views',
+        'function_name': 'report_new_member_deposit_tracking_days_view',
+        'template': 'report_app/reports/report_new_member_deposit_tracking_days/view.html',
+        'params': ['reg_start_date', 'reg_end_date', 'days_to_track'],
+        'description': 'Track deposit behavior of newly registered members by day offset (Day 0, Day 1, Day 2...).'
+    },
+    {
         'name': 'Inactive Withdrawers',
         'category': 'Retention Management',
         'view': 'report_app.reports.report_inactive_withdrawers.views',
