@@ -29,7 +29,16 @@ REPORTS = [
         'params': ['start_date', 'end_date'],
         'description': 'Analyze user activity over a specific time period, and show each user total deposit and withdrawal within that period'
     },
-        {
+    {
+        'name': 'New Member Deposit Activity',
+        'category': 'Retention Management',
+        'view': 'report_app.reports.report_new_member_deposit_activity.views',
+        'function_name': 'report_new_member_deposit_activity_view',
+        'template': 'report_app/reports/report_new_member_deposit_activity/view.html',
+        'params': ['reg_start_date', 'reg_end_date', 'dep_start_date', 'dep_end_date'],
+        'description': 'Track deposit behavior of newly registered members across different time periods.'
+    },
+    {
         'name': 'Inactive Withdrawers',
         'category': 'Retention Management',
         'view': 'report_app.reports.report_inactive_withdrawers.views',
