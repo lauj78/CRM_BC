@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}New Member Deposit Tracking (by Days){% endblock %}
+
+{% block content %}
+<style>
+    .report-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .report-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .report-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+    }
+
+    .form-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #1e293b;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    .btn-generate {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-generate:hover {
+        opacity: 0.9;
+    }
+
+    .results-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        min-width: 800px;
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 8px 4px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        border-right: 1px solid #475569;
+        white-space: normal;
+        line-height: 1.2;
+        max-width: 70px;
+        min-width: 70px;
+    }
+
+    .data-table th.day-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        font-size: 0.75rem;
+    }
+
+    .data-table th:last-child {
+        border-right: none;
+    }
+
+    .data-table td {
+        padding: 10px 4px;
+        text-align: center;
+        border-bottom: 1px solid #e2e8f0;
+        border-right: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+        max-width: 70px;
+    }
+
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background: #fafbfc;
+    }
+
+    .reg-date-col {
+        font-weight: 600;
+        color: #1e293b;
+        background: #f1f5f9 !important;
+    }
+
+    .new-members-col {
+        font-weight: 600;
+        color: #059669;
+        background: #f1f5f9 !important;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+
+    .alert-info {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>📈 New Member Deposit Tracking (by Days)</h1>
+        <p>Track deposit behavior of newly registered members by day offset (Day 0, Day 1, Day 2...)</p>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Filter Form -->
+    <div class="form-section">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reg_start_date">Registration Start Date</label>
+                    <input type="date" name="reg_start_date" id="reg_start_date" 
+                           value="{{ request.POST.reg_start_date|default:default_reg_start|date:'Y-m-d' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg_end_date">Registration End Date</label>
+                    <input type="date" name="reg_end_date" id="reg_end_date" 
+                           value="{{ request.POST.reg_end_date|default:default_reg_end|date:'Y-m-d' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="days_to_track">Days to Track (1-30)</label>
+                    <input type="number" name="days_to_track" id="days_to_track" 
+                           value="{{ request.POST.days_to_track|default:default_days }}" 
+                           min="1" max="30" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-generate">🔍 Generate Report</button>
+        </form>
+    </div>
+
+    {% if results %}
+    <!-- Results Table -->
+    <div class="results-section">
+        <h5 class="mb-3">Report Results</h5>
+        
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Registration<br>Date</th>
+                        <th rowspan="2">New<br>Members</th>
+                        {% for activity in results.0.day_activity %}
+                        <th colspan="3" class="day-header">Day {{ activity.day_offset }}<br>{{ activity.actual_date|date:"d M" }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        {% for activity in results.0.day_activity %}
+                        <th>Member<br>Count</th>
+                        <th>Trx<br>Count</th>
+                        <th>Deposit<br>Amount</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results %}
+                    <tr>
+                        <td class="reg-date-col">{{ row.registration_date|date:"d M Y" }}</td>
+                        <td class="new-members-col">{{ row.new_members_count }}</td>
+                        {% for activity in row.day_activity %}
+                        <td>{{ activity.member_count }}</td>
+                        <td>{{ activity.transaction_count }}</td>
+                        <td>{{ activity.deposit_amount|floatformat:0 }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% elif request.method == "POST" and not error_message %}
+    <div class="alert alert-info">
+        No members found in the selected registration period.
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
